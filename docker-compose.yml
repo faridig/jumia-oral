@@ -1,13 +1,39 @@
 services:
-  qdrant:
-    image: qdrant/qdrant:latest
-    container_name: jumia_qdrant
-    ports:
-      - "6343:6333"
-      - "6344:6334"
-    volumes:
-      - qdrant_storage:/qdrant/storage
+  evolution_api:
+    image: evoapicloud/evolution-api:v2.3.7
+    container_name: jumia_evolution_api
     restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      - SERVER_URL=http://localhost:8080
+      - AUTHENTICATION_API_KEY=${EVOLUTION_API_KEY:-apikey}
+      - LANGUAGE=fr
+      - DATABASE_PROVIDER=postgresql
+      - DATABASE_CONNECTION_URI=postgresql://postgres:postgres@postgres_evo_jumia:5432/evolution?schema=public
+      - DATABASE_SAVE_DATA_INSTANCE=true
+      - DATABASE_SAVE_DATA_NEW_MESSAGE=false
+      - DATABASE_SAVE_MESSAGE_UPDATE=true
+      - DATABASE_SAVE_DATA_CONTACTS=true
+      - DATABASE_SAVE_DATA_CHATS=true
+      - CACHE_REDIS_ENABLED=false
+      - CACHE_LOCAL_ENABLED=true
+    volumes:
+      - evolution_instances_jumia:/evolution/instances
+    depends_on:
+      - postgres_evo_jumia
+
+  postgres_evo_jumia:
+    image: postgres:15-alpine
+    container_name: postgres_evo_jumia
+    restart: always
+    environment:
+      - POSTGRES_DB=evolution
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - postgres_data_jumia:/var/lib/postgresql/data
 
 volumes:
-  qdrant_storage:
+  evolution_instances_jumia:
+  postgres_data_jumia:

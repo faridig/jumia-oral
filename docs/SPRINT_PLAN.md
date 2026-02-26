@@ -1,32 +1,34 @@
 # 🏃 SPRINT PLAN - SPRINT 0 (INFRASTRUCTURE)
 
 ## 🎯 OBJECTIF
-Mettre en place l'environnement de développement, l'infrastructure Docker et valider la chaîne de connexion technique.
+Mettre en place l'environnement de développement et valider la connexion à l'infrastructure existante (Qdrant).
 
 ## 📋 TÂCHES À RÉALISER
 
 ### [PBI-000] Initialisation de l'Espace de Travail
 - **Tâches** :
-  - [ ] Créer l'arborescence complète : `src/`, `scripts/`, `data/raw/markdown/`, `docs/`, `logs/`.
-  - [ ] Créer le fichier `requirements.txt` (Crawl4ai, LlamaIndex, Qdrant-client, FastAPI, python-dotenv).
-  - [ ] Créer le fichier `.env.example` incluant : `OPENAI_API_KEY`, `QDRANT_URL`, `EVOLUTION_API_KEY`.
+  - [ ] Créer l'arborescence : `src/`, `scripts/`, `data/raw/markdown/`, `docs/`, `logs/`.
+  - [ ] Créer `requirements.txt` (Crawl4ai, LlamaIndex, Qdrant-client, FastAPI, python-dotenv).
+  - [ ] Créer `.env.example` avec :
+    - `QDRANT_URL` (URL de votre instance existante)
+    - `QDRANT_COLLECTION_NAME=jumia_products`
+    - `OPENAI_API_KEY`
+    - `EVOLUTION_API_KEY`
 
-### [PBI-001] Infrastructure Docker
+### [PBI-001] Infrastructure WhatsApp (Evolution API)
 - **Tâches** :
-  - [ ] Créer un fichier `docker-compose.yml` incluant :
-    - Service `qdrant` (image: qdrant/qdrant).
-    - Service `evolution-api` (image: atendimento/evolution-api).
-  - [ ] Lancer les containers et vérifier l'accessibilité des ports (6333 et 8080).
+  - [ ] Créer un fichier `docker-compose.yml` uniquement pour **Evolution API** (car Qdrant est déjà présent).
+  - [ ] Lancer le container Evolution API et vérifier l'accès au port 8080.
 
-### [PBI-002] Walking Skeleton & Validation
+### [PBI-002] Validation de la Chaîne de Connexion
 - **Tâches** :
   - [ ] Créer un script `scripts/check_infra.py` qui :
-    - Charge les variables d'environnement.
-    - Teste la connexion à l'instance Qdrant.
-    - Teste un appel minimal à l'API OpenAI (ChatCompletion).
-  - [ ] Créer un fichier `src/main.py` vide servant de point d'entrée futur.
+    - Teste la connexion à l'instance Qdrant locale.
+    - Vérifie si la collection `jumia_products` existe (sinon la créer).
+    - Teste l'accessibilité de l'API OpenAI.
+    - Teste l'accessibilité d'Evolution API.
 
 ## ✅ DEFINITION OF DONE (DoD)
-- L'infrastructure Docker est "Up and Running".
-- Le script `check_infra.py` s'exécute sans erreur.
-- Le fichier `README.md` est à jour avec les instructions d'installation.
+- Evolution API est opérationnel via Docker.
+- La collection `jumia_products` est initialisée dans le Qdrant existant.
+- Le script `check_infra.py` valide tous les accès techniques.
