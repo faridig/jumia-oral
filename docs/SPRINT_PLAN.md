@@ -1,34 +1,37 @@
-# 🏃 SPRINT PLAN - SPRINT 0 (INFRASTRUCTURE)
+# 🏃 SPRINT PLAN - SPRINT 1 (SCRAPING INTELLIGENT)
 
 ## 🎯 OBJECTIF
-Mettre en place l'environnement de développement et valider la connexion à l'infrastructure existante (Qdrant).
+Extraire les données produits de la catégorie "Informatique" de Jumia.ma sur les 10 premières pages en utilisant une extraction intelligente.
 
 ## 📋 TÂCHES À RÉALISER
 
-### [PBI-000] Initialisation de l'Espace de Travail
+### [PBI-101] Crawling des URLs (Pagination)
 - **Tâches** :
-  - [ ] Créer l'arborescence : `src/`, `scripts/`, `data/raw/markdown/`, `docs/`, `logs/`.
-  - [ ] Créer `requirements.txt` (Crawl4ai, LlamaIndex, Qdrant-client, FastAPI, python-dotenv).
-  - [ ] Créer `.env.example` avec :
-    - `QDRANT_URL` (URL de votre instance existante)
-    - `QDRANT_COLLECTION_NAME=jumia_products`
-    - `OPENAI_API_KEY`
-    - `EVOLUTION_API_KEY`
+  - [ ] Implémenter le crawler de liste pour `https://www.jumia.ma/ordinateurs-accessoires-informatique/`.
+  - [ ] Gérer la boucle de pagination pour les pages 1 à 10.
+  - [ ] Extraire et stocker la liste unique des URLs produits.
+  - [ ] **Logging & Reporting** : Créer `logs/extraction.log` pour suivre la progression page par page et `data/extraction_summary.json` pour le bilan final.
 
-### [PBI-001] Infrastructure WhatsApp (Evolution API)
+### [PBI-102] Scraping LLM-Powered (Détails & Avis)
 - **Tâches** :
-  - [ ] Créer un fichier `docker-compose.yml` uniquement pour **Evolution API** (car Qdrant est déjà présent).
-  - [ ] Lancer le container Evolution API et vérifier l'accès au port 8080.
+  - [ ] Définir le `ProductExtractionSchema` (Pydantic) :
+    - Nom, Prix (actuel/ancien), Image, URL.
+    - Specs techniques (Dictionnaire).
+    - Note, Nombre d'avis, Résumé des avis (Points forts/faibles).
+  - [ ] Implémenter `LLMExtractionStrategy` avec `gpt-4o-mini`.
+  - [ ] Calculer le `trust_score` : `(Note * 0.7) + (log10(Avis) * 0.3)`.
 
-### [PBI-002] Validation de la Chaîne de Connexion
+### [PBI-103] Génération du Catalogue Markdown
 - **Tâches** :
-  - [ ] Créer un script `scripts/check_infra.py` qui :
-    - Teste la connexion à l'instance Qdrant locale.
-    - Vérifie si la collection `jumia_products` existe (sinon la créer).
-    - Teste l'accessibilité de l'API OpenAI.
-    - Teste l'accessibilité d'Evolution API.
+  - [ ] Créer les fichiers `.md` dans `data/raw/markdown/informatique/`.
+  - [ ] Structure : Frontmatter YAML (données structurées) + Corps (Description texte).
+
+## 🛠️ SPÉCIFICATIONS TECHNIQUES
+- **Tool** : Crawl4AI (AsyncWebCrawler).
+- **Model** : GPT-4o-mini (Extraction).
+- **Format** : Markdown LLM-Ready.
 
 ## ✅ DEFINITION OF DONE (DoD)
-- Evolution API est opérationnel via Docker.
-- La collection `jumia_products` est initialisée dans le Qdrant existant.
-- Le script `check_infra.py` valide tous les accès techniques.
+- ~400 fichiers Markdown générés avec un Frontmatter complet.
+- Présence du `trust_score` pour chaque produit.
+- Structure de dossiers respectée.

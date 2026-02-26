@@ -26,10 +26,7 @@
 ## 📋 BACKLOG GÉNÉRAL
 
 ### [PBI-000] SPRINT 0 : Infrastructure & Walking Skeleton
-**Priorité** : High | **Estimation** : S
-- Créer l'arborescence du projet.
-- Configurer Docker (Evolution API uniquement).
-- Valider la connexion au Qdrant local existant (Collection: `jumia_products`).
+**Status** : DONE ✅
 
 ### [PBI-101] Crawling & Extraction (10 pages)
 **Priorité** : High | **Estimation** : L

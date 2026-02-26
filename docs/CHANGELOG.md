@@ -2,10 +2,11 @@
 
 ## [Unreleased]
 
-### 💡 LEÇONS APPRISES (Sprint 0)
-- **Configuration Docker** : L'Evolution API nécessite obligatoirement une base de données PostgreSQL externe (ou dans le même compose) pour persister les sessions WhatsApp. L'utilisation de `DATABASE_PROVIDER=postgresql` est cruciale.
-- **Gestion Qdrant** : Dans un environnement où Qdrant est déjà mutualisé, il est préférable de ne pas l'inclure dans le `docker-compose.yml` local pour éviter les conflits de ports (6333/6343), mais de déléguer la vérification de la collection au script d'initialisation.
-- **Dépendances Python** : Attention aux versions non-épinglées dans `requirements.txt` qui peuvent générer des `RequestsDependencyWarning` liés à `urllib3`. Un futur passage à `pip-compile` ou `poetry` est recommandé.
+## [0.2.0] - 2026-02-26
+### Added
+- **Sprint 0 Terminé** : Infrastructure validée (Evolution API + Qdrant local).
+- Arborescence du projet créée et environnement Python prêt.
+- Script de validation technique `check_infra.py` opérationnel.
 
 ## [0.1.0] - 2026-02-26
 ### Added
