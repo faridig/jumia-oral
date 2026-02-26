@@ -1,0 +1,9 @@
+crawl4ai
+llama-index
+qdrant-client
+fastapi
+uvicorn
+python-dotenv
+openai
+pydantic
+requests

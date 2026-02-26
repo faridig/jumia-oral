@@ -1,0 +1,13 @@
+services:
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: jumia_qdrant
+    ports:
+      - "6343:6333"
+      - "6344:6334"
+    volumes:
+      - qdrant_storage:/qdrant/storage
+    restart: always
+
+volumes:
+  qdrant_storage:
