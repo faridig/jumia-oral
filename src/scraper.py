@@ -27,7 +27,7 @@ class ProductExtractionSchema(BaseModel):
     name: str = Field(..., description="Nom complet du produit")
     current_price: float = Field(..., description="Prix actuel du produit")
     old_price: Optional[float] = Field(None, description="Ancien prix avant promotion")
-    image_url: str = Field(..., description="URL de l'image principale")
+    images: List[str] = Field(..., description="Liste des URLs des images (la première est l'image principale, suivies des images secondaires/galerie)")
     url: str = Field(..., description="URL de la page produit")
     technical_specs: Dict[str, str] = Field(default_factory=dict, description="Spécifications techniques (ex: Processeur, RAM, SSD)")
     rating: float = Field(0.0, description="Note du produit sur 5")
@@ -52,7 +52,7 @@ async def scrape_products(urls: List[str], limit: int = 5):
         ),
         schema=ProductExtractionSchema.model_json_schema(),
         extraction_type="schema",
-        instruction="Extract all product details from the page. For prices, use numbers only. If a value is missing, use null or default. Technical specs should be a dictionary of key features.",
+        instruction="Extract all product details from the page. For prices, use numbers only. If a value is missing, use null or default. Technical specs should be a dictionary of key features. IMPORTANT: Capture the main product image URL AND all secondary image URLs from the gallery/thumbnails into the 'images' list.",
         verbose=True
     )
     
@@ -101,7 +101,7 @@ async def scrape_products(urls: List[str], limit: int = 5):
 
 def save_to_markdown(product: Dict):
     """Sauvegarde le produit au format Markdown avec Frontmatter YAML"""
-    base_dir = "data/raw/markdown/informatique"
+    base_dir = os.getenv("SCRAPER_BASE_DIR", "data/raw/markdown/informatique")
     os.makedirs(base_dir, exist_ok=True)
     
     name = product.get('name', 'Unknown_Product')
@@ -109,11 +109,15 @@ def save_to_markdown(product: Dict):
     filename = f"{safe_name}.md"
     filepath = os.path.join(base_dir, filename)
     
+    images = product.get("images", [])
+    main_image = images[0] if images else ""
+    gallery_images = images[1:] if len(images) > 1 else []
+    
     frontmatter = {
         "name": product.get("name"),
         "current_price": product.get("current_price"),
         "old_price": product.get("old_price"),
-        "image_url": product.get("image_url"),
+        "images": images,
         "url": product.get("url"),
         "trust_score": product.get("trust_score"),
         "rating": product.get("rating"),
@@ -121,11 +125,18 @@ def save_to_markdown(product: Dict):
         "technical_specs": product.get("technical_specs")
     }
     
+    gallery_md = "\n".join([f"![Image {i+1}]({img})" for i, img in enumerate(gallery_images)])
+    
     content = f"""---
 {json.dumps(frontmatter, indent=2)}
 ---
 
 # {product.get('name', 'Nom Inconnu')}
+
+![Image Principale]({main_image})
+
+## Galerie d'Images
+{gallery_md if gallery_md else "Aucune image secondaire disponible."}
 
 ## Résumé des Avis
 {product.get('review_summary', 'Aucun résumé disponible.')}
@@ -154,8 +165,8 @@ async def main():
         logger.error("No URLs found in product_urls.json.")
         return
 
-    # On commence par un batch de 3 produits
-    products = await scrape_products(urls, limit=3)
+    # On commence par un batch de 10 produits
+    products = await scrape_products(urls, limit=10)
     
     for product in products:
         path = save_to_markdown(product)
