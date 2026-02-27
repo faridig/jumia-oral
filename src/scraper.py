@@ -23,6 +23,14 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+class SellerInfo(BaseModel):
+    name: Optional[str] = Field(None, description="Nom du vendeur")
+    rating_percentage: Optional[str] = Field(None, description="Évaluation du vendeur en pourcentage")
+    follower_count: Optional[str] = Field(None, description="Nombre d'abonnés du vendeur")
+    shipping_speed: Optional[str] = Field(None, description="Performance: Vitesse d'expédition")
+    quality_score: Optional[str] = Field(None, description="Performance: Score Qualité")
+    customer_reviews_score: Optional[str] = Field(None, description="Performance: Avis des consommateurs")
+
 class ProductExtractionSchema(BaseModel):
     name: str = Field(..., description="Nom complet du produit")
     current_price: float = Field(..., description="Prix actuel du produit")
@@ -33,6 +41,7 @@ class ProductExtractionSchema(BaseModel):
     rating: float = Field(0.0, description="Note du produit sur 5")
     review_count: int = Field(0, description="Nombre total d'avis")
     review_summary: str = Field("", description="Résumé synthétique des points forts et faibles")
+    seller_info: Optional[SellerInfo] = Field(None, description="Informations sur le vendeur")
 
 def calculate_trust_score(rating: float, review_count: int) -> float:
     """Calcul du trust_score : (Note * 0.7) + (log10(Avis) * 0.3)"""
@@ -52,7 +61,7 @@ async def scrape_products(urls: List[str], limit: int = 5):
         ),
         schema=ProductExtractionSchema.model_json_schema(),
         extraction_type="schema",
-        instruction="Extract all product details from the page. For prices, use numbers only. If a value is missing, use null or default. Technical specs should be a dictionary of key features. IMPORTANT: Capture the main product image URL AND all secondary image URLs from the gallery/thumbnails into the 'images' list.",
+        instruction="Extract all product details from the page. For prices, use numbers only. If a value is missing, use null or default. Technical specs should be a dictionary of key features. IMPORTANT: Capture the main product image URL AND all secondary image URLs from the gallery/thumbnails into the 'images' list. ALSO: Extract seller information including name, rating percentage, follower count, and performance metrics (shipping speed, quality score, customer reviews score).",
         verbose=True
     )
     
@@ -126,9 +135,25 @@ def save_to_markdown(product: Dict):
         "trust_score": product.get("trust_score"),
         "rating": product.get("rating"),
         "review_count": product.get("review_count"),
-        "technical_specs": product.get("technical_specs")
+        "technical_specs": product.get("technical_specs"),
+        "seller_info": product.get("seller_info")
     }
     
+    seller = product.get("seller_info", {})
+    seller_md = ""
+    if seller:
+        seller_md = f"""
+### Informations Vendeur
+- **Nom**: {seller.get('name', 'N/A')}
+- **Évaluation**: {seller.get('rating_percentage', 'N/A')}
+- **Abonnés**: {seller.get('follower_count', 'N/A')}
+
+#### Performance Vendeur
+- **Vitesse d'expédition**: {seller.get('shipping_speed', 'N/A')}
+- **Score Qualité**: {seller.get('quality_score', 'N/A')}
+- **Avis Consommateurs**: {seller.get('customer_reviews_score', 'N/A')}
+"""
+
     gallery_md = "\n".join([f"![Image {i+1}]({img})" for i, img in enumerate(gallery_images)])
     
     content = f"""---
@@ -141,6 +166,9 @@ def save_to_markdown(product: Dict):
 
 ## Galerie d'Images
 {gallery_md if gallery_md else "Aucune image secondaire disponible."}
+
+## Détails du Vendeur
+{seller_md if seller_md else "Informations vendeur non disponibles."}
 
 ## Résumé des Avis
 {product.get('review_summary', 'Aucun résumé disponible.')}

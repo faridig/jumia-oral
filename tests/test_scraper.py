@@ -5,7 +5,7 @@ from pydantic import ValidationError
 from src.scraper import ProductExtractionSchema, save_to_markdown
 
 def test_product_extraction_schema_v1_1():
-    # Test valid data with 'images' list
+    # Test valid data with 'images' list and 'seller_info'
     valid_data = {
         "name": "Test Product",
         "current_price": 100.0,
@@ -15,11 +15,22 @@ def test_product_extraction_schema_v1_1():
         "technical_specs": {"Processeur": "i7"},
         "rating": 4.5,
         "review_count": 10,
-        "review_summary": "Good product"
+        "review_summary": "Good product",
+        "seller_info": {
+            "name": "PC STAR",
+            "rating_percentage": "66%",
+            "follower_count": "374",
+            "shipping_speed": "Bon",
+            "quality_score": "Moyen",
+            "customer_reviews_score": "Mauvais"
+        }
     }
     product = ProductExtractionSchema(**valid_data)
     assert product.name == "Test Product"
     assert product.images == ["http://example.com/main.jpg", "http://example.com/thumb1.jpg"]
+    assert product.seller_info is not None
+    assert product.seller_info.name == "PC STAR"
+    assert product.seller_info.rating_percentage == "66%"
     
     # Test missing images (should fail as it's required)
     invalid_data = valid_data.copy()
