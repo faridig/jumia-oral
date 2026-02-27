@@ -61,26 +61,68 @@ async def scrape_products(urls: List[str], limit: int = 5):
         ),
         schema=ProductExtractionSchema.model_json_schema(),
         extraction_type="schema",
-        instruction="Extract all product details from the page. For prices, use numbers only. If a value is missing, use null or default. Technical specs should be a dictionary of key features. IMPORTANT: Capture the main product image URL AND all secondary image URLs from the gallery/thumbnails into the 'images' list. ALSO: Extract seller information including name, rating percentage, follower count, and performance metrics (shipping speed, quality score, customer reviews score).",
+        instruction=(
+            "Extract all product details from the page. For prices, use numbers only. "
+            "If a value is missing, use null or default. Technical specs should be a dictionary of key features. "
+            "IMPORTANT: Capture the main product image URL AND all secondary image URLs from the gallery/thumbnails into the 'images' list. "
+            "ALSO: Extract seller information including name, rating percentage, follower count, and performance metrics. "
+            "CRITICAL: Create an EFFICIENT and DETAILED summary of customer reviews in 'review_summary'. "
+            "Analyze the sentiment, recurring pros/cons, and specific user feedback to provide a high-value summary."
+        ),
         verbose=True
     )
     
     browser_config = BrowserConfig(headless=True)
-    run_config = CrawlerRunConfig(
-        extraction_strategy=extraction_strategy,
-        cache_mode=CacheMode.BYPASS
-    )
+    
+    # JavaScript pour cliquer sur "Commentaires des clients" puis "Voir plus" si possible
+    js_code = """
+    (async () => {
+        // 1. Chercher et cliquer sur l'onglet/lien des commentaires
+        const reviewsLink = Array.from(document.querySelectorAll('a, button, span')).find(el => 
+            el.textContent.toLowerCase().includes('commentaires') || 
+            el.textContent.toLowerCase().includes('avis')
+        );
+        if (reviewsLink) {
+            reviewsLink.click();
+            await new Promise(r => setTimeout(r, 1000));
+        }
+
+        // 2. Chercher et cliquer sur "Voir plus" dans les avis
+        const seeMoreBtn = Array.from(document.querySelectorAll('a, button')).find(el => 
+            el.textContent.toLowerCase().includes('voir plus') || 
+            el.textContent.toLowerCase().includes('see all')
+        );
+        if (seeMoreBtn) {
+            seeMoreBtn.click();
+            // On attend un peu que les avis se chargent
+            await new Promise(r => setTimeout(r, 2000));
+        }
+    })();
+    """
 
     results = []
     
     async with AsyncWebCrawler(config=browser_config) as crawler:
         target_urls = urls[:limit]
-        logger.info(f"Starting LLM extraction for {len(target_urls)} products...")
+        logger.info(f"Starting LLM extraction for {len(target_urls)} products with review expansion...")
         
         for i, url in enumerate(target_urls):
             logger.info(f"Scraping {i+1}/{len(target_urls)}: {url}")
             try:
+                # On utilise un session_id unique pour permettre les interactions JS complexes
+                session_id = f"session_{i}"
+                
+                # Configuration pour l'extraction avec JS
+                run_config = CrawlerRunConfig(
+                    extraction_strategy=extraction_strategy,
+                    cache_mode=CacheMode.BYPASS,
+                    js_code=js_code,
+                    wait_for_images=True,
+                    session_id=session_id
+                )
+
                 result = await crawler.arun(url=url, config=run_config)
+                
                 if result.success:
                     extracted_data = json.loads(result.extracted_content)
                     # L'extraction peut renvoyer une liste ou un objet
