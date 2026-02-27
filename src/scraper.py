@@ -92,6 +92,10 @@ async def scrape_products(urls: List[str], limit: int = 5):
                     
                     results.append(data)
                     logger.info(f"Successfully scraped: {data.get('name', 'Unknown')} (Score: {data['trust_score']})")
+                    
+                    # Sauvegarde incrémentale
+                    path = save_to_markdown(data)
+                    logger.info(f"Saved markdown to {path}")
                 else:
                     logger.error(f"Failed to scrape {url}: {result.error_message}")
             except Exception as e:
@@ -166,11 +170,7 @@ async def main():
         return
 
     # On commence par un batch de 10 produits
-    products = await scrape_products(urls, limit=10)
-    
-    for product in products:
-        path = save_to_markdown(product)
-        logger.info(f"Saved markdown to {path}")
+    await scrape_products(urls, limit=10)
 
 if __name__ == "__main__":
     asyncio.run(main())
