@@ -1,6 +1,19 @@
 # 📜 CHANGELOG
 
-## [Unreleased]
+## [0.3.0] - 2026-02-27
+### Added
+- **Scraper v1.1 (PBI-110)** :
+  - Support multi-images (galerie) dans le schéma et le rendu Markdown.
+  - Extraction des informations détaillées du vendeur (score, vitesse, abonnés).
+  - Expansion dynamique des avis clients via injection JavaScript avant extraction.
+  - Augmentation de la limite de traitement à 10 produits par batch.
+  - Suite de tests unitaires pour valider la robustesse du nouveau schéma.
+
+## 💡 LEÇONS APPRISES
+### Sprint 1 : Optimisation du Scraper
+- **Pollution Visuelle LLM** : L'extraction d'images peut être parasitée par les éléments d'UI (icônes de chat, logos). *Action future* : Prétraiter les sélecteurs d'images ou renforcer l'instruction LLM "exclude UI icons".
+- **Dynamisme JS** : L'utilisation de `js_code` pour cliquer sur "Voir plus" dans les avis augmente significativement la qualité du `review_summary`, mais nécessite une gestion fine des timeouts pour éviter les `Execution context destroyed`.
+- **Informations Vendeur** : Ces données sont cruciales pour le `trust_score` futur. Leur extraction via LLM est stable mais dépend fortement de la visibilité du bloc à l'écran.
 
 ## [0.2.0] - 2026-02-26
 ### Added
