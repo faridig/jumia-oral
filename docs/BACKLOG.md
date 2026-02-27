@@ -4,7 +4,8 @@
 - **Langage** : Python 3.10+
 - **Framework Scraping** : Crawl4AI avec **LLMExtractionStrategy** (GPT-4o-mini).
 - **Orchestration RAG** : LlamaIndex avec **Hybrid Search** (Dense + Sparse).
-- **Vector Database** : Qdrant (Containerisé).
+- **Vector Database** : Qdrant (Utilisation de l'instance locale existante).
+- **Isolation des données** : Collection dédiée `jumia_products`.
 - **WhatsApp Gateway** : Evolution API (Open Source Baileys-based).
 - **Mémoire Conversationnelle** : SimpleChatStore (Persistance JSON par numéro).
 - **Format de sortie** : Markdown avec Frontmatter YAML (metadata enrichies).
@@ -14,6 +15,7 @@
 2. **[2026-02-26] WhatsApp via Evolution API** : Solution Open Source robuste pour transformer WhatsApp en canal de vente conversationnel.
 3. **[2026-02-26] Score de Confiance** : Implémentation d'un calcul `(Note * 0.7) + (log10(Avis) * 0.3)` pour classer les "meilleurs produits".
 4. **[2026-02-26] Ton Amical Marocain** : Personnalité "Personal Shopper" mixant Français et Darija.
+5. **[2026-02-26] Data Isolation** : Utilisation d'une collection Qdrant dédiée pour ne pas interférer avec les autres données de l'utilisateur.
 
 ## ✅ DEFINITION OF DONE (DoD)
 - Extraction : Données structurées validées par le schéma Pydantic.
@@ -24,10 +26,7 @@
 ## 📋 BACKLOG GÉNÉRAL
 
 ### [PBI-000] SPRINT 0 : Infrastructure & Walking Skeleton
-**Priorité** : High | **Estimation** : S
-- Créer l'arborescence du projet.
-- Configurer Docker Compose (Qdrant + Evolution API).
-- Configurer `.env`.
+**Status** : DONE ✅
 
 ### [PBI-101] Crawling & Extraction (10 pages)
 **Priorité** : High | **Estimation** : L

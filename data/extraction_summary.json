@@ -1,0 +1,6 @@
+{
+    "category": "informatique",
+    "pages_crawled": 10,
+    "total_urls_extracted": 426,
+    "output_file": "data/raw/product_urls.json"
+}

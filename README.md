@@ -40,12 +40,18 @@ cp .env.example .env
 ```
 
 ### 4. Lancement de l'infrastructure
+L'infrastructure utilise une instance Qdrant existante. Si vous n'en avez pas, lancez-en une :
+```bash
+docker run -d --name jumia_qdrant -p 6343:6333 -p 6344:6334 -v qdrant_storage:/qdrant/storage qdrant/qdrant:latest
+```
+
+Ensuite, lancez Evolution API (WhatsApp) :
 ```bash
 docker compose up -d
 ```
-Les services suivants seront lancés :
+Les services seront accessibles :
 - **Qdrant** : [http://localhost:6343/dashboard](http://localhost:6343/dashboard)
-- **Evolution API** : [http://localhost:8090](http://localhost:8090) (Configuration à venir)
+- **Evolution API** : [http://localhost:8080](http://localhost:8080)
 
 ### 5. Vérification
 Exécutez le script de diagnostic :
@@ -58,3 +64,4 @@ L'assistant parle un français chaleureux avec des touches de **Darija** (Mrehba
 
 ---
 *Projet en cours de développement (Sprint 0 - Infrastructure).*
+# Dummy
