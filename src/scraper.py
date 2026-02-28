@@ -44,21 +44,21 @@ async def scrape_products(urls: List[str], limit: int = 5):
         extraction_type="schema",
         instruction=(
             "Extract product data into the CategoryAgnosticProduct schema.\n"
-            "1. core_metadata: Extract name, current_price (float, numbers only), old_price (float, numbers only), brand, images, url, and category.\n"
-            "2. category_specs: Normalize all technical specifications. Convert units to standard international formats "
-            "(e.g., '8Go' or '8G' to '8 GB', '100ml' to '100 ml', '2To' to '2 TB').\n"
+            "1. core_metadata: Extract name, current_price (float), old_price (float), brand, images, url, and category.\n"
+            "   - IMPORTANT: 'images' MUST be a list of ALL product image URLs (main image + gallery). Look for high-res images if possible.\n"
+            "2. category_specs: Normalize all technical specifications. Convert units to standard international formats.\n"
             "3. sentiment_analysis: Evaluate the product based on customer reviews and description across 4 axes: "
             "Performance, Design, Autonomie, and Prix. Provide a score (0-10) and a brief rationale for each.\n"
             "4. value_for_money_score: Calculate a score from 0 to 10 based on the quality/features vs price.\n"
             "5. Extract seller information and raw_review_summary.\n"
-            "IMPORTANT: Be precise with normalization. Prices MUST be numbers (floats). If information is missing, use null."
+            "IMPORTANT: Be precise with normalization. If images are missing, double-check the <img> tags. Prices MUST be numbers."
         ),
         verbose=True
     )
     
     browser_config = BrowserConfig(headless=True)
     
-    # JavaScript pour les interactions complexes (Expansion des Avis)
+    # JavaScript pour les interactions complexes (Avis + Scroll pour images)
     js_code = """
     (async () => {
         const sleep = (ms) => new Promise(r => setTimeout(r, ms));
@@ -66,18 +66,37 @@ async def scrape_products(urls: List[str], limit: int = 5):
         // 1. Nettoyage initial (popups)
         document.querySelectorAll('section.pop, .osh-popup-overlay, #newsletter-popup').forEach(p => p.remove());
 
-        // 2. Expansion des avis
+        // 2. Scroll pour charger les images (lazy-loading)
+        window.scrollBy(0, 500);
+        await sleep(500);
+        window.scrollBy(0, -500);
+        await sleep(500);
+
+        // 3. Expansion des avis
         const reviewsLink = Array.from(document.querySelectorAll('a, button, span')).find(el => 
             el.textContent.toLowerCase().includes('commentaires') || 
             el.textContent.toLowerCase().includes('avis')
         );
-        if (reviewsLink) { reviewsLink.click(); await sleep(1000); }
+        
+        if (reviewsLink) { 
+            reviewsLink.scrollIntoView();
+            reviewsLink.click(); 
+            await sleep(1000); 
+        }
 
         const seeMoreBtn = Array.from(document.querySelectorAll('a, button')).find(el => 
             el.textContent.toLowerCase().includes('voir plus') || 
             el.textContent.toLowerCase().includes('see all')
         );
-        if (seeMoreBtn) { seeMoreBtn.click(); await sleep(1500); }
+        if (seeMoreBtn) { 
+            seeMoreBtn.scrollIntoView();
+            seeMoreBtn.click(); 
+            await sleep(1500); 
+        }
+        
+        // Retourner en haut pour s'assurer que les images principales sont visibles
+        window.scrollTo(0, 0);
+        await sleep(500);
     })();
     """
 

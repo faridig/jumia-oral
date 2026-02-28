@@ -7,17 +7,18 @@
     "currency": "Dhs",
     "brand": "Erborian",
     "images": [
-      "https://ma.jumia.is/unsafe/fit-in/500x500/filters:fill(white)/product/90/752376/1.jpg?3584",
-      "https://ma.jumia.is/unsafe/fit-in/500x500/filters:fill(white)/product/90/752376/2.jpg?3584"
+      "https://ma.jumia.is/unsafe/fit-in/680x680/filters:fill(white)/product/90/752376/1.jpg?3584",
+      "https://ma.jumia.is/unsafe/fit-in/680x680/filters:fill(white)/product/90/752376/2.jpg?3584"
     ],
     "url": "https://www.jumia.ma/erborian-cc-creme-a-la-centella-clair-soin-illuminateur-visage-spf-25-45-ml-67325709.html",
-    "category": "Beaut\u00e9 & Sant\u00e9",
+    "category": "Beaut\u00e9 & Soins",
     "rating": 0.0,
     "review_count": 0
   },
   "category_specs": {
     "Volume": "45 ml",
-    "Protection_Solaire": "SPF 25"
+    "SPF": "25",
+    "Main Ingredient": "Centella Asiatica"
   },
   "sentiment_analysis": [
     {
@@ -28,17 +29,17 @@
     {
       "axis": "Design",
       "score": 9.0,
-      "rationale": "The packaging is aesthetically pleasing and functional, making it easy to use."
+      "rationale": "The packaging is sleek and user-friendly, appealing to consumers."
     },
     {
       "axis": "Autonomie",
       "score": 7.0,
-      "rationale": "The product provides decent hydration and skin care benefits throughout the day."
+      "rationale": "The product lasts well throughout the day but may require reapplication for prolonged wear."
     },
     {
       "axis": "Prix",
       "score": 6.0,
-      "rationale": "While the price is on the higher side, the quality justifies the cost."
+      "rationale": "While the product is effective, the price may be considered high for some consumers."
     }
   ],
   "value_for_money_score": 7.0,
@@ -56,16 +57,16 @@
 
 # Erborian CC Crème a la Centella clair soin illuminateur visage spf 25 45 ml
 
-![Image Principale](https://ma.jumia.is/unsafe/fit-in/500x500/filters:fill(white)/product/90/752376/1.jpg?3584)
+![Image Principale](https://ma.jumia.is/unsafe/fit-in/680x680/filters:fill(white)/product/90/752376/1.jpg?3584)
 
 ## Galerie d'Images
-![Image 1](https://ma.jumia.is/unsafe/fit-in/500x500/filters:fill(white)/product/90/752376/2.jpg?3584)
+![Image 1](https://ma.jumia.is/unsafe/fit-in/680x680/filters:fill(white)/product/90/752376/2.jpg?3584)
 
 ## Analyse de Sentiment
 - **Performance**: 8.0/10 - The product effectively unifies and illuminates the skin tone, providing a 'good skin' effect.
-- **Design**: 9.0/10 - The packaging is aesthetically pleasing and functional, making it easy to use.
-- **Autonomie**: 7.0/10 - The product provides decent hydration and skin care benefits throughout the day.
-- **Prix**: 6.0/10 - While the price is on the higher side, the quality justifies the cost.
+- **Design**: 9.0/10 - The packaging is sleek and user-friendly, appealing to consumers.
+- **Autonomie**: 7.0/10 - The product lasts well throughout the day but may require reapplication for prolonged wear.
+- **Prix**: 6.0/10 - While the product is effective, the price may be considered high for some consumers.
 
 **Score Rapport Qualité-Prix**: 7.0/10
 
@@ -83,12 +84,13 @@
 
 
 ## Résumé des Avis (Brut)
-Pas d'avis disponibles
+Les clients ayant acheté ce produit n'ont pas encore émis d'avis.
 
 ## Spécifications Techniques (Normalisées)
 {
   "Volume": "45 ml",
-  "Protection_Solaire": "SPF 25"
+  "SPF": "25",
+  "Main Ingredient": "Centella Asiatica"
 }
 
 ## Lien Produit
