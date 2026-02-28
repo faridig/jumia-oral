@@ -1,37 +1,35 @@
-# 🏃 SPRINT PLAN - SPRINT 1 (SCRAPING INTELLIGENT)
+# 🏃 SPRINT PLAN - SPRINT 2 (RÉFORME & PERFECTION DU CATALOGUE)
 
 ## 🎯 OBJECTIF
-Extraire les données produits de la catégorie "Informatique" de Jumia.ma sur les 10 premières pages en utilisant une extraction intelligente.
+Transformer l'extraction brute en un catalogue **"RAG-Ready Multi-Catégorie"** avec des données normalisées, une logique de "Master Product" (groupement d'offres) et une extraction logistique multi-hubs.
 
 ## 📋 TÂCHES À RÉALISER
 
-### [PBI-101] Crawling des URLs (Pagination)
-- **Tâches** :
-  - [ ] Implémenter le crawler de liste pour `https://www.jumia.ma/ordinateurs-accessoires-informatique/`.
-  - [ ] Gérer la boucle de pagination pour les pages 1 à 10.
-  - [ ] Extraire et stocker la liste unique des URLs produits.
-  - [ ] **Logging & Reporting** : Créer `logs/extraction.log` pour suivre la progression page par page et `data/extraction_summary.json` pour le bilan final.
+### [PBI-120] Architecture Multi-Catégorie & Markdown v2 (Perfection)
+**Priorité** : High | **Estimation** : M
+**User Story** : "En tant qu'Assistant, je veux un catalogue normalisé et extensible, afin de fournir des recommandations précises sur n'importe quel produit (Informatique, Cosmétique, Bricolage)."
+**Critères d'Acceptation** :
+- [ ] Créer un schéma `CategoryAgnosticProduct` (Pydantic) avec `core_metadata` et `category_specs`.
+- [ ] Implémenter la normalisation LLM (ex: "8Go" -> 8 GB, "100ml" -> 100 ml).
+- [ ] Ajouter l'analyse de sentiment par axe (Performance, Design, Autonomie, Prix).
+- [ ] Calculer automatiquement le `value_for_money_score`.
+- [ ] **Test de Validation** : Scraper 5 produits de catégories différentes (ex: 1 Laptop, 1 Smartphone, 1 Cosmétique, 1 Bricolage, 1 Électroménager) pour vérifier la structure v2.
 
-### [PBI-102] Scraping LLM-Powered (Détails & Avis)
-- **Tâches** :
-  - [ ] Définir le `ProductExtractionSchema` (Pydantic) :
-    - Nom, Prix (actuel/ancien), Image, URL.
-    - Specs techniques (Dictionnaire).
-    - Note, Nombre d'avis, Résumé des avis (Points forts/faibles).
-  - [ ] Implémenter `LLMExtractionStrategy` avec `gpt-4o-mini`.
-  - [ ] Calculer le `trust_score` : `(Note * 0.7) + (log10(Avis) * 0.3)`.
-
-### [PBI-103] Génération du Catalogue Markdown
-- **Tâches** :
-  - [ ] Créer les fichiers `.md` dans `data/raw/markdown/informatique/`.
-  - [ ] Structure : Frontmatter YAML (données structurées) + Corps (Description texte).
+### [PBI-130] Extraction Logistique Dynamique (Livraison)
+**Priorité** : High | **Estimation** : M
+**User Story** : "En tant que client Jumia, je veux connaître le coût total de livraison (Hubs + Zone 3), afin de choisir l'offre la plus rentable pour ma ville."
+**Critères d'Acceptation** :
+- [ ] Interaction JS (Crawl4AI) pour les 5 hubs (Casa, Rabat, Tanger, Marrakech, Agadir).
+- [ ] Capture du tarif "Plafond" (Zone 3 - ex: Dakhla).
+- [ ] Stockage structuré dans le YAML (`shipping_fees`).
 
 ## 🛠️ SPÉCIFICATIONS TECHNIQUES
-- **Tool** : Crawl4AI (AsyncWebCrawler).
-- **Model** : GPT-4o-mini (Extraction).
-- **Format** : Markdown LLM-Ready.
+- **Moteur** : Crawl4AI (AsyncWebCrawler) + JS Dropdown Manipulation.
+- **Normalisation** : GPT-4o-mini (Extraction forcée par schéma).
+- **Groupement** : Script de post-processing `merge_offers.py` pour grouper les produits par modèle identique.
 
 ## ✅ DEFINITION OF DONE (DoD)
-- ~400 fichiers Markdown générés avec un Frontmatter complet.
-- Présence du `trust_score` pour chaque produit.
-- Structure de dossiers respectée.
+- Le catalogue informatique est 100% migré vers le nouveau format v2.
+- Validation : 5 produits témoins de catégories différentes (ex: 1 Laptop, 1 Smartphone, 1 Cosmétique, 1 Bricolage, 1 Électroménager) sont scrapés avec succès dans le nouveau format.
+- Les scripts sont extensibles aux catégories cosmétiques/bricolage sans modification majeure du code.
+- Chaque produit a une fiche YAML valide avec métadonnées de livraison.
