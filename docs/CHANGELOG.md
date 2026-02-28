@@ -1,5 +1,26 @@
 # 📜 CHANGELOG
 
+## [0.5.0] - 2026-02-28
+### Added
+- **Moteur RAG Avancé (PBI-210)** :
+  - Implémentation du **Multi-Query expansion** : Traduction dynamique Darija -> Français technique pour optimiser le matching vectoriel.
+  - Intégration de l'**Auto-Retriever LlamaIndex** : Extraction automatique de filtres métadonnées (prix, marque, catégorie) depuis le langage naturel.
+  - Système de **Fallback intelligent** : Bascule automatique vers la recherche sémantique standard en cas d'over-filtering.
+- **Personnalité & Intelligence Commerciale (PBI-301)** :
+  - Tone of Voice "Jumia Oral" : Réponses bilingues (Darija/Français) avec expressions locales (Mrehba, Besseha).
+  - Logique de **Re-ranking multi-critères** : Pondération dynamique combinant pertinence sémantique (40%), Trust Score (24%) et Value for Money (36%).
+  - Post-processor de **Dédoublonnage** : Suppression des doublons de produits par normalisation de nom.
+- **Infrastructure & Ingestion (PBI-201)** :
+  - Migration vers **Qdrant** comme base vectorielle (Vector Store).
+  - Ingestion de 58 produits enrichis avec métadonnées YAML.
+
+## 💡 LEÇONS APPRISES
+### Sprint 3 : Advanced RAG & Persona
+- **Multi-Query Expansion** : L'utilisation d'un LLM pour traduire la Darija en termes techniques Français améliore considérablement le rappel (recall) de la recherche vectorielle sur un catalogue majoritairement francophone.
+- **Auto-Retriever Stability** : LlamaIndex `VectorIndexAutoRetriever` est puissant pour les filtres structurés mais nécessite un fallback robuste car les utilisateurs utilisent souvent des termes vagues (ex: "rkhis", "mzyan") que le LLM tente parfois de transformer en filtres impossibles.
+- **Sécurité & Transparence** : L'ajout de consignes d'honnêteté forçant le LLM à mentionner l'absence d'avis (`trust_score=0`) est crucial pour la crédibilité de l'assistant "Expert".
+- **Performance du Re-ranking** : La combinaison des scores business (Trust/VFM) avec le score de similarité vectorielle permet de sortir du "simple matching" pour devenir un véritable "Personal Shopper" qui conseille les bonnes affaires.
+
 ## [0.4.0] - 2026-02-28
 ### Added
 - **Architecture Multi-Catégorie v2 (PBI-120)** :
