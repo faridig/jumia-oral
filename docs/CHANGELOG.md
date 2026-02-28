@@ -10,12 +10,15 @@
   - Système de rangement automatique des fiches Markdown par dossiers catégories.
 - **Simplification Logistique** : Retrait de la complexité PBI-130 (frais de livraison) pour garantir la stabilité du scraper multi-catégorie.
 
+- **Validation à l'Échelle** : Test de stress réussi sur un batch de 58 produits couvrant plus de 20 catégories Jumia (Chaussures, Vêtements, Gaming, Maison). Taux de succès d'extraction d'images de 100%.
+
 ## 💡 LEÇONS APPRISES
 ### Sprint 2 : Réforme & Simplification
 - **Arbitrage Complexité/Valeur** : L'extraction dynamique des frais de livraison via interactions JS multiples s'est avérée trop instable par rapport à la valeur ajoutée immédiate. La simplification a permis de se concentrer sur la robustesse des données produits.
 - **Normalisation LLM** : `gpt-4o-mini` est excellent pour la normalisation d'unités techniques si le schéma Pydantic est bien typé (`Dict[str, Any]`).
 - **Structure RAG-Ready** : L'utilisation de dossiers par catégorie dans `data/raw/markdown/` facilite grandement le futur filtrage par métadonnées dans la base vectorielle.
 - **Lazy-Loading des Images** : L'expansion dynamique des avis peut masquer ou décharger la galerie d'images. L'ajout d'un scroll préventif et d'un retour au sommet (`window.scrollTo(0,0)`) est crucial pour garantir que le LLM "voit" les médias avant l'extraction.
+- **Scaling & Diversité** : Le passage à l'échelle (58 produits) a confirmé la capacité du système à s'adapter à des catégories non-informatiques (ex: Mode, Sport) sans modification de code, validant ainsi l'architecture `CategoryAgnosticProduct`.
 
 ## [0.3.0] - 2026-02-27
 ### Added
