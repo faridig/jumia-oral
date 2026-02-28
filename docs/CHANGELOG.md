@@ -15,6 +15,7 @@
 - **Arbitrage Complexité/Valeur** : L'extraction dynamique des frais de livraison via interactions JS multiples s'est avérée trop instable par rapport à la valeur ajoutée immédiate. La simplification a permis de se concentrer sur la robustesse des données produits.
 - **Normalisation LLM** : `gpt-4o-mini` est excellent pour la normalisation d'unités techniques si le schéma Pydantic est bien typé (`Dict[str, Any]`).
 - **Structure RAG-Ready** : L'utilisation de dossiers par catégorie dans `data/raw/markdown/` facilite grandement le futur filtrage par métadonnées dans la base vectorielle.
+- **Lazy-Loading des Images** : L'expansion dynamique des avis peut masquer ou décharger la galerie d'images. L'ajout d'un scroll préventif et d'un retour au sommet (`window.scrollTo(0,0)`) est crucial pour garantir que le LLM "voit" les médias avant l'extraction.
 
 ## [0.3.0] - 2026-02-27
 ### Added

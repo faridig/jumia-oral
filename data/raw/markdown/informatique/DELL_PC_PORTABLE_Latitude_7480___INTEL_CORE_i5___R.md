@@ -19,37 +19,37 @@
     "review_count": 0
   },
   "category_specs": {
-    "processor": "Intel Core i5 (6\u00e8me g\u00e9n\u00e9ration) 6300U / 2.6 GHz",
-    "ram": "8 Go",
-    "resolution": "1920 x 1080 (Full HD)",
-    "storage": "256 Go SSD M.2 SATA",
-    "graphics": "Intel HD Graphics 620",
-    "weight": "1.36 kg",
-    "condition": "Remis \u00e0 neuf"
+    "Processor": "Intel Core i5 (6\u00e8me g\u00e9n\u00e9ration) 6300U / 2.6 GHz",
+    "RAM": "8 Go",
+    "Resolution": "1920 x 1080 (Full HD)",
+    "Storage": "256 Go SSD M.2 SATA",
+    "Graphics": "Intel HD Graphics 620",
+    "Weight": "1.36 kg",
+    "Condition": "Remis \u00e0 neuf"
   },
   "sentiment_analysis": [
     {
       "axis": "Performance",
       "score": 8.0,
-      "rationale": "Le processeur Intel Core i5 et le SSD offrent une bonne r\u00e9activit\u00e9 et rapidit\u00e9."
+      "rationale": "The Intel Core i5 processor and SSD storage provide good performance for everyday tasks."
     },
     {
       "axis": "Design",
       "score": 7.0,
-      "rationale": "Design monocoque et finition agr\u00e9able au toucher, mais un peu standard."
+      "rationale": "The laptop has a sleek design and is lightweight, making it portable."
     },
     {
       "axis": "Autonomie",
       "score": 6.0,
-      "rationale": "Pas d'informations sp\u00e9cifiques sur l'autonomie, mais g\u00e9n\u00e9ralement acceptable pour un usage professionnel."
+      "rationale": "Battery life is decent but not exceptional, typical for laptops in this range."
     },
     {
       "axis": "Prix",
-      "score": 9.0,
-      "rationale": "Le prix est tr\u00e8s comp\u00e9titif par rapport aux caract\u00e9ristiques offertes."
+      "score": 8.0,
+      "rationale": "The price is competitive for the specifications offered, especially with a discount."
     }
   ],
-  "value_for_money_score": 9.0,
+  "value_for_money_score": 8.0,
   "trust_score": 0.0,
   "seller_info": {
     "name": "PC STAR",
@@ -73,12 +73,12 @@
 ![Image 4](https://ma.jumia.is/unsafe/fit-in/680x680/filters:fill(white)/product/01/716026/5.jpg?4778)
 
 ## Analyse de Sentiment
-- **Performance**: 8.0/10 - Le processeur Intel Core i5 et le SSD offrent une bonne réactivité et rapidité.
-- **Design**: 7.0/10 - Design monocoque et finition agréable au toucher, mais un peu standard.
-- **Autonomie**: 6.0/10 - Pas d'informations spécifiques sur l'autonomie, mais généralement acceptable pour un usage professionnel.
-- **Prix**: 9.0/10 - Le prix est très compétitif par rapport aux caractéristiques offertes.
+- **Performance**: 8.0/10 - The Intel Core i5 processor and SSD storage provide good performance for everyday tasks.
+- **Design**: 7.0/10 - The laptop has a sleek design and is lightweight, making it portable.
+- **Autonomie**: 6.0/10 - Battery life is decent but not exceptional, typical for laptops in this range.
+- **Prix**: 8.0/10 - The price is competitive for the specifications offered, especially with a discount.
 
-**Score Rapport Qualité-Prix**: 9.0/10
+**Score Rapport Qualité-Prix**: 8.0/10
 
 ## Détails du Vendeur
 
@@ -94,17 +94,17 @@
 
 
 ## Résumé des Avis (Brut)
-4 out of 5 (1 avis vérifié)
+4 out of 5 based on 1 verified review.
 
 ## Spécifications Techniques (Normalisées)
 {
-  "processor": "Intel Core i5 (6\u00e8me g\u00e9n\u00e9ration) 6300U / 2.6 GHz",
-  "ram": "8 Go",
-  "resolution": "1920 x 1080 (Full HD)",
-  "storage": "256 Go SSD M.2 SATA",
-  "graphics": "Intel HD Graphics 620",
-  "weight": "1.36 kg",
-  "condition": "Remis \u00e0 neuf"
+  "Processor": "Intel Core i5 (6\u00e8me g\u00e9n\u00e9ration) 6300U / 2.6 GHz",
+  "RAM": "8 Go",
+  "Resolution": "1920 x 1080 (Full HD)",
+  "Storage": "256 Go SSD M.2 SATA",
+  "Graphics": "Intel HD Graphics 620",
+  "Weight": "1.36 kg",
+  "Condition": "Remis \u00e0 neuf"
 }
 
 ## Lien Produit

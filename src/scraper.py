@@ -3,6 +3,7 @@ import json
 import logging
 import os
 import math
+import random
 from typing import Dict, List, Optional, Any
 from pydantic import BaseModel, Field
 from dotenv import load_dotenv
@@ -47,11 +48,12 @@ async def scrape_products(urls: List[str], limit: int = 5):
             "1. core_metadata: Extract name, current_price (float), old_price (float), brand, images, url, and category.\n"
             "   - IMPORTANT: 'images' MUST be a list of ALL product image URLs (main image + gallery). Look for high-res images if possible.\n"
             "2. category_specs: Normalize all technical specifications. Convert units to standard international formats.\n"
+            "   - FOR CLOTHING/SHOES: Extract available sizes, colors, and materials into category_specs (e.g., 'Available Sizes': ['S', 'M', 'L'], 'Color': 'Blue').\n"
             "3. sentiment_analysis: Evaluate the product based on customer reviews and description across 4 axes: "
             "Performance, Design, Autonomie, and Prix. Provide a score (0-10) and a brief rationale for each.\n"
             "4. value_for_money_score: Calculate a score from 0 to 10 based on the quality/features vs price.\n"
             "5. Extract seller information and raw_review_summary.\n"
-            "IMPORTANT: Be precise with normalization. If images are missing, double-check the <img> tags. Prices MUST be numbers."
+            "IMPORTANT: Be precise with normalization. If images or sizes are missing, double-check the <img> tags and size pickers. Prices MUST be numbers."
         ),
         verbose=True
     )
@@ -109,6 +111,12 @@ async def scrape_products(urls: List[str], limit: int = 5):
         for i, url in enumerate(target_urls):
             logger.info(f"Scraping {i+1}/{len(target_urls)}: {url}")
             try:
+                # Politesse (Rate Limiting) - Pause entre chaque produit
+                if i > 0:
+                    pause = random.uniform(1, 3)
+                    logger.info(f"Rate Limiting: pause de {pause:.2f}s...")
+                    await asyncio.sleep(pause)
+
                 # On utilise un session_id unique pour permettre les interactions JS complexes
                 session_id = f"session_{i}"
                 
@@ -254,8 +262,8 @@ async def main():
         logger.error("No URLs found in product_urls.json.")
         return
 
-    # On commence par un batch de 10 produits
-    await scrape_products(urls, limit=10)
+    # On commence par un batch de 50 produits
+    await scrape_products(urls, limit=50)
 
 if __name__ == "__main__":
     asyncio.run(main())

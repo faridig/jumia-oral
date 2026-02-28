@@ -9,13 +9,13 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 async def validate_v2():
-    # Sélection de 5 URLs représentatives de différentes catégories pour DoD PBI-120
+    # Sélection d'URLs diversifiées incluant la mode (PBI-120)
     urls = [
         "https://www.jumia.ma/dell-pc-portable-latitude-7480-intel-core-i5-ram-8go-256go-ssd-remis-a-neuf-62061710.html", # Laptop
         "https://www.jumia.ma/samsung-galaxy-a16-8gb-256gb-black-2-ans-de-garantie-65981498.html", # Smartphone
         "https://www.jumia.ma/erborian-cc-creme-a-la-centella-clair-soin-illuminateur-visage-spf-25-45-ml-67325709.html", # Cosmétique
-        "https://www.jumia.ma/meuble-7-couches-pour-chaussures-etagere-de-rangement-diaphragme-anti-poussiere-porte-de-dortoir-generic-mpg1517017.html", # Bricolage/Maison
-        "https://www.jumia.ma/bouilloire-electrique-elegant-18l-1500w-bg1500-kenz-mpg1460090.html" # Électroménager
+        "https://www.jumia.ma/nike-polo-heritage-slim-blanc-42371255.html", # Mode (Polo)
+        "https://www.jumia.ma/adidas-duramo-rc2-running-shoes-noir-jr7151-67413299.html" # Mode (Chaussures)
     ]
     
     logger.info(f"Démarrage de la validation V2 pour {len(urls)} produits...")
