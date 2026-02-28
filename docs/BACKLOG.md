@@ -45,6 +45,7 @@
 - Augmentation de la limite de batch.
 
 ### [PBI-120] Architecture Multi-Catégorie & Markdown v2 (Perfection)
+**Status** : IN PROGRESS 🏃
 **Priorité** : High | **Estimation** : M
 - **Refactorisation Multi-Catégorie** : Design d'un schéma extensible (Informatique, Cosmétique, Bricolage, etc.) via `category_specific_specs`.
 - **Standardisation & Normalisation** : Utilisation du LLM pour transformer les specs brutes en valeurs numériques normalisées (ex: "8Go" -> 8 GB).
@@ -53,7 +54,8 @@
 - **Calcul de Valeur (Value-Score)** : Algorithme croisant Specs, Prix et Trust Score pour identifier les "Best Deals".
 
 ### [PBI-130] Extraction Logistique Dynamique (Livraison)
-**Priorité** : Medium | **Estimation** : M
+**Status** : IN PROGRESS 🏃
+**Priorité** : High | **Estimation** : M
 - Script d'interaction JS (Crawl4AI) pour sélectionner les 5 régions clés (Casablanca, Rabat, Tanger, Marrakech, Agadir).
 - Extraction d'un tarif "Plafond" (Zone 3 - ex: Dakhla) pour les villes non listées.
 - Extraction des frais de livraison et délais par produit.
@@ -75,3 +77,38 @@
 - Flux d'onboarding demandant la ville à l'utilisateur lors du premier échange.
 - Persistance de la localisation dans le `SimpleChatStore`.
 - Utilisation automatique de la localisation pour filtrer les frais de livraison dans les réponses.
+
+## 📝 FEEDBACKS À AFFINER
+
+### [PBI-401] TECH/UX : Équilibrage du Re-ranking (Poids Business vs Sémantique)
+**Priorité** : Medium | **Estimation** : S
+
+**User Story** : En tant qu'utilisateur, je veux des résultats de recherche sémantiquement pertinents avant d'être commercialement performants, afin de ne pas voir de produits hors-sujet en tête de liste.
+**Dépendances** : [PBI-201]
+**Critères d'Acceptation (Gherkin)** :
+- [ ] **Scenario 1** : Ajustement des poids de pondération
+  - **GIVEN** Un moteur de recherche utilisant `JumiaReRanker`
+  - **WHEN** Une requête sémantique est effectuée
+  - **THEN** Le score sémantique pèse pour 60% et le score business pour 40% dans le classement final (au lieu de 40/60).
+
+### [PBI-402] PROMPT/SECURITY : Renforcement de la consigne d'Honnêteté (Trust Score 0)
+**Priorité** : High | **Estimation** : XS
+
+**User Story** : En tant qu'utilisateur, je veux être explicitement averti lorsqu'un produit n'a pas encore d'avis, afin de prendre une décision d'achat éclairée et sécurisée.
+**Dépendances** : [PBI-301]
+**Critères d'Acceptation (Gherkin)** :
+- [ ] **Scenario 1** : Injection des scores et transparence LLM
+  - **GIVEN** Un produit avec un `trust_score` de 0.0 injecté dans les métadonnées textuelles
+  - **WHEN** L'assistant présente ce produit à l'utilisateur
+  - **THEN** L'assistant doit obligatoirement mentionner le manque de données en Darija (ex: "Chouf, had l-produit ba9i madiyoroch fih l-avis").
+
+### [PBI-403] TECH : Affinage de l'Auto-Retriever (Over-filtering)
+**Priorité** : Medium | **Estimation** : S
+
+**User Story** : En tant qu'utilisateur, je veux obtenir des résultats même si je ne précise pas de critères de qualité stricts, afin d'éviter les listes de résultats vides dues à un filtrage automatique trop zélé.
+**Dépendances** : [PBI-201]
+**Critères d'Acceptation (Gherkin)** :
+- [ ] **Scenario 1** : Assouplissement des instructions de filtrage
+  - **GIVEN** Une requête utilisateur sans intention explicite de qualité (ex: pas de mot "fiable", "bien noté")
+  - **WHEN** L'Auto-Retriever analyse la requête
+  - **THEN** Il ne doit pas appliquer de filtre restrictif sur le `trust_score` par défaut.
