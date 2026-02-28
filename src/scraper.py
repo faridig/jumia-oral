@@ -3,11 +3,12 @@ import json
 import logging
 import os
 import math
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Any
 from pydantic import BaseModel, Field
 from dotenv import load_dotenv
 from crawl4ai import AsyncWebCrawler, BrowserConfig, CrawlerRunConfig, CacheMode, LLMConfig
 from crawl4ai.extraction_strategy import LLMExtractionStrategy
+from src.models import CategoryAgnosticProduct, SentimentAxis, SellerInfo, ShippingFees
 
 load_dotenv()
 
@@ -22,26 +23,6 @@ logging.basicConfig(
     ]
 )
 logger = logging.getLogger(__name__)
-
-class SellerInfo(BaseModel):
-    name: Optional[str] = Field(None, description="Nom du vendeur")
-    rating_percentage: Optional[str] = Field(None, description="Évaluation du vendeur en pourcentage")
-    follower_count: Optional[str] = Field(None, description="Nombre d'abonnés du vendeur")
-    shipping_speed: Optional[str] = Field(None, description="Performance: Vitesse d'expédition")
-    quality_score: Optional[str] = Field(None, description="Performance: Score Qualité")
-    customer_reviews_score: Optional[str] = Field(None, description="Performance: Avis des consommateurs")
-
-class ProductExtractionSchema(BaseModel):
-    name: str = Field(..., description="Nom complet du produit")
-    current_price: float = Field(..., description="Prix actuel du produit")
-    old_price: Optional[float] = Field(None, description="Ancien prix avant promotion")
-    images: List[str] = Field(..., description="Liste des URLs des images (la première est l'image principale, suivies des images secondaires/galerie)")
-    url: str = Field(..., description="URL de la page produit")
-    technical_specs: Dict[str, str] = Field(default_factory=dict, description="Spécifications techniques (ex: Processeur, RAM, SSD)")
-    rating: float = Field(0.0, description="Note du produit sur 5")
-    review_count: int = Field(0, description="Nombre total d'avis")
-    review_summary: str = Field("", description="Résumé synthétique des points forts et faibles")
-    seller_info: Optional[SellerInfo] = Field(None, description="Informations sur le vendeur")
 
 def calculate_trust_score(rating: float, review_count: int) -> float:
     """Calcul du trust_score : (Note * 0.7) + (log10(Avis) * 0.3)"""
@@ -59,43 +40,68 @@ async def scrape_products(urls: List[str], limit: int = 5):
             provider="openai/gpt-4o-mini",
             api_token=os.getenv("OPENAI_API_KEY")
         ),
-        schema=ProductExtractionSchema.model_json_schema(),
+        schema=CategoryAgnosticProduct.model_json_schema(),
         extraction_type="schema",
         instruction=(
-            "Extract all product details from the page. For prices, use numbers only. "
-            "If a value is missing, use null or default. Technical specs should be a dictionary of key features. "
-            "IMPORTANT: Capture the main product image URL AND all secondary image URLs from the gallery/thumbnails into the 'images' list. "
-            "ALSO: Extract seller information including name, rating percentage, follower count, and performance metrics. "
-            "CRITICAL: Create an EFFICIENT and DETAILED summary of customer reviews in 'review_summary'. "
-            "Analyze the sentiment, recurring pros/cons, and specific user feedback to provide a high-value summary."
+            "Extract product data into the CategoryAgnosticProduct schema.\n"
+            "1. core_metadata: Extract name, current_price (float, numbers only), old_price (float, numbers only), brand, images, url, and category.\n"
+            "2. category_specs: Normalize all technical specifications. Convert units to standard international formats "
+            "(e.g., '8Go' or '8G' to '8 GB', '100ml' to '100 ml', '2To' to '2 TB').\n"
+            "3. sentiment_analysis: Evaluate the product based on customer reviews and description across 4 axes: "
+            "Performance, Design, Autonomie, and Prix. Provide a score (0-10) and a brief rationale for each.\n"
+            "4. value_for_money_score: Calculate a score from 0 to 10 based on the quality/features vs price.\n"
+            "5. Extract seller information and raw_review_summary.\n"
+            "6. shipping_fees: Extract shipping fees for major hubs (Casablanca, Rabat, Tanger, Marrakech, Agadir) "
+            "and the ceiling for Zone 3 (e.g., Dakhla) if mentioned.\n"
+            "IMPORTANT: Be precise with normalization. Prices MUST be numbers (floats). If information is missing, use null."
         ),
         verbose=True
     )
     
     browser_config = BrowserConfig(headless=True)
     
-    # JavaScript pour cliquer sur "Commentaires des clients" puis "Voir plus" si possible
+    # JavaScript pour cliquer sur "Commentaires des clients", "Voir plus" et extraire les infos de livraison
     js_code = """
     (async () => {
-        // 1. Chercher et cliquer sur l'onglet/lien des commentaires
+        const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+        
+        // 1. Fermer les popups intrusifs
+        const popup = document.querySelector('section.pop, .osh-popup-overlay');
+        if (popup) popup.remove();
+        
+        // 2. Chercher et cliquer sur l'onglet/lien des commentaires
         const reviewsLink = Array.from(document.querySelectorAll('a, button, span')).find(el => 
             el.textContent.toLowerCase().includes('commentaires') || 
             el.textContent.toLowerCase().includes('avis')
         );
         if (reviewsLink) {
             reviewsLink.click();
-            await new Promise(r => setTimeout(r, 1000));
+            await sleep(1000);
         }
 
-        // 2. Chercher et cliquer sur "Voir plus" dans les avis
+        // 3. Chercher et cliquer sur "Voir plus" dans les avis
         const seeMoreBtn = Array.from(document.querySelectorAll('a, button')).find(el => 
             el.textContent.toLowerCase().includes('voir plus') || 
             el.textContent.toLowerCase().includes('see all')
         );
         if (seeMoreBtn) {
             seeMoreBtn.click();
-            // On attend un peu que les avis se chargent
-            await new Promise(r => setTimeout(r, 2000));
+            await sleep(1500);
+        }
+
+        // 4. Interaction pour la livraison (PBI-130)
+        // On essaie d'ouvrir la section de changement de ville si elle existe
+        const deliveryChange = Array.from(document.querySelectorAll('.delivery-info .change, #delivery-section .trigger')).find(el => true);
+        if (deliveryChange) {
+            deliveryChange.click();
+            await sleep(1000);
+            
+            // On pourrait ici itérer sur les villes, mais pour rester robuste, 
+            // on va injecter un marqueur pour que le LLM sache qu'on a tenté l'interaction.
+            const marker = document.createElement('div');
+            marker.id = 'shipping-interaction-marker';
+            marker.textContent = 'Shipping section opened';
+            document.body.appendChild(marker);
         }
     })();
     """
@@ -135,17 +141,21 @@ async def scrape_products(urls: List[str], limit: int = 5):
                         logger.warning(f"No data extracted for {url}")
                         continue
 
-                    data['url'] = url
-                    data['trust_score'] = calculate_trust_score(
-                        float(data.get('rating') or 0.0), 
-                        int(data.get('review_count') or 0)
-                    )
+                    # Validation et post-processing
+                    product_obj = CategoryAgnosticProduct(**data)
+                    product_obj.core_metadata.url = url
                     
-                    results.append(data)
-                    logger.info(f"Successfully scraped: {data.get('name', 'Unknown')} (Score: {data['trust_score']})")
+                    # Trust score calculation (using rating from core_metadata if available)
+                    rating = product_obj.core_metadata.rating
+                    review_count = product_obj.core_metadata.review_count
+                    product_obj.trust_score = calculate_trust_score(float(rating or 0.0), int(review_count or 0))
+                    
+                    final_data = product_obj.model_dump()
+                    results.append(final_data)
+                    logger.info(f"Successfully scraped: {product_obj.core_metadata.name} (Score: {product_obj.trust_score})")
                     
                     # Sauvegarde incrémentale
-                    path = save_to_markdown(data)
+                    path = save_to_markdown(final_data)
                     logger.info(f"Saved markdown to {path}")
                 else:
                     logger.error(f"Failed to scrape {url}: {result.error_message}")
@@ -156,29 +166,34 @@ async def scrape_products(urls: List[str], limit: int = 5):
 
 def save_to_markdown(product: Dict):
     """Sauvegarde le produit au format Markdown avec Frontmatter YAML"""
-    base_dir = os.getenv("SCRAPER_BASE_DIR", "data/raw/markdown/informatique")
+    category = product.get('core_metadata', {}).get('category')
+    if category:
+        category = category.lower()
+    else:
+        category = 'diverse'
+    
+    base_dir = os.path.join(os.getenv("SCRAPER_BASE_DIR", "data/raw/markdown"), category)
     os.makedirs(base_dir, exist_ok=True)
     
-    name = product.get('name', 'Unknown_Product')
+    name = product.get('core_metadata', {}).get('name', 'Unknown_Product')
     safe_name = "".join([c if c.isalnum() else "_" for c in name[:50]]).strip("_")
     filename = f"{safe_name}.md"
     filepath = os.path.join(base_dir, filename)
     
-    images = product.get("images", [])
+    core = product.get("core_metadata", {})
+    images = core.get("images", [])
     main_image = images[0] if images else ""
     gallery_images = images[1:] if len(images) > 1 else []
     
+    # On structure le frontmatter pour être RAG-Ready
     frontmatter = {
-        "name": product.get("name"),
-        "current_price": product.get("current_price"),
-        "old_price": product.get("old_price"),
-        "images": images,
-        "url": product.get("url"),
+        "core_metadata": core,
+        "category_specs": product.get("category_specs"),
+        "sentiment_analysis": product.get("sentiment_analysis"),
+        "value_for_money_score": product.get("value_for_money_score"),
         "trust_score": product.get("trust_score"),
-        "rating": product.get("rating"),
-        "review_count": product.get("review_count"),
-        "technical_specs": product.get("technical_specs"),
-        "seller_info": product.get("seller_info")
+        "seller_info": product.get("seller_info"),
+        "shipping_fees": product.get("shipping_fees")
     }
     
     seller = product.get("seller_info", {})
@@ -198,28 +213,35 @@ def save_to_markdown(product: Dict):
 
     gallery_md = "\n".join([f"![Image {i+1}]({img})" for i, img in enumerate(gallery_images)])
     
+    sentiment_md = "\n".join([f"- **{s['axis']}**: {s['score']}/10 - {s['rationale']}" for s in product.get('sentiment_analysis', [])])
+    
     content = f"""---
 {json.dumps(frontmatter, indent=2)}
 ---
 
-# {product.get('name', 'Nom Inconnu')}
+# {core.get('name', 'Nom Inconnu')}
 
 ![Image Principale]({main_image})
 
 ## Galerie d'Images
 {gallery_md if gallery_md else "Aucune image secondaire disponible."}
 
+## Analyse de Sentiment
+{sentiment_md if sentiment_md else "Pas d'analyse de sentiment disponible."}
+
+**Score Rapport Qualité-Prix**: {product.get('value_for_money_score', 'N/A')}/10
+
 ## Détails du Vendeur
 {seller_md if seller_md else "Informations vendeur non disponibles."}
 
-## Résumé des Avis
-{product.get('review_summary', 'Aucun résumé disponible.')}
+## Résumé des Avis (Brut)
+{product.get('raw_review_summary', 'Aucun résumé disponible.')}
 
-## Spécifications Techniques
-{json.dumps(product.get('technical_specs', {}), indent=2)}
+## Spécifications Techniques (Normalisées)
+{json.dumps(product.get('category_specs', {}), indent=2)}
 
 ## Lien Produit
-[Voir sur Jumia]({product.get('url', '#')})
+[Voir sur Jumia]({core.get('url', '#')})
 """
     
     with open(filepath, "w", encoding="utf-8") as f:
