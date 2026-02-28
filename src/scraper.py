@@ -51,8 +51,9 @@ async def scrape_products(urls: List[str], limit: int = 5):
             "Performance, Design, Autonomie, and Prix. Provide a score (0-10) and a brief rationale for each.\n"
             "4. value_for_money_score: Calculate a score from 0 to 10 based on the quality/features vs price.\n"
             "5. Extract seller information and raw_review_summary.\n"
-            "6. shipping_fees: Extract shipping fees for major hubs (Casablanca, Rabat, Tanger, Marrakech, Agadir) "
-            "and the ceiling for Zone 3 (e.g., Dakhla) if mentioned.\n"
+            "6. shipping_fees: Extract shipping fees. Read the line starting with 'SHIPPING_DATA' at the top of the page. "
+            "It contains raw delivery info. Map it to the hubs (Casablanca, etc.) if possible. "
+            "If only one price is found, assign it to Casablanca as the default.\n"
             "IMPORTANT: Be precise with normalization. Prices MUST be numbers (floats). If information is missing, use null."
         ),
         verbose=True
@@ -89,20 +90,12 @@ async def scrape_products(urls: List[str], limit: int = 5):
             await sleep(1500);
         }
 
-        // 4. Interaction pour la livraison (PBI-130)
-        // On essaie d'ouvrir la section de changement de ville si elle existe
-        const deliveryChange = Array.from(document.querySelectorAll('.delivery-info .change, #delivery-section .trigger')).find(el => true);
-        if (deliveryChange) {
-            deliveryChange.click();
-            await sleep(1000);
-            
-            // On pourrait ici itérer sur les villes, mais pour rester robuste, 
-            // on va injecter un marqueur pour que le LLM sache qu'on a tenté l'interaction.
-            const marker = document.createElement('div');
-            marker.id = 'shipping-interaction-marker';
-            marker.textContent = 'Shipping section opened';
-            document.body.appendChild(marker);
-        }
+        // Interaction Logistique (PBI-130)
+        const allText = document.body.innerText;
+        const shippingMarker = document.createElement('div');
+        shippingMarker.id = 'shipping-data-extract';
+        shippingMarker.innerText = "LIVRAISON_BRUT: " + allText.substring(0, 5000); // On prend un gros bloc
+        document.body.prepend(shippingMarker);
     })();
     """
 
