@@ -34,6 +34,16 @@ services:
     volumes:
       - postgres_data_jumia:/var/lib/postgresql/data
 
+  qdrant_jumia:
+    image: qdrant/qdrant:v1.10.1
+    container_name: qdrant_jumia
+    restart: always
+    ports:
+      - "6343:6333"
+    volumes:
+      - qdrant_data_jumia:/qdrant/storage
+
 volumes:
   evolution_instances_jumia:
   postgres_data_jumia:
+  qdrant_data_jumia:
