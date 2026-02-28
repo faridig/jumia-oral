@@ -16,28 +16,28 @@
     "RAM": "8 GB",
     "storage": "256 GB",
     "color": "Black",
-    "warranty": "2 years"
+    "warranty": "2 ans"
   },
   "sentiment_analysis": [
     {
       "axis": "Performance",
       "score": 8.0,
-      "rationale": "Most reviews indicate that the phone performs well for everyday tasks."
+      "rationale": "The phone performs well for normal usage, as indicated by positive reviews."
     },
     {
       "axis": "Design",
       "score": 9.0,
-      "rationale": "The design is frequently praised for being sleek and modern."
+      "rationale": "Customers appreciate the lightweight and sleek design of the phone."
     },
     {
       "axis": "Autonomie",
       "score": 7.0,
-      "rationale": "Battery life is generally considered good, but some users noted it could be better."
+      "rationale": "Battery life is generally satisfactory, but some users may expect more."
     },
     {
       "axis": "Prix",
       "score": 8.0,
-      "rationale": "The price is seen as reasonable given the features offered."
+      "rationale": "The price is considered reasonable for the features offered."
     }
   ],
   "value_for_money_score": 8.0,
@@ -49,12 +49,6 @@
     "shipping_speed": null,
     "quality_score": null,
     "customer_reviews_score": null
-  },
-  "shipping_fees": {
-    "hubs": {
-      "Casablanca": 15.0
-    },
-    "zone_3_ceiling": null
   }
 }
 ---
@@ -67,10 +61,10 @@
 Aucune image secondaire disponible.
 
 ## Analyse de Sentiment
-- **Performance**: 8.0/10 - Most reviews indicate that the phone performs well for everyday tasks.
-- **Design**: 9.0/10 - The design is frequently praised for being sleek and modern.
-- **Autonomie**: 7.0/10 - Battery life is generally considered good, but some users noted it could be better.
-- **Prix**: 8.0/10 - The price is seen as reasonable given the features offered.
+- **Performance**: 8.0/10 - The phone performs well for normal usage, as indicated by positive reviews.
+- **Design**: 9.0/10 - Customers appreciate the lightweight and sleek design of the phone.
+- **Autonomie**: 7.0/10 - Battery life is generally satisfactory, but some users may expect more.
+- **Prix**: 8.0/10 - The price is considered reasonable for the features offered.
 
 **Score Rapport Qualité-Prix**: 8.0/10
 
@@ -95,7 +89,7 @@ Aucune image secondaire disponible.
   "RAM": "8 GB",
   "storage": "256 GB",
   "color": "Black",
-  "warranty": "2 years"
+  "warranty": "2 ans"
 }
 
 ## Lien Produit

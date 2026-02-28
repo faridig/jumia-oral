@@ -12,10 +12,7 @@
     "rating": 3.7,
     "review_count": 361
   },
-  "category_specs": {
-    "capacity": "1.8 L",
-    "power": "1500 W"
-  },
+  "category_specs": {},
   "sentiment_analysis": [
     {
       "axis": "Performance",
@@ -25,17 +22,17 @@
     {
       "axis": "Design",
       "score": 6.0,
-      "rationale": "The design is considered elegant, but some users may find it basic."
+      "rationale": "The design is acceptable but not highlighted as a strong point in reviews."
     },
     {
       "axis": "Autonomie",
-      "score": 8.0,
-      "rationale": "Users report good performance in terms of boiling time and efficiency."
+      "score": 5.0,
+      "rationale": "No specific comments on autonomy, indicating average performance."
     },
     {
       "axis": "Prix",
-      "score": 7.0,
-      "rationale": "The price is seen as reasonable for the features offered."
+      "score": 8.0,
+      "rationale": "Many users mention good value for money."
     }
   ],
   "value_for_money_score": 8.0,
@@ -47,12 +44,6 @@
     "shipping_speed": null,
     "quality_score": null,
     "customer_reviews_score": null
-  },
-  "shipping_fees": {
-    "hubs": {
-      "Casablanca": 15.0
-    },
-    "zone_3_ceiling": null
   }
 }
 ---
@@ -66,9 +57,9 @@ Aucune image secondaire disponible.
 
 ## Analyse de Sentiment
 - **Performance**: 7.0/10 - The product is generally effective as indicated by multiple positive reviews.
-- **Design**: 6.0/10 - The design is considered elegant, but some users may find it basic.
-- **Autonomie**: 8.0/10 - Users report good performance in terms of boiling time and efficiency.
-- **Prix**: 7.0/10 - The price is seen as reasonable for the features offered.
+- **Design**: 6.0/10 - The design is acceptable but not highlighted as a strong point in reviews.
+- **Autonomie**: 5.0/10 - No specific comments on autonomy, indicating average performance.
+- **Prix**: 8.0/10 - Many users mention good value for money.
 
 **Score Rapport Qualité-Prix**: 8.0/10
 
@@ -86,13 +77,10 @@ Aucune image secondaire disponible.
 
 
 ## Résumé des Avis (Brut)
-Avis vérifiés (361) 3.7/5 3.7 out of 5 361 avis vérifiés * 5 (165) * 4 (71) * 3 (44) * 2 (17) * 1 (64)
+Avis variés, avec une note moyenne de 3.7/5. Les utilisateurs apprécient le rapport qualité-prix, mais certains signalent des problèmes de qualité.
 
 ## Spécifications Techniques (Normalisées)
-{
-  "capacity": "1.8 L",
-  "power": "1500 W"
-}
+{}
 
 ## Lien Produit
 [Voir sur Jumia](https://www.jumia.ma/bouilloire-electrique-elegant-18l-1500w-bg1500-kenz-mpg1460090.html)

@@ -22,7 +22,7 @@
     {
       "axis": "Design",
       "score": 4.0,
-      "rationale": "Some users appreciate the design but note it looks better in photos."
+      "rationale": "Some users find the design appealing, but it does not match expectations."
     },
     {
       "axis": "Autonomie",
@@ -32,18 +32,12 @@
     {
       "axis": "Prix",
       "score": 5.0,
-      "rationale": "Some users find it practical for the price, but quality concerns are prevalent."
+      "rationale": "Some users feel it offers decent value for the price despite quality issues."
     }
   ],
   "value_for_money_score": 4.0,
   "trust_score": 3.23,
-  "seller_info": null,
-  "shipping_fees": {
-    "hubs": {
-      "Casablanca": 15.0
-    },
-    "zone_3_ceiling": null
-  }
+  "seller_info": null
 }
 ---
 
@@ -56,9 +50,9 @@ Aucune image secondaire disponible.
 
 ## Analyse de Sentiment
 - **Performance**: 3.0/10 - Many reviews mention the product is fragile and difficult to assemble.
-- **Design**: 4.0/10 - Some users appreciate the design but note it looks better in photos.
+- **Design**: 4.0/10 - Some users find the design appealing, but it does not match expectations.
 - **Autonomie**: 2.0/10 - The product is reported to be unstable and not durable.
-- **Prix**: 5.0/10 - Some users find it practical for the price, but quality concerns are prevalent.
+- **Prix**: 5.0/10 - Some users feel it offers decent value for the price despite quality issues.
 
 **Score Rapport Qualité-Prix**: 4.0/10
 

@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field
 from dotenv import load_dotenv
 from crawl4ai import AsyncWebCrawler, BrowserConfig, CrawlerRunConfig, CacheMode, LLMConfig
 from crawl4ai.extraction_strategy import LLMExtractionStrategy
-from src.models import CategoryAgnosticProduct, SentimentAxis, SellerInfo, ShippingFees
+from src.models import CategoryAgnosticProduct, SentimentAxis, SellerInfo
 
 load_dotenv()
 
@@ -51,10 +51,6 @@ async def scrape_products(urls: List[str], limit: int = 5):
             "Performance, Design, Autonomie, and Prix. Provide a score (0-10) and a brief rationale for each.\n"
             "4. value_for_money_score: Calculate a score from 0 to 10 based on the quality/features vs price.\n"
             "5. Extract seller information and raw_review_summary.\n"
-            "6. shipping_fees: Extract shipping fees. Read from 'SHIPPING_JSON_START'. "
-            "If you see a price like '15 Dhs' for 'Livraison à domicile', assign 15.0 to 'Casablanca'. "
-            "If you see 'Gratuit', assign 0.0. "
-            "Be very aggressive in finding these prices in the raw text block provided.\n"
             "IMPORTANT: Be precise with normalization. Prices MUST be numbers (floats). If information is missing, use null."
         ),
         verbose=True
@@ -62,7 +58,7 @@ async def scrape_products(urls: List[str], limit: int = 5):
     
     browser_config = BrowserConfig(headless=True)
     
-    # JavaScript pour les interactions complexes (Avis + Livraison PBI-130)
+    # JavaScript pour les interactions complexes (Expansion des Avis)
     js_code = """
     (async () => {
         const sleep = (ms) => new Promise(r => setTimeout(r, ms));
@@ -82,36 +78,6 @@ async def scrape_products(urls: List[str], limit: int = 5):
             el.textContent.toLowerCase().includes('see all')
         );
         if (seeMoreBtn) { seeMoreBtn.click(); await sleep(1500); }
-
-        // 3. Extraction Logistique Intuitive (PBI-130)
-        let logisticsText = "";
-        
-        // Tentative d'expansion des options de livraison
-        const cityTrigger = document.querySelector('.delivery-info .change, .-pls .change, .trigger.-pvs');
-        if (cityTrigger) {
-            cityTrigger.click();
-            await sleep(1500);
-            // On cherche le texte dans le modal qui s'ouvre
-            const modalContent = document.querySelector('.osh-modal, .modal, ._main.-pts');
-            if (modalContent) logisticsText += "\\n[MODAL] " + modalContent.innerText;
-        }
-
-        // Capture globale des zones de prix
-        document.querySelectorAll('.delivery-info, #delivery-section, .-pts, .-pvs').forEach(el => {
-            logisticsText += `\\n[RAW] ${el.innerText}`;
-        });
-
-        // Injection pour le LLM
-        const payload = document.createElement('div');
-        payload.id = 'shipping-payload';
-        payload.innerText = "SHIPPING_JSON_START " + logisticsText.replace(/\\n/g, ' | ') + " SHIPPING_JSON_END";
-        document.body.prepend(payload);
-
-        // Injection d'un marqueur RAG-Ready pour le LLM
-        const marker = document.createElement('div');
-        marker.id = 'logistic-payload';
-        marker.innerText = "LOGISTIC_DATA_START" + logisticsText + "LOGISTIC_DATA_END";
-        document.body.prepend(marker);
     })();
     """
 
@@ -201,8 +167,7 @@ def save_to_markdown(product: Dict):
         "sentiment_analysis": product.get("sentiment_analysis"),
         "value_for_money_score": product.get("value_for_money_score"),
         "trust_score": product.get("trust_score"),
-        "seller_info": product.get("seller_info"),
-        "shipping_fees": product.get("shipping_fees")
+        "seller_info": product.get("seller_info")
     }
     
     seller = product.get("seller_info", {})

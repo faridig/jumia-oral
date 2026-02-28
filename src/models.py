@@ -14,10 +14,6 @@ class SellerInfo(BaseModel):
     quality_score: Optional[str] = Field(None, description="Performance: Score Qualité")
     customer_reviews_score: Optional[str] = Field(None, description="Performance: Avis des consommateurs")
 
-class ShippingFees(BaseModel):
-    hubs: Dict[str, Optional[float]] = Field(default_factory=dict, description="Frais par hub (Casa, Rabat, etc.)")
-    zone_3_ceiling: Optional[float] = Field(None, description="Tarif plafond Zone 3 (ex: Dakhla)")
-
 class CoreMetadata(BaseModel):
     name: str = Field(..., description="Nom complet du produit")
     current_price: Optional[float] = Field(None, description="Prix actuel")
@@ -37,5 +33,4 @@ class CategoryAgnosticProduct(BaseModel):
     value_for_money_score: float = Field(0.0, description="Score rapport qualité-prix (0-10)")
     trust_score: float = Field(0.0, description="Score de confiance basé sur les avis (0-5)")
     seller_info: Optional[SellerInfo] = Field(None, description="Informations sur le vendeur")
-    shipping_fees: Optional[ShippingFees] = Field(None, description="Frais de livraison extraits")
     raw_review_summary: str = Field("", description="Résumé brut des avis clients")

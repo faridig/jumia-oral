@@ -2,7 +2,7 @@
 {
   "core_metadata": {
     "name": "Dell PC Portable Latitude 7480",
-    "current_price": 0.0,
+    "current_price": null,
     "old_price": null,
     "currency": "Dhs",
     "brand": "Dell",
@@ -21,12 +21,12 @@
     {
       "axis": "Performance",
       "score": 8.0,
-      "rationale": "The Intel Core i5 processor and 8 GB RAM provide good performance for most tasks."
+      "rationale": "The Intel Core i5 processor and 8 GB RAM provide good performance for everyday tasks."
     },
     {
       "axis": "Design",
       "score": 7.0,
-      "rationale": "The Latitude series is known for its professional design, though it may not be the most stylish."
+      "rationale": "The Latitude series is known for its professional design, though it may not stand out visually."
     },
     {
       "axis": "Autonomie",
@@ -35,26 +35,13 @@
     },
     {
       "axis": "Prix",
-      "score": 5.0,
-      "rationale": "The price is reasonable for the specifications, but could be lower."
+      "score": 7.0,
+      "rationale": "The price is reasonable for the specifications offered."
     }
   ],
-  "value_for_money_score": 6.0,
+  "value_for_money_score": 7.0,
   "trust_score": 2.8,
-  "seller_info": {
-    "name": null,
-    "rating_percentage": null,
-    "follower_count": null,
-    "shipping_speed": null,
-    "quality_score": null,
-    "customer_reviews_score": null
-  },
-  "shipping_fees": {
-    "hubs": {
-      "Casablanca": 0.0
-    },
-    "zone_3_ceiling": null
-  }
+  "seller_info": null
 }
 ---
 
@@ -66,28 +53,18 @@
 Aucune image secondaire disponible.
 
 ## Analyse de Sentiment
-- **Performance**: 8.0/10 - The Intel Core i5 processor and 8 GB RAM provide good performance for most tasks.
-- **Design**: 7.0/10 - The Latitude series is known for its professional design, though it may not be the most stylish.
+- **Performance**: 8.0/10 - The Intel Core i5 processor and 8 GB RAM provide good performance for everyday tasks.
+- **Design**: 7.0/10 - The Latitude series is known for its professional design, though it may not stand out visually.
 - **Autonomie**: 6.0/10 - Battery life is decent but may vary based on usage.
-- **Prix**: 5.0/10 - The price is reasonable for the specifications, but could be lower.
+- **Prix**: 7.0/10 - The price is reasonable for the specifications offered.
 
-**Score Rapport Qualité-Prix**: 6.0/10
+**Score Rapport Qualité-Prix**: 7.0/10
 
 ## Détails du Vendeur
-
-### Informations Vendeur
-- **Nom**: None
-- **Évaluation**: None
-- **Abonnés**: None
-
-#### Performance Vendeur
-- **Vitesse d'expédition**: None
-- **Score Qualité**: None
-- **Avis Consommateurs**: None
-
+Informations vendeur non disponibles.
 
 ## Résumé des Avis (Brut)
-1 avis vérifié, note de 4 sur 5.
+1 verified review with an average rating of 4 out of 5.
 
 ## Spécifications Techniques (Normalisées)
 {
