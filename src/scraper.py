@@ -51,9 +51,10 @@ async def scrape_products(urls: List[str], limit: int = 5):
             "Performance, Design, Autonomie, and Prix. Provide a score (0-10) and a brief rationale for each.\n"
             "4. value_for_money_score: Calculate a score from 0 to 10 based on the quality/features vs price.\n"
             "5. Extract seller information and raw_review_summary.\n"
-            "6. shipping_fees: Extract shipping fees. Read the line starting with 'SHIPPING_DATA' at the top of the page. "
-            "It contains raw delivery info. Map it to the hubs (Casablanca, etc.) if possible. "
-            "If only one price is found, assign it to Casablanca as the default.\n"
+            "6. shipping_fees: Extract shipping fees. Read from 'SHIPPING_JSON_START'. "
+            "If you see a price like '15 Dhs' for 'Livraison à domicile', assign 15.0 to 'Casablanca'. "
+            "If you see 'Gratuit', assign 0.0. "
+            "Be very aggressive in finding these prices in the raw text block provided.\n"
             "IMPORTANT: Be precise with normalization. Prices MUST be numbers (floats). If information is missing, use null."
         ),
         verbose=True
@@ -61,41 +62,56 @@ async def scrape_products(urls: List[str], limit: int = 5):
     
     browser_config = BrowserConfig(headless=True)
     
-    # JavaScript pour cliquer sur "Commentaires des clients", "Voir plus" et extraire les infos de livraison
+    # JavaScript pour les interactions complexes (Avis + Livraison PBI-130)
     js_code = """
     (async () => {
         const sleep = (ms) => new Promise(r => setTimeout(r, ms));
         
-        // 1. Fermer les popups intrusifs
-        const popup = document.querySelector('section.pop, .osh-popup-overlay');
-        if (popup) popup.remove();
-        
-        // 2. Chercher et cliquer sur l'onglet/lien des commentaires
+        // 1. Nettoyage initial (popups)
+        document.querySelectorAll('section.pop, .osh-popup-overlay, #newsletter-popup').forEach(p => p.remove());
+
+        // 2. Expansion des avis
         const reviewsLink = Array.from(document.querySelectorAll('a, button, span')).find(el => 
             el.textContent.toLowerCase().includes('commentaires') || 
             el.textContent.toLowerCase().includes('avis')
         );
-        if (reviewsLink) {
-            reviewsLink.click();
-            await sleep(1000);
-        }
+        if (reviewsLink) { reviewsLink.click(); await sleep(1000); }
 
-        // 3. Chercher et cliquer sur "Voir plus" dans les avis
         const seeMoreBtn = Array.from(document.querySelectorAll('a, button')).find(el => 
             el.textContent.toLowerCase().includes('voir plus') || 
             el.textContent.toLowerCase().includes('see all')
         );
-        if (seeMoreBtn) {
-            seeMoreBtn.click();
+        if (seeMoreBtn) { seeMoreBtn.click(); await sleep(1500); }
+
+        // 3. Extraction Logistique Intuitive (PBI-130)
+        let logisticsText = "";
+        
+        // Tentative d'expansion des options de livraison
+        const cityTrigger = document.querySelector('.delivery-info .change, .-pls .change, .trigger.-pvs');
+        if (cityTrigger) {
+            cityTrigger.click();
             await sleep(1500);
+            // On cherche le texte dans le modal qui s'ouvre
+            const modalContent = document.querySelector('.osh-modal, .modal, ._main.-pts');
+            if (modalContent) logisticsText += "\\n[MODAL] " + modalContent.innerText;
         }
 
-        // Interaction Logistique (PBI-130)
-        const allText = document.body.innerText;
-        const shippingMarker = document.createElement('div');
-        shippingMarker.id = 'shipping-data-extract';
-        shippingMarker.innerText = "LIVRAISON_BRUT: " + allText.substring(0, 5000); // On prend un gros bloc
-        document.body.prepend(shippingMarker);
+        // Capture globale des zones de prix
+        document.querySelectorAll('.delivery-info, #delivery-section, .-pts, .-pvs').forEach(el => {
+            logisticsText += `\\n[RAW] ${el.innerText}`;
+        });
+
+        // Injection pour le LLM
+        const payload = document.createElement('div');
+        payload.id = 'shipping-payload';
+        payload.innerText = "SHIPPING_JSON_START " + logisticsText.replace(/\\n/g, ' | ') + " SHIPPING_JSON_END";
+        document.body.prepend(payload);
+
+        // Injection d'un marqueur RAG-Ready pour le LLM
+        const marker = document.createElement('div');
+        marker.id = 'logistic-payload';
+        marker.innerText = "LOGISTIC_DATA_START" + logisticsText + "LOGISTIC_DATA_END";
+        document.body.prepend(marker);
     })();
     """
 
