@@ -3,7 +3,7 @@ from pydantic import BaseModel, Field
 
 class SentimentAxis(BaseModel):
     axis: str = Field(..., description="Axe d'analyse (ex: Performance, Design, Autonomie, Prix)")
-    score: float = Field(..., description="Score de 0 à 10")
+    score: Optional[float] = Field(None, description="Score de 0 à 10")
     rationale: str = Field(..., description="Justification du score")
 
 class SellerInfo(BaseModel):
@@ -15,7 +15,7 @@ class SellerInfo(BaseModel):
     customer_reviews_score: Optional[str] = Field(None, description="Performance: Avis des consommateurs")
 
 class ShippingFees(BaseModel):
-    hubs: Dict[str, float] = Field(default_factory=dict, description="Frais par hub (Casa, Rabat, etc.)")
+    hubs: Dict[str, Optional[float]] = Field(default_factory=dict, description="Frais par hub (Casa, Rabat, etc.)")
     zone_3_ceiling: Optional[float] = Field(None, description="Tarif plafond Zone 3 (ex: Dakhla)")
 
 class CoreMetadata(BaseModel):
