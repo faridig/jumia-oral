@@ -12,14 +12,17 @@ def test_low_quality_warning():
     """
     # Si on est en CI (GitHub Actions), on moque l'appel RAG pour éviter les erreurs de connexion Qdrant/OpenAI
     if os.getenv("GITHUB_ACTIONS") == "true":
-        logging.info("CI détecté : Utilisation d'un mock pour MultiQueryAutoRAG")
-        mock_rag = unittest.mock.Mock()
+        logging.info("CI détecté : Utilisation d'un mock pour les composants RAG")
         mock_response = unittest.mock.Mock()
         mock_response.__str__ = unittest.mock.Mock(return_value="Chouf, had l-produit dyal Jedel ba9i madiyoroch fih l-avis, koun vigilant.")
         mock_response.source_nodes = [unittest.mock.Mock()]
-        mock_rag.query.return_value = mock_response
         
-        with unittest.mock.patch("tests.test_rag_quality.MultiQueryAutoRAG", return_value=mock_rag):
+        with unittest.mock.patch("src.rag_engine.get_rag_engine") as mock_get_engine, \
+             unittest.mock.patch("src.rag_engine.expand_query_darija", return_value=["jedel speaker"]):
+            mock_engine = unittest.mock.Mock()
+            mock_engine.query.return_value = mock_response
+            mock_get_engine.return_value = mock_engine
+            
             rag = MultiQueryAutoRAG()
             query = "Bghit baffes rkhisa dyal pc (Jedel)"
             response = rag.query(query)
