@@ -61,15 +61,31 @@ class JumiaReRanker(BaseNodePostprocessor):
     Re-ranker personnalisé utilisant le trust_score (40%) et le value_for_money_score (60%).
     Priorise les meilleures affaires et les vendeurs de confiance.
     Pondération : 60% pertinence sémantique / 40% scores business (PBI-401).
+    Hard-Filtering : Élimine les produits avec une similarité < 0.6 (PBI-404).
     """
+    similarity_threshold: float = 0.6
+
     def _postprocess_nodes(
         self, nodes: List[NodeWithScore], query_bundle: Optional[QueryBundle] = None
     ) -> List[NodeWithScore]:
         if not nodes:
             return nodes
             
-        logger.info(f"Re-ranking de {len(nodes)} nodes via Trust & Value scores...")
-        for node_with_score in nodes:
+        # PBI-404 : Hard-Filtering de pertinence sémantique
+        filtered_nodes = []
+        for node in nodes:
+            if node.score is not None and node.score >= self.similarity_threshold:
+                filtered_nodes.append(node)
+            else:
+                name = node.node.metadata.get("name", "N/A")
+                logger.warning(f"  - Hard-Filtering (Score {node.score:.4f} < {self.similarity_threshold}): {name[:50]}")
+        
+        if not filtered_nodes:
+            logger.warning(f"Aucun produit ne dépasse le seuil de pertinence ({self.similarity_threshold})")
+            return []
+
+        logger.info(f"Re-ranking de {len(filtered_nodes)} nodes après hard-filtering...")
+        for node_with_score in filtered_nodes:
             metadata = node_with_score.node.metadata
             trust = float(metadata.get("trust_score", 0.0))
             vfm = float(metadata.get("value_for_money_score", 0.0))
@@ -84,8 +100,8 @@ class JumiaReRanker(BaseNodePostprocessor):
             name = metadata.get('name', 'N/A')
             logger.info(f"  - {name[:30]}... | Trust: {trust} | VFM: {vfm} | Final: {node_with_score.score:.4f}")
             
-        nodes.sort(key=lambda x: x.score if x.score is not None else 0.0, reverse=True)
-        return nodes
+        filtered_nodes.sort(key=lambda x: x.score if x.score is not None else 0.0, reverse=True)
+        return filtered_nodes
 
 def get_rag_engine(use_auto_retriever: bool = True):
     """
