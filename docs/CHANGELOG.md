@@ -15,6 +15,10 @@
   - Ingestion de 58 produits enrichis avec métadonnées YAML.
 
 ## 💡 LEÇONS APPRISES
+### Sprint 4 : Re-optimisation & Transparence
+- **Pondération Sémantique vs Business** : Un ratio de 60/40 semble être le point d equilibrium idéal pour éviter les produits hors-sujet tout en mettant en avant les bonnes affaires.
+- **Transparence Trust Score** : L injection directe du score de confiance dans le prompt système, couplée à une consigne Darija stricte, humanise l assistant et renforce la crédibilité de la plateforme.
+- **Résilience Auto-Retriever** : Toujours prévoir un fallback sur la recherche vectorielle classique car l extraction de filtres structurés par le LLM peut échouer sur des requêtes trop familières ou ambiguës.
 ### Sprint 3 : Advanced RAG & Persona
 - **Multi-Query Expansion** : L'utilisation d'un LLM pour traduire la Darija en termes techniques Français améliore considérablement le rappel (recall) de la recherche vectorielle sur un catalogue majoritairement francophone.
 - **Auto-Retriever Stability** : LlamaIndex `VectorIndexAutoRetriever` est puissant pour les filtres structurés mais nécessite un fallback robuste car les utilisateurs utilisent souvent des termes vagues (ex: "rkhis", "mzyan") que le LLM tente parfois de transformer en filtres impossibles.
@@ -34,6 +38,10 @@
 - **Validation à l'Échelle** : Test de stress réussi sur un batch de 58 produits couvrant plus de 20 catégories Jumia (Chaussures, Vêtements, Gaming, Maison). Taux de succès d'extraction d'images de 100%.
 
 ## 💡 LEÇONS APPRISES
+### Sprint 4 : Re-optimisation & Transparence
+- **Pondération Sémantique vs Business** : Un ratio de 60/40 semble être le point d equilibrium idéal pour éviter les produits hors-sujet tout en mettant en avant les bonnes affaires.
+- **Transparence Trust Score** : L injection directe du score de confiance dans le prompt système, couplée à une consigne Darija stricte, humanise l assistant et renforce la crédibilité de la plateforme.
+- **Résilience Auto-Retriever** : Toujours prévoir un fallback sur la recherche vectorielle classique car l extraction de filtres structurés par le LLM peut échouer sur des requêtes trop familières ou ambiguës.
 ### Sprint 2 : Réforme & Simplification
 - **Arbitrage Complexité/Valeur** : L'extraction dynamique des frais de livraison via interactions JS multiples s'est avérée trop instable par rapport à la valeur ajoutée immédiate. La simplification a permis de se concentrer sur la robustesse des données produits.
 - **Normalisation LLM** : `gpt-4o-mini` est excellent pour la normalisation d'unités techniques si le schéma Pydantic est bien typé (`Dict[str, Any]`).
@@ -51,6 +59,10 @@
   - Suite de tests unitaires pour valider la robustesse du nouveau schéma.
 
 ## 💡 LEÇONS APPRISES
+### Sprint 4 : Re-optimisation & Transparence
+- **Pondération Sémantique vs Business** : Un ratio de 60/40 semble être le point d equilibrium idéal pour éviter les produits hors-sujet tout en mettant en avant les bonnes affaires.
+- **Transparence Trust Score** : L injection directe du score de confiance dans le prompt système, couplée à une consigne Darija stricte, humanise l assistant et renforce la crédibilité de la plateforme.
+- **Résilience Auto-Retriever** : Toujours prévoir un fallback sur la recherche vectorielle classique car l extraction de filtres structurés par le LLM peut échouer sur des requêtes trop familières ou ambiguës.
 ### Sprint 1 : Optimisation du Scraper
 - **Pollution Visuelle LLM** : L'extraction d'images peut être parasitée par les éléments d'UI (icônes de chat, logos). *Action future* : Prétraiter les sélecteurs d'images ou renforcer l'instruction LLM "exclude UI icons".
 - **Dynamisme JS** : L'utilisation de `js_code` pour cliquer sur "Voir plus" dans les avis augmente significativement la qualité du `review_summary`, mais nécessite une gestion fine des timeouts pour éviter les `Execution context destroyed`.
@@ -65,6 +77,10 @@
   - Génération automatique de fiches produits au format Markdown avec Frontmatter YAML.
 
 ## 💡 LEÇONS APPRISES
+### Sprint 4 : Re-optimisation & Transparence
+- **Pondération Sémantique vs Business** : Un ratio de 60/40 semble être le point d equilibrium idéal pour éviter les produits hors-sujet tout en mettant en avant les bonnes affaires.
+- **Transparence Trust Score** : L injection directe du score de confiance dans le prompt système, couplée à une consigne Darija stricte, humanise l assistant et renforce la crédibilité de la plateforme.
+- **Résilience Auto-Retriever** : Toujours prévoir un fallback sur la recherche vectorielle classique car l extraction de filtres structurés par le LLM peut échouer sur des requêtes trop familières ou ambiguës.
 ### Sprint 1 : Scraping & Extraction
 - **Crawl4AI vs Pagination** : L'utilisation de `JsonCssExtractionStrategy` est extrêmement efficace pour la collecte d'URLs en masse avant de passer à l'extraction lourde (LLM).
 - **Logique de Trust Score** : Le calcul `(Note * 0.7) + (log10(Avis) * 0.3)` permet de bien différencier un produit avec une note parfaite mais un seul avis d'un produit très populaire avec une note légèrement inférieure.
