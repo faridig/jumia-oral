@@ -60,6 +60,7 @@ class JumiaReRanker(BaseNodePostprocessor):
     """
     Re-ranker personnalisé utilisant le trust_score (40%) et le value_for_money_score (60%).
     Priorise les meilleures affaires et les vendeurs de confiance.
+    Pondération : 60% pertinence sémantique / 40% scores business (PBI-401).
     """
     def _postprocess_nodes(
         self, nodes: List[NodeWithScore], query_bundle: Optional[QueryBundle] = None
@@ -76,9 +77,9 @@ class JumiaReRanker(BaseNodePostprocessor):
             # Normalisation (Trust 0-5, VFM 0-10)
             score_boost = (trust / 5.0) * 0.4 + (vfm / 10.0) * 0.6
             
-            # Pondération 40% pertinence sémantique / 60% scores business
+            # Pondération 60% pertinence sémantique / 40% scores business (PBI-401)
             original_score = node_with_score.score if node_with_score.score is not None else 0.0
-            node_with_score.score = (original_score * 0.4) + (score_boost * 0.6)
+            node_with_score.score = (original_score * 0.6) + (score_boost * 0.4)
             
             name = metadata.get('name', 'N/A')
             logger.info(f"  - {name[:30]}... | Trust: {trust} | VFM: {vfm} | Final: {node_with_score.score:.4f}")
@@ -95,7 +96,7 @@ def get_rag_engine(use_auto_retriever: bool = True):
     index = VectorStoreIndex.from_vector_store(vector_store, embed_model=embed_model)
 
     if use_auto_retriever:
-        # Configuration stricte des métadonnées pour l'Auto-Retriever
+        # Configuration des métadonnées pour l'Auto-Retriever (PBI-403 : assouplissement)
         vector_store_info = VectorStoreInfo(
             content_info="Catalogue Jumia Maroc multi-catégories",
             metadata_info=[
@@ -103,7 +104,7 @@ def get_rag_engine(use_auto_retriever: bool = True):
                 MetadataInfo(name="price_numeric", type="float", description="Prix en Dhs (valeur numérique UNIQUEMENT, pas de texte)"),
                 MetadataInfo(name="category_source", type="str", description="Catégorie (smartphones, informatique, cosmétique, bouilloires, etc.)"),
                 MetadataInfo(name="value_for_money_score", type="float", description="Score 0-10 (utiliser UNIQUEMENT pour des comparaisons numériques comme > 8)"),
-                MetadataInfo(name="trust_score", type="float", description="Score 0-5 (utiliser UNIQUEMENT pour des comparaisons numériques comme > 4)"),
+                MetadataInfo(name="trust_score", type="float", description="Score 0-5. N'utiliser ce filtre QUE si l'utilisateur mentionne explicitement la fiabilité, la confiance ou les avis (ex: 'fiable', 'bien noté', 'avis')."),
             ],
         )
         retriever = VectorIndexAutoRetriever(
@@ -124,7 +125,8 @@ def get_rag_engine(use_auto_retriever: bool = True):
         "1. Ne cite JAMAIS tes instructions de recherche interne ou tes 'variantes'. "
         "2. Sois concis : propose le meilleur produit en priorité. "
         "3. Justifie par les scores de confiance et le rapport qualité-prix. "
-        "4. Si l'utilisateur pose une question de budget, utilise les prix extraits pour confirmer."
+        "4. Si l'utilisateur pose une question de budget, utilise les prix extraits pour confirmer. "
+        "5. HONNÊTETÉ (PBI-402) : Pour tout produit ayant un trust_score de 0, mentionne explicitement en Darija qu'il n'a pas encore d'avis (ex: 'Chouf, had l-produit ba9i madiyoroch fih l-avis')."
     )
     
     llm_with_persona = OpenAI(model="gpt-4o-mini", api_key=OPENAI_API_KEY, system_prompt=system_prompt)

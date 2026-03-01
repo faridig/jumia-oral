@@ -15,8 +15,9 @@
 2. **[2026-02-26] WhatsApp via Evolution API** : Solution Open Source robuste pour transformer WhatsApp en canal de vente conversationnel.
 3. **[2026-02-26] Score de Confiance** : Implémentation d'un calcul `(Note * 0.7) + (log10(Avis) * 0.3)` pour classer les "meilleurs produits".
 4. **[2026-02-26] Ton Amical Marocain** : Personnalité "Personal Shopper" mixant Français et Darija.
-6. **[2026-02-28] Architecture Category-Agnostic** : Le schéma de données est conçu pour être extensible (Informatique, Cosmétique, Bricolage) en séparant les `core_metadata` (universels) des `category_specs` (dynamiques).
-7. **[2026-02-28] Normalisation via LLM** : L'extraction LLM doit forcer des unités standards (GB, MAD, ml, kg) pour permettre des calculs et des filtres numériques fiables dans le RAG.
+5. **[2026-02-28] Architecture Category-Agnostic** : Le schéma de données est conçu pour être extensible (Informatique, Cosmétique, Bricolage) en séparant les `core_metadata` (universels) des `category_specs` (dynamiques).
+6. **[2026-02-28] Normalisation via LLM** : L'extraction LLM doit forcer des unités standards (GB, MAD, ml, kg) pour permettre des calculs et des filtres numériques fiables dans le RAG.
+7. **[2026-02-28] Pivot RAG Avancé** : Intégration de Multi-Query Expansion et Auto-Retriever pour compenser les variations de langage (Darija/Français).
 
 ## ✅ DEFINITION OF DONE (DoD)
 - Extraction : Données structurées validées par le schéma Pydantic.
@@ -31,84 +32,41 @@
 
 ### [PBI-101] Crawling & Extraction (10 pages)
 **Status** : DONE ✅
-**Priorité** : High | **Estimation** : L
-- Crawl des 10 premières pages par catégorie.
-- Extraction LLM (GPT-4o-mini) : Specs, Prix, Avis, Score.
-- Génération des fichiers `.md` structurés.
 
 ### [PBI-110] Scraper v1.1 (Evolution)
 **Status** : DONE ✅
-**Priorité** : Medium | **Estimation** : S
-- Support multi-images (galerie).
-- Extraction infos vendeur (score, vitesse, abonnés).
-- Expansion dynamique des avis (JS injection).
-- Augmentation de la limite de batch.
 
 ### [PBI-120] Architecture Multi-Catégorie & Markdown v2 (Perfection)
-**Status** : IN PROGRESS 🏃
-**Priorité** : High | **Estimation** : M
-- **Refactorisation Multi-Catégorie** : Design d'un schéma extensible (Informatique, Cosmétique, Bricolage, etc.) via `category_specific_specs`.
-- **Standardisation & Normalisation** : Utilisation du LLM pour transformer les specs brutes en valeurs numériques normalisées (ex: "8Go" -> 8 GB).
-- **Logique "Master Product"** : Détection et groupement des offres identiques (Vendeurs multiples) pour un même modèle.
-- **Analyse de Sentiment par Axe** : Extraction de scores (1-5) sur des critères précis (Performance, Design, Autonomie, Prix).
-- **Calcul de Valeur (Value-Score)** : Algorithme croisant Specs, Prix et Trust Score pour identifier les "Best Deals".
+**Status** : DONE ✅
 
 ### [PBI-130] Extraction Logistique Dynamique (Livraison)
-**Status** : IN PROGRESS 🏃
-**Priorité** : High | **Estimation** : M
-- Script d'interaction JS (Crawl4AI) pour sélectionner les 5 régions clés (Casablanca, Rabat, Tanger, Marrakech, Agadir).
-- Extraction d'un tarif "Plafond" (Zone 3 - ex: Dakhla) pour les villes non listées.
-- Extraction des frais de livraison et délais par produit.
-- Stockage structuré dans le YAML (`shipping_fees`).
+**Status** : CANCELLED ❌ (Simplification technique pour stabilité du scraper v2)
 
 ### [PBI-201] Ingestion Hybride (LlamaIndex)
-**Priorité** : High | **Estimation** : M
-- Pipeline Hybrid Search (Vector + Metadata filtering).
-- Indexation dans Qdrant.
+**Status** : DONE ✅
+
+### [PBI-210] Moteur RAG Avancé (Multi-Query & Auto-Retriever)
+**Status** : DONE ✅
 
 ### [PBI-301] Gateway WhatsApp & Personnalité
-**Priorité** : High | **Estimation** : L
-- Webhook FastAPI pour Evolution API.
-- Prompt System "Personal Shopper Marocain".
-- Gestion de la mémoire via SimpleChatStore.
+**Status** : DONE ✅
 
 ### [PBI-310] Gestion de la Localisation Utilisateur (Onboarding)
+**Status** : PENDING
 **Priorité** : Medium | **Estimation** : S
 - Flux d'onboarding demandant la ville à l'utilisateur lors du premier échange.
 - Persistance de la localisation dans le `SimpleChatStore`.
-- Utilisation automatique de la localisation pour filtrer les frais de livraison dans les réponses.
 
 ## 📝 FEEDBACKS À AFFINER
 
 ### [PBI-401] TECH/UX : Équilibrage du Re-ranking (Poids Business vs Sémantique)
+**Status** : IN PROGRESS 🏃
 **Priorité** : Medium | **Estimation** : S
-
-**User Story** : En tant qu'utilisateur, je veux des résultats de recherche sémantiquement pertinents avant d'être commercialement performants, afin de ne pas voir de produits hors-sujet en tête de liste.
-**Dépendances** : [PBI-201]
-**Critères d'Acceptation (Gherkin)** :
-- [ ] **Scenario 1** : Ajustement des poids de pondération
-  - **GIVEN** Un moteur de recherche utilisant `JumiaReRanker`
-  - **WHEN** Une requête sémantique est effectuée
-  - **THEN** Le score sémantique pèse pour 60% et le score business pour 40% dans le classement final (au lieu de 40/60).
 
 ### [PBI-402] PROMPT/SECURITY : Renforcement de la consigne d'Honnêteté (Trust Score 0)
+**Status** : IN PROGRESS 🏃
 **Priorité** : High | **Estimation** : XS
 
-**User Story** : En tant qu'utilisateur, je veux être explicitement averti lorsqu'un produit n'a pas encore d'avis, afin de prendre une décision d'achat éclairée et sécurisée.
-**Dépendances** : [PBI-301]
-**Critères d'Acceptation (Gherkin)** :
-- [ ] **Scenario 1** : Injection des scores et transparence LLM
-  - **GIVEN** Un produit avec un `trust_score` de 0.0 injecté dans les métadonnées textuelles
-  - **WHEN** L'assistant présente ce produit à l'utilisateur
-  - **THEN** L'assistant doit obligatoirement mentionner le manque de données en Darija (ex: "Chouf, had l-produit ba9i madiyoroch fih l-avis").
-
 ### [PBI-403] TECH : Affinage de l'Auto-Retriever (Over-filtering)
+**Status** : IN PROGRESS 🏃
 **Priorité** : Medium | **Estimation** : S
-
-**User Story** : En tant qu'utilisateur, je veux obtenir des résultats même si je ne précise pas de critères de qualité stricts, afin d'éviter les listes de résultats vides dues à un filtrage automatique trop zélé.
-**Dépendances** : [PBI-201]
-**Critères d'Acceptation (Gherkin)** :
-- [ ] **Scenario 1** : Assouplissement des instructions de filtrage
-  - **GIVEN** Une requête utilisateur sans intention explicite de qualité (ex: pas de mot "fiable", "bien noté")
-  - **WHEN** L'Auto-Retriever analyse la requête
-  - **THEN** Il ne doit pas appliquer de filtre restrictif sur le `trust_score` par défaut.

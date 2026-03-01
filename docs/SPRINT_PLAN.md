@@ -1,35 +1,40 @@
-# 🏃 SPRINT PLAN - SPRINT 2 (RÉFORME & PERFECTION DU CATALOGUE)
+# 🏃 SPRINT PLAN - SPRINT 4 (RE-OPTIMISATION & TRANSPARENCE)
 
 ## 🎯 OBJECTIF
-Transformer l'extraction brute en un catalogue **"RAG-Ready Multi-Catégorie"** avec des données normalisées, une logique de "Master Product" (groupement d'offres) et une extraction logistique multi-hubs.
+Améliorer la précision du moteur de recommandation en équilibrant les scores business/sémantiques et en renforçant la transparence sur les produits sans avis (Trust 0).
 
 ## 📋 TÂCHES À RÉALISER
 
-### [PBI-120] Architecture Multi-Catégorie & Markdown v2 (Perfection)
-**Priorité** : High | **Estimation** : M
-**User Story** : "En tant qu'Assistant, je veux un catalogue normalisé et extensible, afin de fournir des recommandations précises sur n'importe quel produit (Informatique, Cosmétique, Bricolage)."
+### [PBI-401] TECH/UX : Équilibrage du Re-ranking (Poids Business vs Sémantique)
+**Priorité** : High | **Estimation** : S
+**User Story** : "En tant qu'utilisateur, je veux des résultats de recherche sémantiquement pertinents avant d'être commercialement performants, afin de ne pas voir de produits hors-sujet en tête de liste."
 **Critères d'Acceptation** :
-- [ ] Créer un schéma `CategoryAgnosticProduct` (Pydantic) avec `core_metadata` et `category_specs`.
-- [ ] Implémenter la normalisation LLM (ex: "8Go" -> 8 GB, "100ml" -> 100 ml).
-- [ ] Ajouter l'analyse de sentiment par axe (Performance, Design, Autonomie, Prix).
-- [ ] Calculer automatiquement le `value_for_money_score`.
-- [ ] **Test de Validation** : Scraper 5 produits de catégories différentes (ex: 1 Laptop, 1 Smartphone, 1 Cosmétique, 1 Bricolage, 1 Électroménager) pour vérifier la structure v2.
+- [ ] Modifier la logique de pondération dans `JumiaReRanker`.
+- [ ] Appliquer les nouveaux poids : **60% Sémantique / 40% Business** (Trust + VFM).
+- [ ] **Test** : Vérifier que sur une requête "Crème visage", une cartouche d'encre (même bien notée) n'apparaît pas avant les produits de beauté.
 
-### [PBI-130] Extraction Logistique Dynamique (Livraison)
-**Priorité** : High | **Estimation** : M
-**User Story** : "En tant que client Jumia, je veux connaître le coût total de livraison (Hubs + Zone 3), afin de choisir l'offre la plus rentable pour ma ville."
+### [PBI-402] PROMPT/SECURITY : Renforcement de la consigne d'Honnêteté (Trust Score 0)
+**Priorité** : High | **Estimation** : XS
+**User Story** : "En tant qu'utilisateur, je veux être explicitement averti lorsqu'un produit n'a pas encore d'avis, afin de prendre une décision d'achat éclairée et sécurisée."
 **Critères d'Acceptation** :
-- [ ] Interaction JS (Crawl4AI) pour les 5 hubs (Casa, Rabat, Tanger, Marrakech, Agadir).
-- [ ] Capture du tarif "Plafond" (Zone 3 - ex: Dakhla).
-- [ ] Stockage structuré dans le YAML (`shipping_fees`).
+- [ ] Injecter explicitement le `trust_score` dans les métadonnées textuelles envoyées au LLM.
+- [ ] Mettre à jour le `System Prompt` pour forcer la mention du manque d'avis en Darija pour tout produit ayant un score de 0.
+- [ ] **Test** : L'assistant doit répondre "Chouf, had l-produit ba9i madiyoroch fih l-avis" (ou similaire) lors de la présentation d'un produit neuf sans retour.
+
+### [PBI-403] TECH : Affinage de l'Auto-Retriever (Over-filtering)
+**Priorité** : Medium | **Estimation** : S
+**User Story** : "En tant qu'utilisateur, je veux obtenir des résultats même si je ne précise pas de critères de qualité stricts, afin d'éviter les listes de résultats vides."
+**Critères d'Acceptation** :
+- [ ] Assouplir les descriptions de filtres dans `AutoRetriever`.
+- [ ] Configurer le retriever pour qu'il ne filtre sur `trust_score` QUE si des termes comme "fiable", "bien noté" ou "avis" sont détectés.
+- [ ] **Test** : Une requête simple "Laptop" doit retourner des résultats même si le trust_score est faible ou nul.
 
 ## 🛠️ SPÉCIFICATIONS TECHNIQUES
-- **Moteur** : Crawl4AI (AsyncWebCrawler) + JS Dropdown Manipulation.
-- **Normalisation** : GPT-4o-mini (Extraction forcée par schéma).
-- **Groupement** : Script de post-processing `merge_offers.py` pour grouper les produits par modèle identique.
+- **Fichiers concernés** : `core/rag/reranker.py`, `core/rag/retriever.py`, `prompts/system_prompt.txt`.
+- **Validation** : Comparaison avant/après sur un set de 5 requêtes types (Ambiguë, Précise, Qualité, Prix).
 
 ## ✅ DEFINITION OF DONE (DoD)
-- Le catalogue informatique est 100% migré vers le nouveau format v2.
-- Validation : 5 produits témoins de catégories différentes (ex: 1 Laptop, 1 Smartphone, 1 Cosmétique, 1 Bricolage, 1 Électroménager) sont scrapés avec succès dans le nouveau format.
-- Les scripts sont extensibles aux catégories cosmétiques/bricolage sans modification majeure du code.
-- Chaque produit a une fiche YAML valide avec métadonnées de livraison.
+- Les poids du re-ranking sont ajustés.
+- Le LLM signale systématiquement les produits sans avis.
+- L'Auto-Retriever ne vide plus les résultats par excès de zèle.
+- Aucun secret ou clé API en dur dans les prompts.
