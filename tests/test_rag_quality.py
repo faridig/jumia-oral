@@ -112,6 +112,7 @@ def test_auto_retriever_overfiltering_pbi_403():
     # On va vérifier si le système prompt et les descriptions ont été mis à jour via une inspection manuelle ou un mock.
     from src.rag_engine import get_rag_engine
     with unittest.mock.patch("qdrant_client.QdrantClient"), \
+         unittest.mock.patch("src.rag_engine.QdrantVectorStore"), \
          unittest.mock.patch("llama_index.core.VectorStoreIndex.from_vector_store"):
         engine = get_rag_engine(use_auto_retriever=True)
         # Accès aux métadonnées de l'auto-retriever
