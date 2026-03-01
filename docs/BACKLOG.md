@@ -18,12 +18,16 @@
 5. **[2026-02-28] Architecture Category-Agnostic** : Le schéma de données est conçu pour être extensible (Informatique, Cosmétique, Bricolage) en séparant les `core_metadata` (universels) des `category_specs` (dynamiques).
 6. **[2026-02-28] Normalisation via LLM** : L'extraction LLM doit forcer des unités standards (GB, MAD, ml, kg) pour permettre des calculs et des filtres numériques fiables dans le RAG.
 7. **[2026-02-28] Pivot RAG Avancé** : Intégration de Multi-Query Expansion et Auto-Retriever pour compenser les variations de langage (Darija/Français).
+8. **[2026-03-01] VFM Boost via MCP (Sales-Focused)** : Décision d'intégrer une recherche web via MCP pour enrichir le VFM avec des avis d'experts mondiaux et des arguments de vente "sociaux", SANS jamais citer de prix concurrents, afin de maximiser la conversion sur Jumia.
+9. **[2026-03-01] Seuil de Pertinence (Hard-Filter)** : Constat (Sprint 4) que le Trust Score peut biaiser les résultats vers des produits hors-sujet. Décision d'implémenter un filtre de similarité minimum avant le re-ranking.
 
 ## ✅ DEFINITION OF DONE (DoD)
 - Extraction : Données structurées validées par le schéma Pydantic.
 - RAG : Capacité de comparaison entre 2 produits via le LLM.
 - UX : Chatbot réactif sur WhatsApp avec gestion du contexte utilisateur.
 - Sécurité : Variables d'environnement pour toutes les clés API.
+- **Sales Compliance** : Aucun nom de concurrent ou prix externe ne doit filtrer dans les réponses.
+- **Qualité de Recommandation** : Aucun produit avec une similarité sémantique faible ne doit polluer les résultats (Hard-Filtering).
 
 ## 📋 BACKLOG GÉNÉRAL
 
@@ -60,13 +64,30 @@
 ## 📝 FEEDBACKS À AFFINER
 
 ### [PBI-401] TECH/UX : Équilibrage du Re-ranking (Poids Business vs Sémantique)
-**Status** : IN PROGRESS 🏃
-**Priorité** : Medium | **Estimation** : S
+**Status** : DONE ✅
 
 ### [PBI-402] PROMPT/SECURITY : Renforcement de la consigne d'Honnêteté (Trust Score 0)
-**Status** : IN PROGRESS 🏃
-**Priorité** : High | **Estimation** : XS
+**Status** : DONE ✅
 
 ### [PBI-403] TECH : Affinage de l'Auto-Retriever (Over-filtering)
-**Status** : IN PROGRESS 🏃
-**Priorité** : Medium | **Estimation** : S
+**Status** : DONE ✅
+
+### [PBI-404] TECH/UX : Seuil de Pertinence Sémantique (Hard-Filtering)
+**Status** : DONE ✅
+**Priorité** : High | **Estimation** : S
+**User Story** : "En tant qu'utilisateur, je veux que les produits sémantiquement faibles (< 0.6) soient éliminés de la liste de re-ranking, même s'ils ont des scores business parfaits."
+**Critères d'Acceptation** :
+- [x] Définir un seuil de similarité vectorielle (ex: 0.6) dans le `JumiaReRanker`.
+- [x] Tout produit en dessous du seuil doit être supprimé de la liste AVANT le calcul du boost business.
+- [x] **Test** : Une requête "Crème" ne doit jamais retourner une "Cartouche d'encre" même si cette dernière a un Trust Score de 5.0.
+
+### [PBI-502] TECH/UX : VFM Boost via Expertise Externe (MCP - Sales Focus)
+**Status** : PENDING
+**Priorité** : High | **Estimation** : M
+**User Story** : "En tant que Personal Shopper, je veux enrichir le score VFM avec des tests d'experts externes, afin de rassurer l'utilisateur et de **déclencher l'achat sur Jumia**."
+**Critères d'Acceptation** :
+- [ ] Utiliser le MCP pour trouver des notes de tests professionnels (ex: DXOMARK, NotebookCheck).
+- [ ] Extraire 2-3 arguments "chocs" (Pros/Cons) pour chaque produit.
+- [ ] **Arbitrage de Confiance** : Si des avis experts sont trouvés, transformer le message "Manque d'avis" (PBI-402) en argument de "Nouveauté validée par les pros".
+- [ ] Interdiction stricte de citer des prix concurrents ou des noms de boutiques externes.
+- [ ] Intégrer ces arguments dans la réponse WhatsApp pour "vendre" le produit sélectionné.
