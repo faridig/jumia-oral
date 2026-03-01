@@ -61,9 +61,9 @@ class JumiaReRanker(BaseNodePostprocessor):
     Re-ranker personnalisé utilisant le trust_score (40%) et le value_for_money_score (60%).
     Priorise les meilleures affaires et les vendeurs de confiance.
     Pondération : 60% pertinence sémantique / 40% scores business (PBI-401).
-    Hard-Filtering : Élimine les produits avec une similarité < 0.6 (PBI-404).
+    Hard-Filtering : Élimine les produits avec une similarité < 0.8 (PBI-404).
     """
-    similarity_threshold: float = 0.6
+    similarity_threshold: float = 0.8
 
     def _postprocess_nodes(
         self, nodes: List[NodeWithScore], query_bundle: Optional[QueryBundle] = None
