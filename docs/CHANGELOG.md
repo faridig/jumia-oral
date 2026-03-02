@@ -13,6 +13,8 @@
 ## 💡 LEÇONS APPRISES
 ### Sprint 5 : Qualité & Pertinence
 - **Insuffisance des seuils bas** : Un seuil de similarité de 0.6 (souvent recommandé par défaut) laisse passer des produits très éloignés (ex: Cartouches d'encre vs Crèmes). Un seuil de 0.8 est nécessaire pour garantir une étanchéité catégorielle totale.
+- **Régressions dans les Tests** : L'introduction d'un filtrage strict peut invalider des tests existants utilisant des données factices à faible score. Il est crucial d'ajuster les jeux de tests pour franchir les nouveaux seuils.
+- **Vigilance Sales Compliance** : La recommandation d'un assistant RAG peut involontairement citer des concurrents si le prompt n'est pas verrouillé. Une instruction spécifique 'Sales Compliance' est indispensable pour protéger l'écosystème commercial.
 
 ### Sprint 4 : Re-optimisation & Transparence
 - **Pondération Sémantique vs Business** : Un ratio de 60/40 semble être le point d equilibrium idéal pour éviter les produits hors-sujet tout en mettant en avant les bonnes affaires.
