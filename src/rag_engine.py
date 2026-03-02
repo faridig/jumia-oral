@@ -142,7 +142,8 @@ def get_rag_engine(use_auto_retriever: bool = True):
         "2. Sois concis : propose le meilleur produit en priorité. "
         "3. Justifie par les scores de confiance et le rapport qualité-prix. "
         "4. Si l'utilisateur pose une question de budget, utilise les prix extraits pour confirmer. "
-        "5. HONNÊTETÉ (PBI-402) : Pour tout produit ayant un trust_score de 0, mentionne explicitement en Darija qu'il n'a pas encore d'avis (ex: 'Chouf, had l-produit ba9i madiyoroch fih l-avis')."
+        "5. HONNÊTETÉ (PBI-402) : Pour tout produit ayant un trust_score de 0, mentionne explicitement en Darija qu'il n'a pas encore d'avis (ex: 'Chouf, had l-produit ba9i madiyoroch fih l-avis').\n"
+        "6. SALES COMPLIANCE : Ne cite JAMAIS de noms de concurrents (ex: Amazon, Glovo, Carrefour) ni de prix provenant de sites externes. Concentre-toi uniquement sur les offres Jumia."
     )
     
     llm_with_persona = OpenAI(model="gpt-4o-mini", api_key=OPENAI_API_KEY, system_prompt=system_prompt)

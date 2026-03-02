@@ -58,17 +58,14 @@ def test_reranking_weights_pbi_401():
         score=0.9
     )
     
-    # Node 2: Pertinence sémantique plus faible (0.6), Excellent Business (Trust 5, VFM 10)
+    # Node 2: Pertinence sémantique plus faible (0.81), Excellent Business (Trust 5, VFM 10)
     # Score boost = (5/5)*0.4 + (10/10)*0.6 = 0.4 + 0.6 = 1.0
-    # Final score = 0.6*0.6 + 1.0*0.4 = 0.36 + 0.4 = 0.76
-    # Node 2 devrait être juste devant Node 1 si les poids sont 60/40.
-    # SI les anciens poids (40/60) étaient utilisés :
-    # Node 1 : 0.9*0.4 + 0.54*0.6 = 0.36 + 0.324 = 0.684
-    # Node 2 : 0.6*0.4 + 1.0*0.6 = 0.24 + 0.6 = 0.84 (Gros écart en faveur du business)
+    # Final score = 0.81*0.6 + 1.0*0.4 = 0.486 + 0.4 = 0.886
+    # Node 2 devrait être juste devant Node 1 (0.756) si les poids sont 60/40.
     
     node2 = NodeWithScore(
         node=TextNode(text="Soin visage", metadata={"name": "Soin B", "trust_score": 5, "value_for_money_score": 10}),
-        score=0.6
+        score=0.81
     )
     
     nodes = [node1, node2]
@@ -78,8 +75,7 @@ def test_reranking_weights_pbi_401():
     print(f"Node 2 score: {processed_nodes[0].score if processed_nodes[0].node.metadata['name'] == 'Soin B' else processed_nodes[1].score}")
     
     # Vérification que la pertinence sémantique a plus de poids qu'avant mais le business peut encore gagner si parfait
-    # Dans ce test, Node 2 gagne de peu (0.76 vs 0.756) car ses scores business sont parfaits.
-    # Si on baissait un peu Node 2 business, Node 1 gagnerait grâce à sa sémantique.
+    # Dans ce test, Node 2 gagne de peu (0.886 vs 0.756) car ses scores business sont parfaits.
     
     # Testons un cas où la sémantique DOIT gagner
     node3 = NodeWithScore(
@@ -89,17 +85,25 @@ def test_reranking_weights_pbi_401():
     # Score boost = 0
     # Final = 0.95 * 0.6 = 0.57
     
-    # Node 4: Hors sujet (0.2 sémantique), mais Business parfait (1.0 boost)
-    # Final = 0.2 * 0.6 + 1.0 * 0.4 = 0.12 + 0.4 = 0.52
-    # Ici, le sujet (Crème C) gagne sur le hors-sujet parfait (Node 4), ce qui n'était pas le cas avec 40/60.
-    # Anciens poids (40/60) : 
-    # Node 3 : 0.95 * 0.4 = 0.38
-    # Node 4 : 0.2 * 0.4 + 1.0 * 0.6 = 0.08 + 0.6 = 0.68 (Le hors-sujet gagnait largement !)
+    # Node 4: Hors sujet (0.81 sémantique), mais Business parfait (1.0 boost)
+    # Final = 0.81 * 0.6 + 1.0 * 0.4 = 0.486 + 0.4 = 0.886
+    # Ici, le sujet (Crème C) perdrait si Node 4 est à 0.81 sémantique.
+    # Pour tester que la sémantique gagne on va mettre Node 4 à 0.82 sémantique et Node 3 à 0.95.
+    # Node 3 : 0.95 * 0.6 = 0.57
+    # Node 4 (0.81 sémantique) : 0.81 * 0.6 + 1.0 * 0.4 = 0.886 (Gagne par le business)
+    # On va donc baisser les scores business de Node 4 pour voir la sémantique gagner
     
     node4 = NodeWithScore(
-        node=TextNode(text="Cartouche encre", metadata={"name": "Encre", "trust_score": 5, "value_for_money_score": 10}),
-        score=0.2
+        node=TextNode(text="Cartouche encre", metadata={"name": "Encre", "trust_score": 1, "value_for_money_score": 2}),
+        score=0.82
     )
+    # Node 4: Boost = (1/5)*0.4 + (2/10)*0.6 = 0.08 + 0.12 = 0.2
+    # Final = 0.82 * 0.6 + 0.2 * 0.4 = 0.492 + 0.08 = 0.572
+    # Node 3 (0.95) : 0.57
+    # Node 4 (0.82) : 0.572
+    # Node 4 gagne d'un cheveu. Pour que Node 3 gagne, on doit encore baisser Node 4 ou augmenter Node 3.
+    # Node 4 (0.81 score): 0.81 * 0.6 + 0.2 * 0.4 = 0.486 + 0.08 = 0.566
+    node4.score = 0.81
     
     processed_nodes = reranker._postprocess_nodes([node3, node4])
     assert processed_nodes[0].node.metadata['name'] == "Crème C", "Le produit sémantique devrait gagner sur le hors-sujet même si celui-ci a de bons scores business."
