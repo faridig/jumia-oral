@@ -39,11 +39,13 @@ class JumiaChatManager:
         profile_key = f"profile_{user_id}"
         messages = self.chat_store.get_messages(profile_key)
         if messages:
-            try:
-                profile_data = json.loads(messages[0].content)
-                return profile_data.get("location")
-            except:
-                return None
+            content = messages[0].content
+            if isinstance(content, str):
+                try:
+                    profile_data = json.loads(content)
+                    return profile_data.get("location")
+                except Exception:
+                    return None
         return None
 
     def set_location(self, user_id, location):
