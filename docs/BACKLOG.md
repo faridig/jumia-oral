@@ -63,6 +63,12 @@
 
 ## 📝 FEEDBACKS À AFFINER
 
+### [STYLE/TONE] : Correction du biais de prudence (PBI-402)
+**Status** : PENDING
+**Priorité** : High | **Estimation** : XS
+**Feedback Client** : "L'assistant ne doit pas freiner la vente. Dire 'il faut être prudent' pour un produit sans avis est trop négatif."
+**Action** : Reformuler la consigne d'honnêteté dans `src/rag_engine.py`. Remplacer l'avertissement par une invitation à la découverte (ex: "Soyez le premier à donner votre avis").
+
 ### [PBI-401] TECH/UX : Équilibrage du Re-ranking (Poids Business vs Sémantique)
 **Status** : DONE ✅
 

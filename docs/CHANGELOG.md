@@ -1,5 +1,10 @@
 # 📜 CHANGELOG
 
+## [0.6.2] - 2026-03-03
+### Added
+- **Onboarding Localisation (PBI-310)** : Dialogue interactif en Darija pour identifier la ville de l'utilisateur et persistance de la session via `SimpleChatStore`.
+- **Logiciel d'Expertise Isolé (PBI-502)** : Nouveau module `ExpertAdvisor` pour injecter des conseils professionnels (Dermatologue, Tech Analyst, etc.) basés sur la catégorie produit.
+
 ## [0.6.1] - 2026-03-01
 ### Added
 - **Hard-Filtering de Pertinence (PBI-404)** : Instauration d'un seuil de similarité strict (0.8) pour éliminer les faux positifs sémantiques avant le re-ranking.
@@ -11,6 +16,11 @@
 - **Affinage de l'Auto-Retriever (PBI-403)** : Optimisation des filtres métadonnées pour éviter l'over-filtering sur les requêtes simples.
 
 ## 💡 LEÇONS APPRISES
+### Sprint 6 : Location Onboarding & Expert Insights
+- **Isolation de la Logique d'Expertise** : Séparer le moteur de recommandation de la logique de conseil pur (`ExpertAdvisor`) permet de changer de persona ou de style sans impacter la recherche vectorielle.
+- **Gestion Hybride des Sessions** : L'utilisation détournée de `SimpleChatStore` pour stocker des métadonnées profil (localisation) simplifie l'architecture tout en assurant la persistance.
+- **Onboarding par le Dialogue** : L'extraction de la ville via le dialogue direct est plus naturelle en Darija que des formulaires rigides. Un fallback sur un message clair est nécessaire si l'utilisateur ne répond pas directement.
+
 ### Sprint 5 : Qualité & Pertinence
 - **Insuffisance des seuils bas** : Un seuil de similarité de 0.6 (souvent recommandé par défaut) laisse passer des produits très éloignés (ex: Cartouches d'encre vs Crèmes). Un seuil de 0.8 est nécessaire pour garantir une étanchéité catégorielle totale.
 - **Régressions dans les Tests** : L'introduction d'un filtrage strict peut invalider des tests existants utilisant des données factices à faible score. Il est crucial d'ajuster les jeux de tests pour franchir les nouveaux seuils.
