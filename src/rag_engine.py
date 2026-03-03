@@ -21,6 +21,8 @@ from llama_index.llms.openai import OpenAI
 from llama_index.core.postprocessor.types import BaseNodePostprocessor
 from llama_index.core.schema import NodeWithScore
 
+from src.expert_advisor import expert_advisor
+
 # Configuration
 load_dotenv()
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -143,7 +145,9 @@ def get_rag_engine(use_auto_retriever: bool = True):
         "3. Justifie par les scores de confiance et le rapport qualité-prix. "
         "4. Si l'utilisateur pose une question de budget, utilise les prix extraits pour confirmer. "
         "5. HONNÊTETÉ (PBI-402) : Pour tout produit ayant un trust_score de 0, mentionne explicitement en Darija qu'il n'a pas encore d'avis (ex: 'Chouf, had l-produit ba9i madiyoroch fih l-avis').\n"
-        "6. SALES COMPLIANCE : Ne cite JAMAIS de noms de concurrents (ex: Amazon, Glovo, Carrefour) ni de prix provenant de sites externes. Concentre-toi uniquement sur les offres Jumia."
+        "6. SALES COMPLIANCE : Ne cite JAMAIS de noms de concurrents (ex: Amazon, Glovo, Carrefour) ni de prix provenant de sites externes. Concentre-toi uniquement sur les offres Jumia.\n"
+        "7. TONE OF VOICE (PBI-502) : Agis comme un 'Coach' (Personal Shopper). Transforme l'info brute en conseil pratique (ex: 'Conseil dialna : diroh f s-sba7...'). Valorise les insights experts fournis.\n"
+        "8. Si aucun produit n'est trouvé, réponds poliment en Darija que l'article n'est pas disponible pour le moment, sans mentionner d'autres sites."
     )
     
     llm_with_persona = OpenAI(model="gpt-4o-mini", api_key=OPENAI_API_KEY, system_prompt=system_prompt)
@@ -195,6 +199,45 @@ class MultiQueryAutoRAG:
             # Fallback sur recherche vectorielle standard avec la variante la plus pertinente
             search_query = variantes[0] if variantes else user_query
             response = self.base_engine.query(search_query)
+            
+        if not response.source_nodes:
+            return "Sm7 lya, had l-produit ba9i madiyoroch f stock l-youm. Chouf chi 7aja khora?"
+
+        # PBI-502 : Enrichissement VFM via Expertise Externe
+        if response.source_nodes:
+
+            top_node = response.source_nodes[0]
+            product_name = top_node.node.metadata.get("name", "Produit")
+            category = top_node.node.metadata.get("category_source", "Général")
+            
+            expert_insight = expert_advisor.get_expert_insight(product_name, category)
+            logger.info(f"Expert Insight added: {expert_insight[:50]}...")
+            
+            # Injection de l'insight dans le prompt de synthèse en modifiant le texte de la réponse
+            # Ou plus proprement en ajoutant un node synthétique d'expertise
+            from llama_index.core.schema import TextNode, NodeWithScore
+            expert_node = NodeWithScore(
+                node=TextNode(
+                    text=f"CONSEIL D'EXPERT (Context7) : {expert_insight}",
+                    metadata={"is_expert_insight": True, "product_name": product_name}
+                ),
+                score=1.0 # Haute priorité
+            )
+            response.source_nodes.insert(0, expert_node)
+            
+            # Re-générer la réponse si nécessaire ? 
+            # Non, LlamaIndex utilise les source_nodes pour la synthèse. 
+            # Mais ici `response` contient déjà le texte généré !
+            # Je dois donc appeler le synthesizer MANUELLEMENT ou intercepter AVANT.
+            
+            # Correction : L'appel à `query` déclenche déjà la synthèse. 
+            # Je dois donc refaire la synthèse avec le nouveau node ou modifier l'engine.
+            
+            # Approche plus robuste : On refait la synthèse avec les nodes enrichis.
+            response = self.auto_engine._response_synthesizer.synthesize(
+                query=user_query,
+                nodes=response.source_nodes
+            )
             
         return response
 

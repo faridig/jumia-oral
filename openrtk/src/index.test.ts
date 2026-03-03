@@ -7,6 +7,10 @@ describe("rewrite", () => {
       expect(rewrite("git status")).toBe("rtk git status")
     })
 
+    test("rewrites git statuts (typo)", () => {
+      expect(rewrite("git statuts")).toBe("rtk git status")
+    })
+
     test("rewrites git status with flags", () => {
       expect(rewrite("git status -s")).toBe("rtk git status -s")
     })

@@ -1,5 +1,5 @@
 /** Env-var prefix pattern: \`FOO=bar BAZ=qux \` */
-const ENV_PREFIX_RE = /^([A-Za-z_][A-Za-z0-9_]*=[^ ]* +)+/
+const ENV_PREFIX_RE = /^([A-Za-z_][A-Za-z0-9_]*=(?:[^"'\s]+|"[^"]*"|'[^']*')\s+)+/
 
 /**
  * Command rewrite rules. Each entry maps a regex pattern (matched against the
@@ -10,7 +10,8 @@ const ENV_PREFIX_RE = /^([A-Za-z_][A-Za-z0-9_]*=[^ ]* +)+/
  */
 const RULES: [RegExp, (cmd: string) => string][] = [
   // --- Git ---
-  [/^git\s+status(\s|$)/, (c) => c.replace(/^git status/, "rtk git status")],
+  [/^git\s+status(\s|$)/, (c) => c.replace(/^git\s+status/, "rtk git status")],
+  [/^git\s+statuts?(\s|$)/, (c) => c.replace(/^git\s+statuts?/, "rtk git status")],
   [/^git\s+diff(\s|$)/, (c) => c.replace(/^git diff/, "rtk git diff")],
   [/^git\s+log(\s|$)/, (c) => c.replace(/^git log/, "rtk git log")],
   [/^git\s+add(\s|$)/, (c) => c.replace(/^git add/, "rtk git add")],
@@ -21,10 +22,12 @@ const RULES: [RegExp, (cmd: string) => string][] = [
   [/^git\s+fetch(\s|$)/, (c) => c.replace(/^git fetch/, "rtk git fetch")],
   [/^git\s+stash(\s|$)/, (c) => c.replace(/^git stash/, "rtk git stash")],
   [/^git\s+show(\s|$)/, (c) => c.replace(/^git show/, "rtk git show")],
+  [/^git\s+(status|diff|log|branch|stash|show)(\s|$)/, (c) => c.replace(/^git\s+/, "rtk git ")],
+  [/^git\s+(add|commit|push|pull|fetch|checkout|merge|init|rebase|reset|remote)(\s|$)/, (c) => c.replace(/^git\s+/, "rtk git ")],
+  [/^gh\s+(pr|issue|run|api|release|review|repo|search)(\s|$)/, (c) => c.replace(/^gh\s+/, "rtk gh ")],
 
   // --- GitHub CLI ---
-  [/^gh\s+(pr|issue|run|api|release)(\s|$)/, (c) => c.replace(/^gh /, "rtk gh ")],
-
+  [/^gh\s+(pr|issue|run|api|release|review)(\s|$)/, (c) => c.replace(/^gh\s+/, "rtk gh ")],
   // --- Cargo (Rust) ---
   [/^cargo\s+test(\s|$)/, (c) => c.replace(/^cargo test/, "rtk cargo test")],
   [/^cargo\s+build(\s|$)/, (c) => c.replace(/^cargo build/, "rtk cargo build")],
@@ -88,7 +91,7 @@ const RULES: [RegExp, (cmd: string) => string][] = [
   [/^mix\s+format(\s|$)/, (c) => c.replace(/^mix format/, "rtk format mix format")],
   [/^mix\s+dialyzer(\s|$)/, (c) => c.replace(/^mix dialyzer/, "rtk err mix dialyzer")],
   [/^mix\s+compile(\s|$)/, (c) => c.replace(/^mix compile/, "rtk mix compile")],
-  [/^mix\s+ecto\.(migrate|migrations)(\s|$)/, (c) => c.replace(/^mix ecto\.(migrate|migrations)/, "rtk mix ecto.\$1")],
+  [/^mix\s+ecto\.(migrate|migrations)(\s|$)/, (c) => c.replace(/^mix ecto\.(migrate|migrations)/, "rtk mix ecto.$1")],
   [/^mix\s+help(\s|$)/, (c) => c.replace(/^mix help/, "rtk --cache mix help")],
   [/^mix\s+/, (c) => c.replace(/^mix /, "rtk mix ")],
   [/^iex\s+/, (c) => c.replace(/^iex /, "rtk iex ")],
