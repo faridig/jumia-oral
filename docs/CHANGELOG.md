@@ -25,6 +25,7 @@
 - **Intégration Transparente via Proxy** : L'utilisation de `rtk` comme proxy pour Git permet d'injecter une couche d'intelligence (emoji, résumé de tokens) sans modifier les binaires originaux. L'icône 📌 sert de signature visuelle pour confirmer que la couche d'optimisation est active.
 - **Rigueur des Tests Unitaires** : Maintenir un taux de succès de 100% sur la suite de tests (56/56) est crucial avant toute modification du PATH système, car toute régression bloquerait le flux de travail de l'agent.
 - **Pollution Visuelle CLI** : Un affichage compact (6-10 lignes pour un status complexe) réduit drastiquement la consommation de tokens de contexte et améliore la lisibilité pour l'LLM.
+- **Hygiène du dépôt (Dotfiles)** : L'exclusion stricte des dossiers de configuration locale (comme `.opencode/`) via `.gitignore` et le nettoyage de l'index Git est impératif pour éviter la fuite de configurations spécifiques à l'environnement de dev et maintenir un dépôt propre.
 
 ### Sprint 6 : Location Onboarding & Expert Insights
 - **Isolation de la Logique d'Expertise** : Séparer le moteur de recommandation de la logique de conseil pur (`ExpertAdvisor`) permet de changer de persona ou de style sans impacter la recherche vectorielle.
