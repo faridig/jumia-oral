@@ -52,11 +52,21 @@
 ### [PBI-210] Moteur RAG Avancé (Multi-Query & Auto-Retriever)
 **Status** : DONE ✅
 
-### [PBI-301] Gateway WhatsApp & Personnalité
+### [PBI-301] Gateway WhatsApp (Infrastructure)
+**Status** : PENDING ⏳
+**Priorité** : High | **Estimation** : L
+**User Story** : "En tant que système, je veux être connecté à Evolution API afin de recevoir et d'envoyer des messages réels sur WhatsApp."
+**Critères d'Acceptation** :
+- [ ] Instance Evolution API fonctionnelle (Docker).
+- [ ] Webhook configuré pour router les messages entrants vers `src/session_manager.py`.
+- [ ] Envoi de messages texte simple validé via API.
+
+### [PBI-302] Personnalité & Intelligence Commerciale
 **Status** : DONE ✅
+(Note: La logique de réponse est prête, mais attend le canal de diffusion PBI-301)
 
 ### [PBI-310] Gestion de la Localisation Utilisateur (Onboarding)
-**Status** : PENDING
+**Status** : DONE ✅
 **Priorité** : Medium | **Estimation** : S
 - Flux d'onboarding demandant la ville à l'utilisateur lors du premier échange.
 - Persistance de la localisation dans le `SimpleChatStore`.
@@ -64,7 +74,7 @@
 ## 📝 FEEDBACKS À AFFINER
 
 ### [STYLE/TONE] : Correction du biais de prudence (PBI-402)
-**Status** : PENDING
+**Status** : DONE ✅
 **Priorité** : High | **Estimation** : XS
 **Feedback Client** : "L'assistant ne doit pas freiner la vente. Dire 'il faut être prudent' pour un produit sans avis est trop négatif."
 **Action** : Reformuler la consigne d'honnêteté dans `src/rag_engine.py`. Remplacer l'avertissement par une invitation à la découverte (ex: "Soyez le premier à donner votre avis").
@@ -88,12 +98,12 @@
 - [x] **Test** : Une requête "Crème" ne doit jamais retourner une "Cartouche d'encre" même si cette dernière a un Trust Score de 5.0.
 
 ### [PBI-502] TECH/UX : VFM Boost via Expertise Externe (MCP - Sales Focus)
-**Status** : PENDING
+**Status** : DONE ✅
 **Priorité** : High | **Estimation** : M
 **User Story** : "En tant que Personal Shopper, je veux enrichir le score VFM avec des tests d'experts externes, afin de rassurer l'utilisateur et de **déclencher l'achat sur Jumia**."
 **Critères d'Acceptation** :
-- [ ] Utiliser le MCP pour trouver des notes de tests professionnels (ex: DXOMARK, NotebookCheck).
-- [ ] Extraire 2-3 arguments "chocs" (Pros/Cons) pour chaque produit.
-- [ ] **Arbitrage de Confiance** : Si des avis experts sont trouvés, transformer le message "Manque d'avis" (PBI-402) en argument de "Nouveauté validée par les pros".
-- [ ] Interdiction stricte de citer des prix concurrents ou des noms de boutiques externes.
-- [ ] Intégrer ces arguments dans la réponse WhatsApp pour "vendre" le produit sélectionné.
+- [x] Utiliser le MCP pour trouver des notes de tests professionnels (ex: DXOMARK, NotebookCheck).
+- [x] Extraire 2-3 arguments "chocs" (Pros/Cons) pour chaque produit.
+- [x] **Arbitrage de Confiance** : Si des avis experts sont trouvés, transformer le message "Manque d'avis" (PBI-402) en argument de "Nouveauté validée par les pros".
+- [x] Interdiction stricte de citer des prix concurrents ou des noms de boutiques externes.
+- [x] Intégrer ces arguments dans la réponse WhatsApp pour "vendre" le produit sélectionné.

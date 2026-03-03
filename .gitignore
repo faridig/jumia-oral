@@ -6,3 +6,6 @@ __pycache__/
 logs/*.log
 data/raw/markdown/*
 !data/raw/markdown/.gitkeep
+
+# Local OpenCode Configuration
+.opencode/

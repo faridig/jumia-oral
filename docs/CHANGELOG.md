@@ -1,5 +1,10 @@
 # 📜 CHANGELOG
 
+## [0.6.3] - 2026-03-03
+### Added
+- **Intégration OpenRTK (Plugin System)** : Déploiement du plugin de filtrage intelligent pour `rtk`. Ce plugin intercepte les commandes Git (notamment `git status`) pour fournir un affichage ultra-compact avec l'icône 📌 et des indicateurs visuels (📝, ❓).
+- **Audit de Performance CLI** : Validation de la suite de tests (56 tests passés) et vérification du PATH pour l'outil `rtk`.
+
 ## [0.6.2] - 2026-03-03
 ### Added
 - **Onboarding Localisation (PBI-310)** : Dialogue interactif en Darija pour identifier la ville de l'utilisateur et persistance de la session via `SimpleChatStore`.
@@ -16,6 +21,11 @@
 - **Affinage de l'Auto-Retriever (PBI-403)** : Optimisation des filtres métadonnées pour éviter l'over-filtering sur les requêtes simples.
 
 ## 💡 LEÇONS APPRISES
+### Sprint 7 : OpenRTK Plugin System
+- **Intégration Transparente via Proxy** : L'utilisation de `rtk` comme proxy pour Git permet d'injecter une couche d'intelligence (emoji, résumé de tokens) sans modifier les binaires originaux. L'icône 📌 sert de signature visuelle pour confirmer que la couche d'optimisation est active.
+- **Rigueur des Tests Unitaires** : Maintenir un taux de succès de 100% sur la suite de tests (56/56) est crucial avant toute modification du PATH système, car toute régression bloquerait le flux de travail de l'agent.
+- **Pollution Visuelle CLI** : Un affichage compact (6-10 lignes pour un status complexe) réduit drastiquement la consommation de tokens de contexte et améliore la lisibilité pour l'LLM.
+
 ### Sprint 6 : Location Onboarding & Expert Insights
 - **Isolation de la Logique d'Expertise** : Séparer le moteur de recommandation de la logique de conseil pur (`ExpertAdvisor`) permet de changer de persona ou de style sans impacter la recherche vectorielle.
 - **Gestion Hybride des Sessions** : L'utilisation détournée de `SimpleChatStore` pour stocker des métadonnées profil (localisation) simplifie l'architecture tout en assurant la persistance.
