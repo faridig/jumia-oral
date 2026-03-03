@@ -1,35 +1,24 @@
-# 🏃 SPRINT PLAN - SPRINT 2 (RÉFORME & PERFECTION DU CATALOGUE)
+# 🏃 SPRINT PLAN - SPRINT 5 (QUALITÉ & PERTINENCE)
 
 ## 🎯 OBJECTIF
-Transformer l'extraction brute en un catalogue **"RAG-Ready Multi-Catégorie"** avec des données normalisées, une logique de "Master Product" (groupement d'offres) et une extraction logistique multi-hubs.
+Éliminer les faux positifs sémantiques en instaurant un seuil de similarité strict, garantissant que seuls les produits réellement pertinents sont proposés, quels que soient leurs scores business.
 
 ## 📋 TÂCHES À RÉALISER
 
-### [PBI-120] Architecture Multi-Catégorie & Markdown v2 (Perfection)
-**Priorité** : High | **Estimation** : M
-**User Story** : "En tant qu'Assistant, je veux un catalogue normalisé et extensible, afin de fournir des recommandations précises sur n'importe quel produit (Informatique, Cosmétique, Bricolage)."
+### [PBI-404] TECH/UX : Seuil de Pertinence Sémantique (Hard-Filtering)
+**Priorité** : High | **Estimation** : S
+**User Story** : "En tant qu'utilisateur, je veux que les produits sémantiquement faibles (< 0.8) soient éliminés de la liste de re-ranking, même s'ils ont des scores business parfaits."
 **Critères d'Acceptation** :
-- [ ] Créer un schéma `CategoryAgnosticProduct` (Pydantic) avec `core_metadata` et `category_specs`.
-- [ ] Implémenter la normalisation LLM (ex: "8Go" -> 8 GB, "100ml" -> 100 ml).
-- [ ] Ajouter l'analyse de sentiment par axe (Performance, Design, Autonomie, Prix).
-- [ ] Calculer automatiquement le `value_for_money_score`.
-- [ ] **Test de Validation** : Scraper 5 produits de catégories différentes (ex: 1 Laptop, 1 Smartphone, 1 Cosmétique, 1 Bricolage, 1 Électroménager) pour vérifier la structure v2.
-
-### [PBI-130] Extraction Logistique Dynamique (Livraison)
-**Priorité** : High | **Estimation** : M
-**User Story** : "En tant que client Jumia, je veux connaître le coût total de livraison (Hubs + Zone 3), afin de choisir l'offre la plus rentable pour ma ville."
-**Critères d'Acceptation** :
-- [ ] Interaction JS (Crawl4AI) pour les 5 hubs (Casa, Rabat, Tanger, Marrakech, Agadir).
-- [ ] Capture du tarif "Plafond" (Zone 3 - ex: Dakhla).
-- [ ] Stockage structuré dans le YAML (`shipping_fees`).
+- [x] Définir un seuil de similarité vectorielle (ex: 0.8) dans le `JumiaReRanker`.
+- [x] Tout produit en dessous du seuil doit être supprimé de la liste AVANT le calcul du boost business.
+- [x] **Test** : Une requête "Crème" ne doit jamais retourner une "Cartouche d'encre" même si cette dernière a un Trust Score de 5.0.
 
 ## 🛠️ SPÉCIFICATIONS TECHNIQUES
-- **Moteur** : Crawl4AI (AsyncWebCrawler) + JS Dropdown Manipulation.
-- **Normalisation** : GPT-4o-mini (Extraction forcée par schéma).
-- **Groupement** : Script de post-processing `merge_offers.py` pour grouper les produits par modèle identique.
+- **Fichiers concernés** : `src/rag_engine.py` (Classe `JumiaReRanker`).
+- **Logique** : Ajouter un filtre `node_with_score.score >= 0.8` au début de la méthode `_postprocess_nodes`.
+- **Validation** : Test manuel avec la requête "Crème visage" et vérification de l'absence de produits informatiques.
 
 ## ✅ DEFINITION OF DONE (DoD)
-- Le catalogue informatique est 100% migré vers le nouveau format v2.
-- Validation : 5 produits témoins de catégories différentes (ex: 1 Laptop, 1 Smartphone, 1 Cosmétique, 1 Bricolage, 1 Électroménager) sont scrapés avec succès dans le nouveau format.
-- Les scripts sont extensibles aux catégories cosmétiques/bricolage sans modification majeure du code.
-- Chaque produit a une fiche YAML valide avec métadonnées de livraison.
+- Le seuil de 0.8 est appliqué et fonctionnel.
+- Les tests de non-régression sémantique sont validés.
+- Aucun produit hors-sujet n'apparaît en tête de liste par simple "biais de confiance".
