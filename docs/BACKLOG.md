@@ -23,6 +23,7 @@
 
 10. **[2026-03-04] Pivot Spécialisé PC Portables** : Décision de restreindre le catalogue RAG uniquement aux ordinateurs portables (`notebooks`) pour garantir une précision technique maximale (CPU, RAM, GPU) et une expertise verticale.
 11. **[2026-03-04] Réinitialisation Totale (Reset Data)** : Purge du dossier `data/` et de la collection Qdrant pour éliminer les anciennes données multi-catégories et repartir sur une base 100% Notebooks.
+12. **[2026-03-04] Transition Chat-Centric (PBI-1001)** : Abandon du modèle de requête unique pour un moteur de chat contextuel. Cette décision vise à transformer le bot en un véritable compagnon d'achat capable de gérer des dialogues complexes.
 
 ## ✅ DEFINITION OF DONE (DoD)
 - Extraction : Données structurées validées par le schéma Pydantic (Enrichi Laptop).
@@ -66,6 +67,28 @@
 **Priorité** : High | **Estimation** : M
 - Ingestion des nouvelles données dans le moteur RAG.
 - Vérification de la recherche hybride sur des requêtes techniques (ex: "PC i7 16GB").
+
+### [PBI-1001] TECH/UX : Mémoire Contextuelle de Recherche (Shopping Dialogue)
+**Status** : PENDING ⏳
+**Priorité** : High | **Estimation** : M
+
+**User Story** : "En tant que Personal Shopper, je veux que le bot se souvienne des produits précédemment cités, afin que l'utilisateur puisse poser des questions de suivi (ex: 'Et son autonomie ?') sans répétition fastidieuse."
+
+**Dépendances** : PBI-210 (Moteur RAG)
+
+**Critères d'Acceptation (Gherkin)** :
+- [ ] **Scenario 1 : Question de suivi sur un produit**
+  - **GIVEN** L'utilisateur a déjà reçu une description du "MacBook Air M2".
+  - **WHEN** L'utilisateur demande : "Et son autonomie ?".
+  - **THEN** Le bot identifie que "son" se rapporte au MacBook Air M2 et répond via le RAG sur ce contexte précis.
+- [ ] **Scenario 2 : Transition vers ContextChatEngine**
+  - **GIVEN** Le `src/rag_engine.py` utilise un `QueryEngine`.
+  - **WHEN** On initialise le moteur RAG.
+  - **THEN** Il doit exposer une interface `chat` (LlamaIndex ContextChatEngine) au lieu de `query`.
+- [ ] **Scenario 3 : Persistence de l'historique**
+  - **GIVEN** Un utilisateur WhatsApp identifié par son numéro.
+  - **WHEN** Plusieurs échanges ont lieu.
+  - **THEN** Le `SimpleChatStore` doit sauvegarder et recharger l'historique pour maintenir la cohérence sur plusieurs jours.
 
 ### [PBI-000] SPRINT 0 : Infrastructure & Walking Skeleton
 **Status** : DONE ✅
@@ -143,23 +166,6 @@
 **Priorité** : Medium | **Estimation** : XS
 - Accueil interactif "Mrehba" fonctionnel sur WhatsApp.
 
-### [PBI-901] TECH : Purge & Reset des Données (Clean Slate)
-**Status** : PENDING ⏳
-**Priorité** : High | **Estimation** : S
-**User Story** : "En tant que Chef d'Orchestre, je veux repartir sur une base de données propre pour tester spécifiquement la catégorie PC Portables."
-**Critères d'Acceptation** :
-- [ ] Suppression physique des fichiers dans le dossier `data/`.
-- [ ] Suppression (Delete Collection) et Re-création de la collection `jumia_products` dans Qdrant.
-
-### [PBI-902] SCRAPE : Extraction Massive PC Portables (445 articles)
-**Status** : PENDING ⏳
-**Priorité** : High | **Estimation** : L
-**User Story** : "En tant qu'utilisateur, je veux avoir le catalogue complet des PC portables Jumia (3 pages) avec toutes les specs."
-**Critères d'Acceptation** :
-- [ ] Crawling de 3 pages sur l'URL cible (Ordinateurs Portables Traditionnels).
-- [ ] Extraction via Crawl4AI + LLM (ExtractionStrategy) pour garantir la qualité des specs (RAM, CPU, Stockage).
-- [ ] Ingestion automatique dans la nouvelle collection Qdrant.
-
 ### [PBI-310] Gestion de la Localisation Utilisateur (Onboarding)
 **Status** : DONE ✅
 **Priorité** : Medium | **Estimation** : S
@@ -202,3 +208,5 @@
 - [x] **Arbitrage de Confiance** : Si des avis experts sont trouvés, transformer le message "Manque d'avis" (PBI-402) en argument de "Nouveauté validée par les pros".
 - [x] Interdiction stricte de citer des prix concurrents ou des noms de boutiques externes.
 - [x] Intégrer ces arguments dans la réponse WhatsApp pour "vendre" le produit sélectionné.
+
+

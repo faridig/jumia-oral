@@ -34,6 +34,12 @@
 - **Affinage de l'Auto-Retriever (PBI-403)** : Optimisation des filtres métadonnées pour éviter l'over-filtering sur les requêtes simples.
 
 ## 💡 LEÇONS APPRISES
+### Sprint 9 : Pivot PC Portables & Nettoyage
+- **Pivot Catégoriel & Performance** : Le passage à une spécialisation PC Portables réduit drastiquement le bruit sémantique. Le nettoyage de l'arborescence (`data/raw/markdown/notebooks`) permet d'accélérer l'indexation et la précision des réponses.
+- **Auto-Retriever & Métadonnées Techniques** : L'ajout de champs techniques (CPU, RAM, SSD) dans les métadonnées de l'Auto-Retriever est crucial pour les produits technologiques. Cela permet des filtres précis (ex: "8Go de RAM") que la recherche vectorielle seule pourrait rater.
+- **Vérification de Propreté (Anti-Pollution)** : L'automatisation du nettoyage des données (`ls -R`) est une étape de validation indispensable pour éviter que d'anciens fichiers (smartphones, beauté) ne polluent les recommandations d'une nouvelle spécialité.
+- **Compatibilité Client/Serveur Qdrant** : Les warnings de version entre le client Python et le serveur Qdrant (1.17 vs 1.10) ne sont pas bloquants mais soulignent l'importance de la synchronisation des images Docker en production pour éviter des comportements instables.
+
 ### Sprint 8 : WhatsApp Live & Onboarding
 - **Exposition Local (Tunneling)** : L'utilisation d'un tunnel (ex: Ngrok) est indispensable en phase de développement pour recevoir les webhooks. Une URL statique stable est recommandée pour la persistance de la session WhatsApp.
 - **BackgroundTasks vs Timeout** : Evolution API renvoie des "retries" si le webhook ne répond pas en moins de 5-10 secondes. Le pattern `BackgroundTasks` de FastAPI est critique ici : répondre `200 OK` d'abord, réfléchir avec le RAG ensuite.

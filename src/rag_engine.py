@@ -148,7 +148,7 @@ def get_rag_engine(use_auto_retriever: bool = True):
         "2. Sois concis : propose le meilleur produit en priorité. "
         "3. Justifie par les scores de confiance et le rapport qualité-prix. "
         "4. Si l'utilisateur pose une question de budget, utilise les prix extraits pour confirmer. "
-        "5. HONNÊTETÉ (PBI-402) : Pour tout produit ayant un trust_score de 0, mentionne explicitement en Darija qu'il n'a pas encore d'avis (ex: 'Chouf, had l-produit ba9i madiyoroch fih l-avis').\n"
+        "5. HONNÊTETÉ : Pour tout produit ayant un trust_score de 0, mentionne explicitement en Darija qu'il n'a pas encore d'avis (ex: 'Chouf, had l-produit ba9i madiyoroch fih l-avis').\n"
         "6. SALES COMPLIANCE : Ne cite JAMAIS de noms de concurrents (ex: Amazon, Glovo, Carrefour) ni de prix provenant de sites externes. Concentre-toi uniquement sur les offres Jumia.\n"
         "7. TONE OF VOICE (PBI-502) : Agis comme un 'Coach' (Personal Shopper). Transforme l'info brute en conseil pratique (ex: 'Conseil dialna : diroh f s-sba7...'). Valorise les insights experts fournis.\n"
         "8. Si aucun produit n'est trouvé, réponds poliment en Darija que l'article n'est pas disponible pour le moment, sans mentionner d'autres sites."
@@ -273,8 +273,6 @@ if __name__ == "__main__":
     rag = MultiQueryAutoRAG()
     tests = [
         "Bghit chi laptop m3lem b a9al mn 5000 dh",
-        "Chi smartphone Samsung kbiira fih l-batterie",
-        "Meilleure crème pour le visage hydratante",
     ]
     for t in tests:
         print(f"\n>>> TEST: {t}")
