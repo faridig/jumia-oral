@@ -19,7 +19,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 QDRANT_URL = os.getenv("QDRANT_URL", "http://localhost:6343")
-COLLECTION_NAME = "jumia_v2" # As specified in PBI-201
+COLLECTION_NAME = os.getenv("QDRANT_COLLECTION_NAME", "jumia_products")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 def extract_metadata_from_markdown(file_path: Path) -> tuple[Dict[str, Any], str]:
@@ -40,8 +40,9 @@ def extract_metadata_from_markdown(file_path: Path) -> tuple[Dict[str, Any], str
     try:
         data = json.loads(frontmatter_raw)
         
-        # Mapping des champs selon PBI-201
+        # Mapping des champs selon PBI-201 & PBI-901
         core = data.get("core_metadata", {})
+        specs = data.get("category_specs", {})
         
         # Conversion du sentiment analysis en 'insights' pour le RAG
         sentiment = data.get("sentiment_analysis", [])
@@ -59,7 +60,14 @@ def extract_metadata_from_markdown(file_path: Path) -> tuple[Dict[str, Any], str
             "trust_score": data.get("trust_score"),
             "insights": insights,
             "category_source": file_path.parent.name, # Mapping dossier source
-            "file_name": file_path.name
+            "file_name": file_path.name,
+            # Laptop Specs (PBI-901)
+            "cpu": specs.get("CPU"),
+            "ram": specs.get("RAM"),
+            "ssd": specs.get("SSD"),
+            "gpu": specs.get("GPU"),
+            "screen": specs.get("Screen"),
+            "condition": specs.get("Condition")
         }
         
         # Nettoyage des valeurs None pour Qdrant

@@ -12,7 +12,13 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Jumia Oral WhatsApp Gateway")
-chat_manager = JumiaChatManager()
+_chat_manager = None
+
+def get_chat_manager():
+    global _chat_manager
+    if _chat_manager is None:
+        _chat_manager = JumiaChatManager()
+    return _chat_manager
 
 EVOLUTION_API_URL = os.getenv("EVOLUTION_API_URL", "http://localhost:8080")
 EVOLUTION_API_KEY = os.getenv("EVOLUTION_API_KEY", "apikey")
@@ -52,7 +58,7 @@ def send_whatsapp_message(number: str, text: str, media_url: Optional[str] = Non
 
 def process_and_respond(user_id: str, text: str):
     logger.info(f"Début du traitement pour {user_id}")
-    chat_response = chat_manager.handle_message(user_id, text)
+    chat_response = get_chat_manager().handle_message(user_id, text)
     logger.info(f"Réponse RAG générée pour {user_id}")
     
     if isinstance(chat_response, dict):

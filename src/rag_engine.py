@@ -29,7 +29,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 QDRANT_URL = os.getenv("QDRANT_URL", "http://localhost:6343")
-COLLECTION_NAME = "jumia_v2"
+COLLECTION_NAME = os.getenv("QDRANT_COLLECTION_NAME", "jumia_products")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 # Modèles
@@ -114,14 +114,17 @@ def get_rag_engine(use_auto_retriever: bool = True):
     index = VectorStoreIndex.from_vector_store(vector_store, embed_model=embed_model)
 
     if use_auto_retriever:
-        # Configuration des métadonnées pour l'Auto-Retriever (PBI-403 : assouplissement)
+        # Configuration des métadonnées pour l'Auto-Retriever (Laptop Specialized)
         vector_store_info = VectorStoreInfo(
-            content_info="Catalogue Jumia Maroc multi-catégories",
+            content_info="Catalogue Jumia Maroc Spécialisé PC Portables",
             metadata_info=[
                 MetadataInfo(name="brand", type="str", description="Marque du produit"),
-                MetadataInfo(name="price_numeric", type="float", description="Prix en Dhs (valeur numérique UNIQUEMENT, pas de texte)"),
-                MetadataInfo(name="category_source", type="str", description="Catégorie (smartphones, informatique, cosmétique, bouilloires, etc.)"),
-                MetadataInfo(name="value_for_money_score", type="float", description="Score 0-10 (utiliser UNIQUEMENT pour des comparaisons numériques comme > 8)"),
+                MetadataInfo(name="price_numeric", type="float", description="Prix en Dhs (valeur numérique UNIQUEMENT)"),
+                MetadataInfo(name="ram", type="str", description="Quantité de mémoire vive (ex: 8Go, 16Go)"),
+                MetadataInfo(name="ssd", type="str", description="Capacité de stockage SSD (ex: 256Go, 512Go)"),
+                MetadataInfo(name="cpu", type="str", description="Modèle du processeur (ex: i5, i7, Ryzen 5)"),
+                MetadataInfo(name="condition", type="str", description="État du PC (Neuf, Remis à neuf)"),
+                MetadataInfo(name="value_for_money_score", type="float", description="Score 0-10 (utiliser pour des comparaisons numériques)"),
                 MetadataInfo(name="trust_score", type="float", description="Score 0-5. N'utiliser ce filtre QUE si l'utilisateur mentionne explicitement la fiabilité, la confiance ou les avis (ex: 'fiable', 'bien noté', 'avis')."),
             ],
         )
@@ -129,6 +132,7 @@ def get_rag_engine(use_auto_retriever: bool = True):
             index,
             vector_store_info=vector_store_info,
             similarity_top_k=10,
+            llm=llm, # Passer l'LLM explicitement (évite Settings.llm default)
             verbose=True
         )
     else:
@@ -144,7 +148,7 @@ def get_rag_engine(use_auto_retriever: bool = True):
         "2. Sois concis : propose le meilleur produit en priorité. "
         "3. Justifie par les scores de confiance et le rapport qualité-prix. "
         "4. Si l'utilisateur pose une question de budget, utilise les prix extraits pour confirmer. "
-        "5. HONNÊTETÉ (PBI-402) : Pour tout produit ayant un trust_score de 0, mentionne explicitement en Darija qu'il n'a pas encore d'avis (ex: 'Chouf, had l-produit ba9i madiyoroch fih l-avis').\n"
+        "5. HONNÊTETÉ : Pour tout produit ayant un trust_score de 0, mentionne explicitement en Darija qu'il n'a pas encore d'avis (ex: 'Chouf, had l-produit ba9i madiyoroch fih l-avis').\n"
         "6. SALES COMPLIANCE : Ne cite JAMAIS de noms de concurrents (ex: Amazon, Glovo, Carrefour) ni de prix provenant de sites externes. Concentre-toi uniquement sur les offres Jumia.\n"
         "7. TONE OF VOICE (PBI-502) : Agis comme un 'Coach' (Personal Shopper). Transforme l'info brute en conseil pratique (ex: 'Conseil dialna : diroh f s-sba7...'). Valorise les insights experts fournis.\n"
         "8. Si aucun produit n'est trouvé, réponds poliment en Darija que l'article n'est pas disponible pour le moment, sans mentionner d'autres sites."
@@ -269,8 +273,6 @@ if __name__ == "__main__":
     rag = MultiQueryAutoRAG()
     tests = [
         "Bghit chi laptop m3lem b a9al mn 5000 dh",
-        "Chi smartphone Samsung kbiira fih l-batterie",
-        "Meilleure crème pour le visage hydratante",
     ]
     for t in tests:
         print(f"\n>>> TEST: {t}")

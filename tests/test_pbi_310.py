@@ -1,12 +1,14 @@
 import pytest
 import os
 import json
+import unittest.mock
 from src.session_manager import JumiaChatManager
 
 @pytest.fixture
 def chat_manager(tmp_path):
     storage_file = tmp_path / "sessions.json"
-    return JumiaChatManager(storage_path=str(storage_file))
+    mock_rag = unittest.mock.Mock()
+    return JumiaChatManager(storage_path=str(storage_file), rag_engine=mock_rag)
 
 def test_onboarding_flow(chat_manager):
     user_id = "user_123"
@@ -26,11 +28,12 @@ def test_onboarding_flow(chat_manager):
 def test_persistence(tmp_path):
     storage_file = tmp_path / "sessions_persist.json"
     user_id = "user_456"
+    mock_rag = unittest.mock.Mock()
     
-    manager1 = JumiaChatManager(storage_path=str(storage_file))
+    manager1 = JumiaChatManager(storage_path=str(storage_file), rag_engine=mock_rag)
     manager1.handle_message(user_id, "Salam")
     manager1.handle_message(user_id, "Marrakech")
     
     # Créer un nouveau manager pointant sur le même fichier
-    manager2 = JumiaChatManager(storage_path=str(storage_file))
+    manager2 = JumiaChatManager(storage_path=str(storage_file), rag_engine=mock_rag)
     assert manager2.get_location(user_id) == "Marrakech"

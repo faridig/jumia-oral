@@ -24,8 +24,10 @@ def test_webhook_text_message():
     
     headers = {"apikey": "apikey"}
     
-    with patch("src.api.chat_manager.handle_message") as mock_handle:
-        mock_handle.return_value = "Hahwa laptop mzyan"
+    with patch("src.api.get_chat_manager") as mock_get_chat:
+        mock_chat = MagicMock()
+        mock_chat.handle_message.return_value = "Hahwa laptop mzyan"
+        mock_get_chat.return_value = mock_chat
         
         with patch("requests.post") as mock_post:
             mock_post.return_value.status_code = 201
@@ -36,7 +38,7 @@ def test_webhook_text_message():
             assert response.status_code == 200
             assert response.json() == {"status": "success"}
             
-            mock_handle.assert_called_once_with("123456789@s.whatsapp.net", "Bghit laptop")
+            mock_chat.handle_message.assert_called_once_with("123456789@s.whatsapp.net", "Bghit laptop")
             mock_post.assert_called()
             # Verify that it tried to send a message back
             args, kwargs = mock_post.call_args
