@@ -7,10 +7,10 @@ from src.rag_engine import MultiQueryAutoRAG
 logger = logging.getLogger(__name__)
 
 class JumiaChatManager:
-    def __init__(self, storage_path="data/sessions.json"):
+    def __init__(self, storage_path="data/sessions.json", rag_engine=None):
         self.storage_path = storage_path
         self.chat_store = self._load_store()
-        self.rag_engine = MultiQueryAutoRAG()
+        self.rag_engine = rag_engine or MultiQueryAutoRAG()
         
     def _load_store(self):
         if os.path.exists(self.storage_path):

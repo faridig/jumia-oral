@@ -63,9 +63,9 @@ class JumiaReRanker(BaseNodePostprocessor):
     Re-ranker personnalisé utilisant le trust_score (40%) et le value_for_money_score (60%).
     Priorise les meilleures affaires et les vendeurs de confiance.
     Pondération : 60% pertinence sémantique / 40% scores business (PBI-401).
-    Hard-Filtering : Élimine les produits avec une similarité < 0.7 (Assoupli pour les tests).
+    Hard-Filtering : Élimine les produits avec une similarité < 0.8 (PBI-404).
     """
-    similarity_threshold: float = 0.7
+    similarity_threshold: float = 0.8
 
     def _postprocess_nodes(
         self, nodes: List[NodeWithScore], query_bundle: Optional[QueryBundle] = None
@@ -119,13 +119,13 @@ def get_rag_engine(use_auto_retriever: bool = True):
             content_info="Catalogue Jumia Maroc Spécialisé PC Portables",
             metadata_info=[
                 MetadataInfo(name="brand", type="str", description="Marque du produit"),
-                MetadataInfo(name="price_numeric", type="float", description="Prix en Dhs"),
+                MetadataInfo(name="price_numeric", type="float", description="Prix en Dhs (valeur numérique UNIQUEMENT)"),
                 MetadataInfo(name="ram", type="str", description="Quantité de mémoire vive (ex: 8Go, 16Go)"),
                 MetadataInfo(name="ssd", type="str", description="Capacité de stockage SSD (ex: 256Go, 512Go)"),
                 MetadataInfo(name="cpu", type="str", description="Modèle du processeur (ex: i5, i7, Ryzen 5)"),
                 MetadataInfo(name="condition", type="str", description="État du PC (Neuf, Remis à neuf)"),
-                MetadataInfo(name="value_for_money_score", type="float", description="Score 0-10"),
-                MetadataInfo(name="trust_score", type="float", description="Score 0-5"),
+                MetadataInfo(name="value_for_money_score", type="float", description="Score 0-10 (utiliser pour des comparaisons numériques)"),
+                MetadataInfo(name="trust_score", type="float", description="Score 0-5. N'utiliser ce filtre QUE si l'utilisateur mentionne explicitement la fiabilité, la confiance ou les avis (ex: 'fiable', 'bien noté', 'avis')."),
             ],
         )
         retriever = VectorIndexAutoRetriever(
