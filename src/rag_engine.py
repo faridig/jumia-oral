@@ -132,6 +132,7 @@ def get_rag_engine(use_auto_retriever: bool = True):
             index,
             vector_store_info=vector_store_info,
             similarity_top_k=10,
+            llm=llm, # Passer l'LLM explicitement (évite Settings.llm default)
             verbose=True
         )
     else:

@@ -116,9 +116,9 @@ def test_auto_retriever_overfiltering_pbi_403():
     Vérifie que l'Auto-Retriever ne filtre pas agressivement sur le trust_score par défaut.
     """
     from src.rag_engine import get_rag_engine
-    from llama_index.core.llms import LLM
+    from llama_index.core.llms.mock import MockLLM
     
-    mock_llm = unittest.mock.MagicMock(spec=LLM)
+    mock_llm = MockLLM()
     
     with unittest.mock.patch("qdrant_client.QdrantClient"), \
          unittest.mock.patch("src.rag_engine.QdrantVectorStore"), \
