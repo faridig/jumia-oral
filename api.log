@@ -1,0 +1,44 @@
+/home/farid/Projets/jumia_oral/venv/lib/python3.12/site-packages/requests/__init__.py:113: RequestsDependencyWarning: urllib3 (2.6.3) or chardet (6.0.0.post1)/charset_normalizer (3.4.4) doesn't match a supported version!
+  warnings.warn(
+2026-03-04 08:20:22,543 - INFO - HTTP Request: GET http://localhost:6343 "HTTP/1.1 200 OK"
+/home/farid/Projets/jumia_oral/src/rag_engine.py:112: UserWarning: Qdrant client version 1.17.0 is incompatible with server version 1.10.1. Major versions should match and minor version difference must not exceed 1. Set check_compatibility=False to skip version check.
+  client = QdrantClient(url=QDRANT_URL)
+2026-03-04 08:20:22,549 - INFO - HTTP Request: GET http://localhost:6343/collections/jumia_v2/exists "HTTP/1.1 200 OK"
+2026-03-04 08:20:22,551 - INFO - HTTP Request: GET http://localhost:6343/collections/jumia_v2 "HTTP/1.1 200 OK"
+2026-03-04 08:20:22,677 - INFO - HTTP Request: GET http://localhost:6343 "HTTP/1.1 200 OK"
+2026-03-04 08:20:22,686 - INFO - HTTP Request: GET http://localhost:6343/collections/jumia_v2/exists "HTTP/1.1 200 OK"
+2026-03-04 08:20:22,688 - INFO - HTTP Request: GET http://localhost:6343/collections/jumia_v2 "HTTP/1.1 200 OK"
+INFO:     Started server process [166846]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+2026-03-04 08:20:27,264 - INFO - Webhook reçu: messages.upsert
+INFO:     127.0.0.1:58420 - "POST /webhook HTTP/1.1" 200 OK
+2026-03-04 08:20:27,273 - INFO - Début du traitement pour 212600000000@s.whatsapp.net
+2026-03-04 08:20:27,274 - INFO - User Query: Salam!
+2026-03-04 08:20:28,311 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-03-04 08:20:28,329 - INFO - Search Variants: ['Salutation', 'Communication', 'Interaction sociale']
+2026-03-04 08:20:29,180 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-03-04 08:20:29,182 - INFO - Using query str: Salam!
+2026-03-04 08:20:29,182 - INFO - Using filters: []
+2026-03-04 08:20:29,182 - INFO - Using top_k: 10
+2026-03-04 08:20:30,102 - INFO - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+2026-03-04 08:20:30,113 - INFO - HTTP Request: POST http://localhost:6343/collections/jumia_v2/points/query "HTTP/1.1 200 OK"
+2026-03-04 08:20:30,120 - INFO - Dédoublonnage effectué : Asus ExpertBook P1503CVA - i5-13420H - 15.6" FHD -...
+2026-03-04 08:20:30,121 - WARNING -   - Hard-Filtering (Score 0.7387 < 0.8): Modem routeur Mobile 5G / 4G LTE CAT6 WiFi 300Mbps
+2026-03-04 08:20:30,121 - WARNING -   - Hard-Filtering (Score 0.7372 < 0.8): Meuble 7 couches pour chaussures, étagère de range
+2026-03-04 08:20:30,121 - WARNING -   - Hard-Filtering (Score 0.7357 < 0.8): Asus ExpertBook P1503CVA - i5-13420H - 15.6" FHD -
+2026-03-04 08:20:30,121 - WARNING -   - Hard-Filtering (Score 0.7333 < 0.8): Table d’Appoint en Forme de C avec roulettes, Tabl
+2026-03-04 08:20:30,121 - WARNING - Aucun produit ne dépasse le seuil de pertinence (0.8)
+2026-03-04 08:20:30,121 - WARNING - Auto-Retriever Fallback (Résultat Auto-Retriever vide). Tentative via Base Engine...
+2026-03-04 08:20:30,290 - INFO - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+2026-03-04 08:20:30,302 - INFO - HTTP Request: POST http://localhost:6343/collections/jumia_v2/points/query "HTTP/1.1 200 OK"
+2026-03-04 08:20:30,306 - INFO - Dédoublonnage effectué : Support Moniteur Ecran LCD Support Ecran PC - Moni...
+2026-03-04 08:20:30,306 - WARNING -   - Hard-Filtering (Score 0.7334 < 0.8): Lenovo Housse 15.6’’ Laptop Urban Sleeve Case - Or
+2026-03-04 08:20:30,306 - WARNING -   - Hard-Filtering (Score 0.7330 < 0.8): Support Moniteur Ecran LCD Support Ecran PC - Moni
+2026-03-04 08:20:30,306 - WARNING -   - Hard-Filtering (Score 0.7305 < 0.8): Table d’Appoint en Forme de C avec roulettes, Tabl
+2026-03-04 08:20:30,306 - WARNING -   - Hard-Filtering (Score 0.7302 < 0.8): Wacom Tablette Graphique One by Petite - USB (CTL-
+2026-03-04 08:20:30,306 - WARNING - Aucun produit ne dépasse le seuil de pertinence (0.8)
+2026-03-04 08:20:30,307 - INFO - Réponse RAG générée pour 212600000000@s.whatsapp.net
+2026-03-04 08:20:30,307 - INFO - Envoi du message (dict) à 212600000000@s.whatsapp.net
+2026-03-04 08:20:30,324 - ERROR - Erreur lors de l'envoi du message: 500 Server Error: Internal Server Error for url: http://localhost:8080/message/sendText/Jumia-Oral-Agent
