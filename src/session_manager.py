@@ -61,11 +61,6 @@ class JumiaChatManager:
         
         if not location:
             # Onboarding : si on ne connaît pas la ville, on vérifie si le message en contient une
-            # Pour l'instant, une logique simple : si c'est le premier message, on demande.
-            # Si le message ressemble à une ville, on enregistre.
-            
-            # TODO: Utiliser un LLM pour extraire la ville si présente
-            # Pour le test, on va simuler
             cities = ["Casablanca", "Marrakech", "Rabat", "Tanger", "Agadir", "Fès"]
             found_city = next((city for city in cities if city.lower() in message_text.lower()), None)
             
@@ -77,4 +72,23 @@ class JumiaChatManager:
         
         # Si la localisation est connue, on passe au RAG
         response = self.rag_engine.query(message_text)
-        return str(response)
+        
+        # Extraction de l'image du premier produit si disponible
+        media_url = None
+        if hasattr(response, 'source_nodes') and response.source_nodes:
+            # On cherche le premier node qui n'est pas un insight d'expert et qui a une image
+            for node_with_score in response.source_nodes:
+                metadata = node_with_score.node.metadata
+                if not metadata.get("is_expert_insight") and metadata.get("images"):
+                    images = metadata.get("images")
+                    if isinstance(images, list) and len(images) > 0:
+                        media_url = images[0]
+                        break
+                    elif isinstance(images, str):
+                        media_url = images
+                        break
+
+        return {
+            "text": str(response),
+            "media_url": media_url
+        }

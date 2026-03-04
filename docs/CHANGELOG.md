@@ -21,6 +21,11 @@
 - **Affinage de l'Auto-Retriever (PBI-403)** : Optimisation des filtres métadonnées pour éviter l'over-filtering sur les requêtes simples.
 
 ## 💡 LEÇONS APPRISES
+### Sprint 7 : WhatsApp Gateway & Comparison Engine
+- **Asynchronisme des Webhooks** : L'utilisation de `BackgroundTasks` dans FastAPI est indispensable pour répondre immédiatement au serveur Evolution API (évite les retries de message) tout en laissant le temps au RAG de générer une réponse complexe.
+- **Intention de Comparaison** : Une détection basée sur des mots-clés bilingues (Fr/Darija) couplée à un prompt de synthèse dédié permet de transformer une recherche sémantique en un véritable outil d'aide à la décision structuré (Tableau Markdown + Verdict Darija).
+- **Richesse Multimédia** : L'extraction automatique des URLs d'images depuis les métadonnées des produits permet de fournir un support visuel immédiat sur WhatsApp, renforçant la confiance de l'utilisateur.
+
 ### Sprint 7 : OpenRTK Plugin System
 - **Intégration Transparente via Proxy** : L'utilisation de `rtk` comme proxy pour Git permet d'injecter une couche d'intelligence (emoji, résumé de tokens) sans modifier les binaires originaux. L'icône 📌 sert de signature visuelle pour confirmer que la couche d'optimisation est active.
 - **Rigueur des Tests Unitaires** : Maintenir un taux de succès de 100% sur la suite de tests (56/56) est crucial avant toute modification du PATH système, car toute régression bloquerait le flux de travail de l'agent.
