@@ -75,6 +75,8 @@ class JumiaChatManager:
         
         # Extraction de l'image du premier produit si disponible
         media_url = None
+        
+        # On vérifie si response est un objet Response de LlamaIndex
         if hasattr(response, 'source_nodes') and response.source_nodes:
             # On cherche le premier node qui n'est pas un insight d'expert et qui a une image
             for node_with_score in response.source_nodes:
@@ -87,8 +89,10 @@ class JumiaChatManager:
                     elif isinstance(images, str):
                         media_url = images
                         break
-
+        
+        # On retourne le texte et le média éventuel
         return {
             "text": str(response),
             "media_url": media_url
         }
+

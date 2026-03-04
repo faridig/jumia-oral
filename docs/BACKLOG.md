@@ -53,17 +53,54 @@
 **Status** : DONE ✅
 
 ### [PBI-301] Gateway WhatsApp (Infrastructure)
-**Status** : PENDING ⏳
+**Status** : DONE ✅
 **Priorité** : High | **Estimation** : L
 **User Story** : "En tant que système, je veux être connecté à Evolution API afin de recevoir et d'envoyer des messages réels sur WhatsApp."
 **Critères d'Acceptation** :
-- [ ] Instance Evolution API fonctionnelle (Docker).
-- [ ] Webhook configuré pour router les messages entrants vers `src/session_manager.py`.
-- [ ] Envoi de messages texte simple validé via API.
+- [x] Instance Evolution API fonctionnelle (Docker).
+- [x] Webhook configuré pour router les messages entrants vers `src/session_manager.py`.
+- [x] Envoi de messages texte simple validé via API.
 
 ### [PBI-302] Personnalité & Intelligence Commerciale
 **Status** : DONE ✅
-(Note: La logique de réponse est prête, mais attend le canal de diffusion PBI-301)
+(Note: Entièrement opérationnel avec la Gateway WhatsApp active)
+
+### [PBI-601] Support des Images sur WhatsApp
+**Status** : DONE ✅
+**Priorité** : Medium | **Estimation** : M
+- Extraction des images produits et envoi via `sendMedia`.
+
+### [PBI-602] Comparaison de Panier Assistée
+**Status** : DONE ✅
+**Priorité** : Medium | **Estimation** : M
+- Logiciel de comparaison par tableau Markdown et verdict Darija.
+
+### [PBI-801] SETUP : Appairage WhatsApp (QR Code)
+**Status** : PENDING ⏳
+**Priorité** : High | **Estimation** : S
+**User Story** : "En tant que Chef d'Orchestre, je veux scanner un QR Code pour connecter mon numéro WhatsApp au moteur RAG."
+**Critères d'Acceptation** :
+- [ ] Création de l'instance `WHATSAPP-BAILEYS` via `POST /instance/create`.
+- [ ] Récupération et affichage du QR Code (Base64 ou Terminal).
+- [ ] Validation de la connexion (`CONNECTION_UPDATE` event).
+
+### [PBI-802] TECH : Exposition du Webhook (Tunneling)
+**Status** : PENDING ⏳
+**Priorité** : High | **Estimation** : S
+**User Story** : "En tant que système, je veux une URL publique pour recevoir les messages WhatsApp en temps réel."
+**Critères d'Acceptation** :
+- [ ] Mise en place d'un tunnel (Ngrok/LocalTunnel) pointant vers le port FastAPI.
+- [ ] Configuration du Webhook dans Evolution API (`MESSAGES_UPSERT`, `CONNECTION_UPDATE`).
+- [ ] Test de connectivité (Ping/Pong).
+
+### [PBI-803] TECH : Récepteur Webhook FastAPI (Performance)
+**Status** : PENDING ⏳
+**Priorité** : High | **Estimation** : M
+**User Story** : "En tant qu'utilisateur, je veux que le bot réponde sans délai technique (Timeout WhatsApp)."
+**Critères d'Acceptation** :
+- [ ] Endpoint `/webhook` validant les headers de sécurité (`apikey`).
+- [ ] Utilisation de `BackgroundTasks` pour traiter le RAG après avoir répondu `200 OK` à Evolution API.
+- [ ] Gestion des messages texte simples et multimédia.
 
 ### [PBI-310] Gestion de la Localisation Utilisateur (Onboarding)
 **Status** : DONE ✅

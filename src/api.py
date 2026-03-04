@@ -1,7 +1,7 @@
 import os
 import logging
 import requests
-from fastapi import FastAPI, Request, BackgroundTasks
+from fastapi import FastAPI, Request, BackgroundTasks, HTTPException
 from pydantic import BaseModel
 from src.session_manager import JumiaChatManager
 from dotenv import load_dotenv
@@ -16,13 +16,15 @@ chat_manager = JumiaChatManager()
 
 EVOLUTION_API_URL = os.getenv("EVOLUTION_API_URL", "http://localhost:8080")
 EVOLUTION_API_KEY = os.getenv("EVOLUTION_API_KEY", "apikey")
-INSTANCE_NAME = os.getenv("INSTANCE_NAME", "jumia")
+INSTANCE_NAME = os.getenv("INSTANCE_NAME", "Jumia-Oral-Agent")
 
-def send_whatsapp_message(number: str, text: str, media_url: str = None):
+from typing import Optional
+
+def send_whatsapp_message(number: str, text: str, media_url: Optional[str] = None):
     if media_url:
         url = f"{EVOLUTION_API_URL}/message/sendMedia/{INSTANCE_NAME}"
         payload = {
-            "number": number,
+            "number": number.split("@")[0], # Evolution API attend souvent juste le numéro ou jid sans @s.whatsapp.net selon config
             "media": media_url,
             "caption": text,
             "mediaType": "image",
@@ -31,7 +33,7 @@ def send_whatsapp_message(number: str, text: str, media_url: str = None):
     else:
         url = f"{EVOLUTION_API_URL}/message/sendText/{INSTANCE_NAME}"
         payload = {
-            "number": number,
+            "number": number.split("@")[0],
             "text": text,
             "delay": 1200,
             "linkPreview": True
@@ -49,17 +51,27 @@ def send_whatsapp_message(number: str, text: str, media_url: str = None):
         logger.error(f"Erreur lors de l'envoi du message: {e}")
 
 def process_and_respond(user_id: str, text: str):
+    logger.info(f"Début du traitement pour {user_id}")
     chat_response = chat_manager.handle_message(user_id, text)
+    logger.info(f"Réponse RAG générée pour {user_id}")
     
     if isinstance(chat_response, dict):
-        response_text = chat_response.get("text")
+        response_text = chat_response.get("text", "")
         media_url = chat_response.get("media_url")
+        logger.info(f"Envoi du message (dict) à {user_id}")
         send_whatsapp_message(user_id, response_text, media_url)
     else:
-        send_whatsapp_message(user_id, chat_response)
+        logger.info(f"Envoi du message (str) à {user_id}")
+        send_whatsapp_message(user_id, str(chat_response))
 
 @app.post("/webhook")
 async def webhook(request: Request, background_tasks: BackgroundTasks):
+    # Vérification de l'apikey dans les headers pour sécuriser la réception (PBI-803)
+    provided_key = request.headers.get("apikey")
+    if provided_key != EVOLUTION_API_KEY:
+        logger.warning(f"Tentative d'accès non autorisée avec l'apikey: {provided_key}")
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
     data = await request.json()
     logger.info(f"Webhook reçu: {data.get('event')}")
     
@@ -74,15 +86,17 @@ async def webhook(request: Request, background_tasks: BackgroundTasks):
         remote_jid = key.get("remoteJid")
         message = msg_data.get("message", {})
         
-        # Extraction du texte (peut être dans conversation ou extendedTextMessage)
-        text = message.get("conversation") or message.get("extendedTextMessage", {}).get("text")
-        
-        if not text and "imageMessage" in message:
-             # Placeholder pour PBI-601
-             text = "[IMAGE_SENT]"
+        # Extraction du texte (PBI-803)
+        # Evolution API peut envoyer le texte dans différents champs selon le type de message
+        text = (
+            message.get("conversation") or 
+            message.get("extendedTextMessage", {}).get("text") or
+            message.get("imageMessage", {}).get("caption") or
+            message.get("videoMessage", {}).get("caption")
+        )
         
         if text:
-            # Traitement asynchrone pour ne pas bloquer le webhook
+            # Traitement asynchrone (BackgroundTasks) pour répondre immédiatement 200 OK
             background_tasks.add_task(process_and_respond, remote_jid, text)
             
     return {"status": "success"}
@@ -90,4 +104,4 @@ async def webhook(request: Request, background_tasks: BackgroundTasks):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=5000)
+    uvicorn.run(app, host="0.0.0.0", port=8000)

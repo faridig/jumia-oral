@@ -1,39 +1,48 @@
-# 🏃 SPRINT PLAN - SPRINT 7 (INFRA & CONNECTIVITÉ)
+# 🏃 SPRINT PLAN - SPRINT 8 (WHATSAPP LIVE)
 
 ## 🎯 OBJECTIF
-Établir la connexion réelle avec WhatsApp et préparer le terrain pour les supports multimédias.
+Permettre au Chef d'Orchestre de tester le moteur RAG directement sur son téléphone via WhatsApp.
 
 ## 📋 TÂCHES À RÉALISER
 
-### [PBI-301] TECH : Mise en service de la Gateway WhatsApp
-**Priorité** : High | **Estimation** : L
-**User Story** : "En tant qu'utilisateur, je veux pouvoir envoyer un message sur un numéro WhatsApp et recevoir la réponse du moteur RAG."
+### [PBI-801] SETUP : Appairage WhatsApp (QR Code)
+**Priorité** : High | **Estimation** : S
+**User Story** : "En tant que Chef d'Orchestre, je veux scanner un QR Code pour connecter mon numéro WhatsApp au moteur RAG."
 **Critères d'Acceptation** :
-- [ ] Lancement et configuration d'Evolution API via Docker.
-- [ ] Création d'un endpoint FastAPI pour recevoir les Webhooks d'Evolution API.
-- [ ] Test de bout en bout : Message WhatsApp -> RAG -> Réponse WhatsApp.
+- [ ] Créer l'instance `Jumia-Oral-Agent` via `POST /instance/create` avec `integration: "WHATSAPP-BAILEYS"` et `qrcode: true`.
+- [ ] Afficher le QR Code (Base64) ou fournir le lien pour le scanner.
+- [ ] Valider la connexion via `CONNECTION_UPDATE`.
 
-### [PBI-601] UX : Support des Images sur WhatsApp
-**Priorité** : Medium | **Estimation** : M
-**Note** : Dépend de la réussite du PBI-301.
-**User Story** : "En tant qu'utilisateur, je veux voir la photo du produit recommandé."
+### [PBI-802] TECH : Exposition du Webhook (Tunneling)
+**Priorité** : High | **Estimation** : S
+**User Story** : "En tant que système, je veux une URL publique pour recevoir les messages WhatsApp en temps réel."
 **Critères d'Acceptation** :
-- [ ] Extraire l'URL de l'image depuis les métadonnées.
-- [ ] Implémenter la fonction `sendMedia` utilisant le SDK Evolution API.
+- [ ] Lancer un tunnel Ngrok ou LocalTunnel vers le port `8000` (FastAPI).
+- [ ] Configurer l'URL du webhook dans Evolution API via `POST /webhook/set/Jumia-Oral-Agent`.
+- [ ] Souscrire aux événements : `MESSAGES_UPSERT`, `CONNECTION_UPDATE`, `QRCODE_UPDATED`.
 
-### [PBI-602] TECH/UX : Comparaison de Panier Assistée
-**Priorité** : Medium | **Estimation** : M
-**User Story** : "En tant que client hésitant, je veux demander 'Lequel est le meilleur ?' pour obtenir un tableau comparatif technique et business entre les deux premiers produits du RAG."
+### [PBI-803] TECH : Récepteur Webhook FastAPI (Performance)
+**Priorité** : High | **Estimation** : M
+**User Story** : "En tant qu'utilisateur, je veux que le bot réponde sans délai technique (Timeout WhatsApp)."
 **Critères d'Acceptation** :
-- [ ] Détecter l'intention de comparaison dans la requête.
-- [ ] Générer un tableau Markdown structuré (Specs, Trust Score, VFM).
-- [ ] Ajouter une conclusion "Verdict de l'Expert" en Darija.
+- [ ] Créer l'endpoint `/webhook` dans FastAPI.
+- [ ] Vérifier le `apikey` dans les headers pour sécuriser la réception.
+- [ ] Utiliser `BackgroundTasks` pour déléguer la logique RAG et répondre immédiatement `200 OK` à Evolution API.
+- [ ] Traiter les messages entrants (`MESSAGES_UPSERT`) : extraire le texte et l'ID de l'expéditeur.
+
+### [PBI-804] UX : Test Live "Mrehba"
+**Priorité** : Medium | **Estimation** : XS
+**User Story** : "En tant qu'utilisateur, je veux recevoir un accueil en Darija dès mon premier message."
+**Critères d'Acceptation** :
+- [ ] Réussir un cycle complet : Message Utilisateur -> Webhook -> RAG -> Réponse WhatsApp.
+- [ ] Vérifier que les images produits (si trouvées) sont bien envoyées via `sendMedia`.
 
 ## 🛠️ SPÉCIFICATIONS TECHNIQUES
-- **Fichiers concernés** : `src/session_manager.py` (pour l'envoi média), `src/rag_engine.py` (pour la logique de comparaison).
-- **API** : Evolution API `/message/sendMedia`.
+- **Fichiers à modifier** : `src/main.py` (FastAPI Webhook), `src/session_manager.py` (Intégration Evolution API).
+- **Sécurité** : Ne jamais versionner l'URL Ngrok ou le `apikey`. Utiliser le `.env`.
+- **Performance** : Temps de réponse webhook < 2 secondes (impératif).
 
 ## ✅ DEFINITION OF DONE (DoD)
-- Les images s'affichent correctement sur WhatsApp.
-- Le tableau comparatif est lisible et utile.
-- Pas de régression sur le ton de voix Darija.
+- Le Chef d'Orchestre peut converser avec son bot sur WhatsApp.
+- Les logs montrent une réception propre des webhooks.
+- Pas de blocage du serveur FastAPI pendant le traitement RAG (BackgroundTasks).

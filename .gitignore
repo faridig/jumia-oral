@@ -4,8 +4,15 @@ venv/
 __pycache__/
 *.pyc
 logs/*.log
+api.log
 data/raw/markdown/*
 !data/raw/markdown/.gitkeep
+data/sessions.json
 
 # Local OpenCode Configuration
 .opencode/
+
+# OpenRTK
+openrtk/node_modules/
+openrtk/dist/
+openrtk/bun.lock

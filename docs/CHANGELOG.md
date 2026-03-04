@@ -1,5 +1,11 @@
 # 📜 CHANGELOG
 
+## [0.7.0] - 2026-03-04
+### Added
+- **Gateway WhatsApp (PBI-301)** : Mise en service d'Evolution API via Docker et routage des webhooks vers FastAPI.
+- **Support Multimédia (PBI-601)** : Capacité d'envoi d'images produits sur WhatsApp via le SDK Evolution API.
+- **Comparaison Assistée (PBI-602)** : Nouveau module de comparaison de produits avec rendu en tableau Markdown et verdict en Darija.
+
 ## [0.6.3] - 2026-03-03
 ### Added
 - **Intégration OpenRTK (Plugin System)** : Déploiement du plugin de filtrage intelligent pour `rtk`. Ce plugin intercepte les commandes Git (notamment `git status`) pour fournir un affichage ultra-compact avec l'icône 📌 et des indicateurs visuels (📝, ❓).
