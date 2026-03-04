@@ -18,7 +18,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 async def crawl_jumia_urls():
-    base_url = "https://www.jumia.ma/ordinateurs-accessoires-informatique/"
+    base_url = "https://www.jumia.ma/notebooks/"
     all_urls = set()
     
     schema = {
@@ -43,7 +43,8 @@ async def crawl_jumia_urls():
     )
 
     async with AsyncWebCrawler(config=browser_config) as crawler:
-        for page in range(1, 11):
+        # Pour le Spike, 1 page suffit largement pour 10 produits
+        for page in range(1, 2):
             url = f"{base_url}?page={page}" if page > 1 else base_url
             logger.info(f"Crawling page {page}: {url}")
             

@@ -1,48 +1,36 @@
-# 🏃 SPRINT PLAN - SPRINT 8 (WHATSAPP LIVE)
+# 🏃 SPRINT PLAN - SPRINT 9 (TEST & PIVOT PC)
 
 ## 🎯 OBJECTIF
-Permettre au Chef d'Orchestre de tester le moteur RAG directement sur son téléphone via WhatsApp.
+Tester l'extraction spécialisée PC Portables sur un petit volume (10 produits) avant de réinitialiser complètement le catalogue.
 
 ## 📋 TÂCHES À RÉALISER
 
-### [PBI-801] SETUP : Appairage WhatsApp (QR Code)
-**Priorité** : High | **Estimation** : S
-**User Story** : "En tant que Chef d'Orchestre, je veux scanner un QR Code pour connecter mon numéro WhatsApp au moteur RAG."
+### [PBI-901] TECH : Purge & Reset (Clean Slate)
+**Priorité** : High | **Estimation** : XS
+**User Story** : "En tant que Lead-Dev, je veux vider les données obsolètes pour repartir sur un catalogue 100% PC Portables."
 **Critères d'Acceptation** :
-- [ ] Créer l'instance `Jumia-Oral-Agent` via `POST /instance/create` avec `integration: "WHATSAPP-BAILEYS"` et `qrcode: true`.
-- [ ] Afficher le QR Code (Base64) ou fournir le lien pour le scanner.
-- [ ] Valider la connexion via `CONNECTION_UPDATE`.
+- [ ] Vider le dossier `data/` (fichiers `.md` et `.csv`).
+- [ ] Supprimer et recréer la collection `jumia_products` dans Qdrant local.
 
-### [PBI-802] TECH : Exposition du Webhook (Tunneling)
-**Priorité** : High | **Estimation** : S
-**User Story** : "En tant que système, je veux une URL publique pour recevoir les messages WhatsApp en temps réel."
+### [SPIKE-902] TEST : Extraction Micro-Batch (10 Produits)
+**Priorité** : High | **Estimation** : XS
+**User Story** : "En tant que Chef d'Orchestre, je veux tester l'extraction LLM sur 10 produits pour valider la qualité des métadonnées."
 **Critères d'Acceptation** :
-- [ ] Lancer un tunnel Ngrok ou LocalTunnel vers le port `8000` (FastAPI).
-- [ ] Configurer l'URL du webhook dans Evolution API via `POST /webhook/set/Jumia-Oral-Agent`.
-- [ ] Souscrire aux événements : `MESSAGES_UPSERT`, `CONNECTION_UPDATE`, `QRCODE_UPDATED`.
+- [ ] Lancer le crawler sur `https://www.jumia.ma/notebooks/`.
+- [ ] **Limiter strictement à 10 produits**.
+- [ ] Extraire les specs : CPU, RAM, SSD, GPU, Écran, État (Neuf/Renewed).
+- [ ] Présenter le résultat JSON pour validation au Chef d'Orchestre.
 
-### [PBI-803] TECH : Récepteur Webhook FastAPI (Performance)
-**Priorité** : High | **Estimation** : M
-**User Story** : "En tant qu'utilisateur, je veux que le bot réponde sans délai technique (Timeout WhatsApp)."
-**Critères d'Acceptation** :
-- [ ] Créer l'endpoint `/webhook` dans FastAPI.
-- [ ] Vérifier le `apikey` dans les headers pour sécuriser la réception.
-- [ ] Utiliser `BackgroundTasks` pour déléguer la logique RAG et répondre immédiatement `200 OK` à Evolution API.
-- [ ] Traiter les messages entrants (`MESSAGES_UPSERT`) : extraire le texte et l'ID de l'expéditeur.
-
-### [PBI-804] UX : Test Live "Mrehba"
+### [PBI-903] INGESTION : Préparation de l'Index Laptop
 **Priorité** : Medium | **Estimation** : XS
-**User Story** : "En tant qu'utilisateur, je veux recevoir un accueil en Darija dès mon premier message."
-**Critères d'Acceptation** :
-- [ ] Réussir un cycle complet : Message Utilisateur -> Webhook -> RAG -> Réponse WhatsApp.
-- [ ] Vérifier que les images produits (si trouvées) sont bien envoyées via `sendMedia`.
+- Configurer les nouveaux champs de métadonnées dans l'Auto-Retriever.
 
 ## 🛠️ SPÉCIFICATIONS TECHNIQUES
-- **Fichiers à modifier** : `src/main.py` (FastAPI Webhook), `src/session_manager.py` (Intégration Evolution API).
-- **Sécurité** : Ne jamais versionner l'URL Ngrok ou le `apikey`. Utiliser le `.env`.
-- **Performance** : Temps de réponse webhook < 2 secondes (impératif).
+- **URL** : `https://www.jumia.ma/notebooks/#catalog-listing`
+- **Volume Test** : 10 produits.
+- **Extraction LLM** : Forçage du schéma Pydantic spécialisé PC.
 
 ## ✅ DEFINITION OF DONE (DoD)
-- Le Chef d'Orchestre peut converser avec son bot sur WhatsApp.
-- Les logs montrent une réception propre des webhooks.
-- Pas de blocage du serveur FastAPI pendant le traitement RAG (BackgroundTasks).
+- Les 10 premiers PC sont extraits proprement avec leurs specs.
+- Le Chef d'Orchestre a validé la structure des données.
+- On est prêt pour le "Full Scale" (5 pages).

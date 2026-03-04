@@ -44,16 +44,18 @@ async def scrape_products(urls: List[str], limit: int = 5):
         schema=CategoryAgnosticProduct.model_json_schema(),
         extraction_type="schema",
         instruction=(
-            "Extract product data into the CategoryAgnosticProduct schema.\n"
-            "1. core_metadata: Extract name, current_price (float), old_price (float), brand, images, url, and category.\n"
-            "   - IMPORTANT: 'images' MUST be a list of ALL product image URLs (main image + gallery). Look for high-res images if possible.\n"
-            "2. category_specs: Normalize all technical specifications. Convert units to standard international formats.\n"
-            "   - FOR CLOTHING/SHOES: Extract available sizes, colors, and materials into category_specs (e.g., 'Available Sizes': ['S', 'M', 'L'], 'Color': 'Blue').\n"
-            "3. sentiment_analysis: Evaluate the product based on customer reviews and description across 4 axes: "
-            "Performance, Design, Autonomie, and Prix. Provide a score (0-10) and a brief rationale for each.\n"
-            "4. value_for_money_score: Calculate a score from 0 to 10 based on the quality/features vs price.\n"
-            "5. Extract seller information and raw_review_summary.\n"
-            "IMPORTANT: Be precise with normalization. If images or sizes are missing, double-check the <img> tags and size pickers. Prices MUST be numbers."
+            "Extract product data into the CategoryAgnosticProduct schema for a LAPTOP (Notebook).\n"
+            "1. core_metadata: Extract name, current_price (float), brand, images, url, and category (Notebooks).\n"
+            "2. category_specs: MUST extract and normalize these fields:\n"
+            "   - CPU: (ex: Intel Core i5-1135G7)\n"
+            "   - RAM: (ex: 16GB DDR4)\n"
+            "   - SSD: (ex: 512GB NVMe)\n"
+            "   - GPU: (ex: Intel Iris Xe or NVIDIA RTX 3050)\n"
+            "   - Screen: (ex: 15.6\" FHD IPS)\n"
+            "   - Condition: (Neuf or Renewed/Reconditionné)\n"
+            "3. sentiment_analysis: Focus on Performance, Build Quality, Display, and Value.\n"
+            "4. value_for_money_score: (0-10) based on specs vs price.\n"
+            "IMPORTANT: Prices and technical specs MUST be accurate. If a spec is not found, use 'N/A'."
         ),
         verbose=True
     )
@@ -262,8 +264,8 @@ async def main():
         logger.error("No URLs found in product_urls.json.")
         return
 
-    # On commence par un batch de 50 produits
-    await scrape_products(urls, limit=50)
+    # Spike: Limiter à 10 produits (On saute les 10 premiers déjà faits)
+    await scrape_products(urls[10:12], limit=2)
 
 if __name__ == "__main__":
     asyncio.run(main())

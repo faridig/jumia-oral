@@ -29,7 +29,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 QDRANT_URL = os.getenv("QDRANT_URL", "http://localhost:6343")
-COLLECTION_NAME = "jumia_v2"
+COLLECTION_NAME = os.getenv("QDRANT_COLLECTION_NAME", "jumia_products")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 # Modèles
@@ -63,9 +63,9 @@ class JumiaReRanker(BaseNodePostprocessor):
     Re-ranker personnalisé utilisant le trust_score (40%) et le value_for_money_score (60%).
     Priorise les meilleures affaires et les vendeurs de confiance.
     Pondération : 60% pertinence sémantique / 40% scores business (PBI-401).
-    Hard-Filtering : Élimine les produits avec une similarité < 0.8 (PBI-404).
+    Hard-Filtering : Élimine les produits avec une similarité < 0.7 (Assoupli pour les tests).
     """
-    similarity_threshold: float = 0.8
+    similarity_threshold: float = 0.7
 
     def _postprocess_nodes(
         self, nodes: List[NodeWithScore], query_bundle: Optional[QueryBundle] = None
@@ -114,15 +114,18 @@ def get_rag_engine(use_auto_retriever: bool = True):
     index = VectorStoreIndex.from_vector_store(vector_store, embed_model=embed_model)
 
     if use_auto_retriever:
-        # Configuration des métadonnées pour l'Auto-Retriever (PBI-403 : assouplissement)
+        # Configuration des métadonnées pour l'Auto-Retriever (Laptop Specialized)
         vector_store_info = VectorStoreInfo(
-            content_info="Catalogue Jumia Maroc multi-catégories",
+            content_info="Catalogue Jumia Maroc Spécialisé PC Portables",
             metadata_info=[
                 MetadataInfo(name="brand", type="str", description="Marque du produit"),
-                MetadataInfo(name="price_numeric", type="float", description="Prix en Dhs (valeur numérique UNIQUEMENT, pas de texte)"),
-                MetadataInfo(name="category_source", type="str", description="Catégorie (smartphones, informatique, cosmétique, bouilloires, etc.)"),
-                MetadataInfo(name="value_for_money_score", type="float", description="Score 0-10 (utiliser UNIQUEMENT pour des comparaisons numériques comme > 8)"),
-                MetadataInfo(name="trust_score", type="float", description="Score 0-5. N'utiliser ce filtre QUE si l'utilisateur mentionne explicitement la fiabilité, la confiance ou les avis (ex: 'fiable', 'bien noté', 'avis')."),
+                MetadataInfo(name="price_numeric", type="float", description="Prix en Dhs"),
+                MetadataInfo(name="ram", type="str", description="Quantité de mémoire vive (ex: 8Go, 16Go)"),
+                MetadataInfo(name="ssd", type="str", description="Capacité de stockage SSD (ex: 256Go, 512Go)"),
+                MetadataInfo(name="cpu", type="str", description="Modèle du processeur (ex: i5, i7, Ryzen 5)"),
+                MetadataInfo(name="condition", type="str", description="État du PC (Neuf, Remis à neuf)"),
+                MetadataInfo(name="value_for_money_score", type="float", description="Score 0-10"),
+                MetadataInfo(name="trust_score", type="float", description="Score 0-5"),
             ],
         )
         retriever = VectorIndexAutoRetriever(

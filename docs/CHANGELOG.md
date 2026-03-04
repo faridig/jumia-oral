@@ -1,5 +1,12 @@
 # 📜 CHANGELOG
 
+## [0.8.0] - 2026-03-04
+### Added
+- **Appairage WhatsApp (PBI-801)** : Activation de l'instance "Jumia-Oral-Agent" et connexion via scan QR Code.
+- **Tunneling & Webhooks (PBI-802)** : Exposition du serveur local via tunnel (Ngrok/LocalTunnel) et configuration des webhooks Evolution API.
+- **Récepteur FastAPI (PBI-803)** : Endpoint `/webhook` avec traitement asynchrone via `BackgroundTasks` pour garantir une réponse instantanée à WhatsApp.
+- **Onboarding Live (PBI-804)** : Accueil interactif "Mrehba" fonctionnel sur le téléphone du Chef d'Orchestre.
+
 ## [0.7.0] - 2026-03-04
 ### Added
 - **Gateway WhatsApp (PBI-301)** : Mise en service d'Evolution API via Docker et routage des webhooks vers FastAPI.
@@ -27,6 +34,11 @@
 - **Affinage de l'Auto-Retriever (PBI-403)** : Optimisation des filtres métadonnées pour éviter l'over-filtering sur les requêtes simples.
 
 ## 💡 LEÇONS APPRISES
+### Sprint 8 : WhatsApp Live & Onboarding
+- **Exposition Local (Tunneling)** : L'utilisation d'un tunnel (ex: Ngrok) est indispensable en phase de développement pour recevoir les webhooks. Une URL statique stable est recommandée pour la persistance de la session WhatsApp.
+- **BackgroundTasks vs Timeout** : Evolution API renvoie des "retries" si le webhook ne répond pas en moins de 5-10 secondes. Le pattern `BackgroundTasks` de FastAPI est critique ici : répondre `200 OK` d'abord, réfléchir avec le RAG ensuite.
+- **Réception Multimédia** : Les webhooks `MESSAGES_UPSERT` de Evolution API contiennent un champ `messageType`. Il faut impérativement isoler la logique de texte de celle des médias (images/vidéos) dès la réception pour éviter les crashs de parsing.
+
 ### Sprint 7 : WhatsApp Gateway & Comparison Engine
 - **Asynchronisme des Webhooks** : L'utilisation de `BackgroundTasks` dans FastAPI est indispensable pour répondre immédiatement au serveur Evolution API (évite les retries de message) tout en laissant le temps au RAG de générer une réponse complexe.
 - **Intention de Comparaison** : Une détection basée sur des mots-clés bilingues (Fr/Darija) couplée à un prompt de synthèse dédié permet de transformer une recherche sémantique en un véritable outil d'aide à la décision structuré (Tableau Markdown + Verdict Darija).
