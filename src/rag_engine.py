@@ -186,6 +186,11 @@ class MultiQueryAutoRAG:
         
     def query(self, user_query: str):
         logger.info(f"User Query: {user_query}")
+        
+        # PBI-602 : Détection d'intention de comparaison
+        keywords = ["comparer", "lequel", "différence", "mieux", "meilleur", "meilleure", "vs", "akhtar"]
+        is_comparison = any(k in user_query.lower() for k in keywords)
+        
         variantes = expand_query_darija(user_query)
         logger.info(f"Search Variants: {variantes}")
         
@@ -196,15 +201,34 @@ class MultiQueryAutoRAG:
                 raise ValueError("Résultat Auto-Retriever vide")
         except Exception as e:
             logger.warning(f"Auto-Retriever Fallback ({e}). Tentative via Base Engine...")
-            # Fallback sur recherche vectorielle standard avec la variante la plus pertinente
             search_query = variantes[0] if variantes else user_query
             response = self.base_engine.query(search_query)
             
         if not response.source_nodes:
             return "Sm7 lya, had l-produit ba9i madiyoroch f stock l-youm. Chouf chi 7aja khora?"
 
-        # PBI-502 : Enrichissement VFM via Expertise Externe
+        # PBI-602 : Logique de comparaison assistée
+        if is_comparison and len(response.source_nodes) >= 2:
+            comparison_prompt = (
+                "Tu es un expert Personal Shopper Jumia. L'utilisateur veut comparer des produits.\n"
+                "Génère un tableau Markdown structuré comparant les 2 ou 3 meilleurs produits trouvés.\n"
+                "Colonnes : Produit | Prix | Trust Score | Value for Money | Points Forts\n"
+                "Après le tableau, ajoute une section '🎯 Verdict de l'Expert' en Darija uniquement.\n"
+                "Le verdict doit être tranché et expliquer lequel est le 'meilleur' choix selon le profil.\n"
+                "Données :\n{context_str}"
+            )
+            # On utilise le synthesizer avec ce prompt spécifique
+            synthesizer = get_response_synthesizer(
+                llm=llm, 
+                text_qa_template=PromptTemplate(comparison_prompt),
+                response_mode=ResponseMode.COMPACT
+            )
+            response = synthesizer.synthesize(query=user_query, nodes=response.source_nodes[:3])
+            return response
+
+        # PBI-502 : Enrichissement VFM via Expertise Externe (pour les requêtes simples)
         if response.source_nodes:
+
 
             top_node = response.source_nodes[0]
             product_name = top_node.node.metadata.get("name", "Produit")

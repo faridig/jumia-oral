@@ -1,0 +1,93 @@
+import os
+import logging
+import requests
+from fastapi import FastAPI, Request, BackgroundTasks
+from pydantic import BaseModel
+from src.session_manager import JumiaChatManager
+from dotenv import load_dotenv
+
+load_dotenv()
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+app = FastAPI(title="Jumia Oral WhatsApp Gateway")
+chat_manager = JumiaChatManager()
+
+EVOLUTION_API_URL = os.getenv("EVOLUTION_API_URL", "http://localhost:8080")
+EVOLUTION_API_KEY = os.getenv("EVOLUTION_API_KEY", "apikey")
+INSTANCE_NAME = os.getenv("INSTANCE_NAME", "jumia")
+
+def send_whatsapp_message(number: str, text: str, media_url: str = None):
+    if media_url:
+        url = f"{EVOLUTION_API_URL}/message/sendMedia/{INSTANCE_NAME}"
+        payload = {
+            "number": number,
+            "media": media_url,
+            "caption": text,
+            "mediaType": "image",
+            "delay": 1200
+        }
+    else:
+        url = f"{EVOLUTION_API_URL}/message/sendText/{INSTANCE_NAME}"
+        payload = {
+            "number": number,
+            "text": text,
+            "delay": 1200,
+            "linkPreview": True
+        }
+    
+    headers = {
+        "Content-Type": "application/json",
+        "apikey": EVOLUTION_API_KEY
+    }
+    try:
+        response = requests.post(url, json=payload, headers=headers)
+        response.raise_for_status()
+        logger.info(f"Message envoyé à {number}")
+    except Exception as e:
+        logger.error(f"Erreur lors de l'envoi du message: {e}")
+
+def process_and_respond(user_id: str, text: str):
+    chat_response = chat_manager.handle_message(user_id, text)
+    
+    if isinstance(chat_response, dict):
+        response_text = chat_response.get("text")
+        media_url = chat_response.get("media_url")
+        send_whatsapp_message(user_id, response_text, media_url)
+    else:
+        send_whatsapp_message(user_id, chat_response)
+
+@app.post("/webhook")
+async def webhook(request: Request, background_tasks: BackgroundTasks):
+    data = await request.json()
+    logger.info(f"Webhook reçu: {data.get('event')}")
+    
+    if data.get("event") == "messages.upsert":
+        msg_data = data.get("data", {})
+        key = msg_data.get("key", {})
+        from_me = key.get("fromMe", False)
+        
+        if from_me:
+            return {"status": "ignored", "reason": "message from self"}
+        
+        remote_jid = key.get("remoteJid")
+        message = msg_data.get("message", {})
+        
+        # Extraction du texte (peut être dans conversation ou extendedTextMessage)
+        text = message.get("conversation") or message.get("extendedTextMessage", {}).get("text")
+        
+        if not text and "imageMessage" in message:
+             # Placeholder pour PBI-601
+             text = "[IMAGE_SENT]"
+        
+        if text:
+            # Traitement asynchrone pour ne pas bloquer le webhook
+            background_tasks.add_task(process_and_respond, remote_jid, text)
+            
+    return {"status": "success"}
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=5000)
