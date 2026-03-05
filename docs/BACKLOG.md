@@ -19,6 +19,7 @@
 18. **[2026-03-05] Support Vocal & Darija Natif** : Décision d'intégrer le support des messages vocaux (STT). Le système doit être capable de comprendre le Darija parlé (via Whisper ou équivalent performant) et de répondre avec une structure grammaticale Darija authentique, dépassant le simple mélange de mots.
 19. **[2026-03-05] Recherche par Intention d'Usage** : Transition d'une recherche par mots-clés vers une compréhension des besoins métiers (Gaming, Montage, Études) pour filtrer automatiquement les specs techniques requises.
 20. **[2026-03-05] Stratégie "Full-Context Chunking"** : Abandon du découpage par phrases ou sections. Chaque fiche Notebook Jumia (< 2000 tokens) sera ingérée comme un **Node unique**. Cela garantit que le LLM a accès à toutes les specs techniques et à l'URL Jumia sans répétition inutile ou perte de lien entre les métadonnées et le descriptif.
+21. **[2026-03-05] Épuration de la Sentiment Analysis (Pure Rationale)** : Pour être cohérent avec le retrait du VFM et du Trust Score, les **notes numériques** (scores 0-10) et l'axe **"Value"** sont supprimés de l'analyse de sentiment. On ne conserve que le **Rationale** (texte descriptif) pour les axes techniques (Performance, Build Quality, Display) afin de nourrir le RAG en arguments qualitatifs neutres.
 
 ## ✅ DEFINITION OF DONE (DoD)
 - Extraction : Données structurées validées par le schéma Pydantic (Enrichi Laptop).

@@ -20,6 +20,7 @@
 - [ ] **Action 4 : Diagnostic & "Full-Context Chunking"**
   - **DIAGNOSTIC CHUNKING** : Le Lead-Dev doit fournir un log montrant le découpage (Chunking) d'un fichier `.md` type.
   - **CONTRAINTE** : Bannir le découpage excessif. Viser **1 seul Chunk (Node) par produit** (si < 2000 tokens) pour garder l'unité de la fiche.
+  - **ÉPURATION** : **Suppression des notes numériques** (0-10) et de l'axe **"Value"** dans la Sentiment Analysis. Ne conserver que le **Rationale** (texte descriptif) pour l'expertise technique.
   - **INTÉGRITÉ** : **Aucune métadonnée ne doit être masquée au LLM** (`excluded_llm_metadata_keys` interdit). Le LLM doit avoir accès à 100% des specs et des URLs.
   - **INGESTION** : Scraping et ingestion de **30 articles Notebooks** maximum (Données 100% propres, sans scores).
 
