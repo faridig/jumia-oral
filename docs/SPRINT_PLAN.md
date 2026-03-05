@@ -1,36 +1,27 @@
-# 🏃 SPRINT PLAN - SPRINT 9 (TEST & PIVOT PC)
+# 🏃 SPRINT PLAN - SPRINT 10
+**Objectif** : Pivoter vers un moteur de recommandation Notebook pur et intentionnel.
 
-## 🎯 OBJECTIF
-Tester l'extraction spécialisée PC Portables sur un petit volume (10 produits) avant de réinitialiser complètement le catalogue.
+## 📋 TICKET UNIQUE SÉLECTIONNÉ
+### [PBI-2000] LE COMPAGNON NOTEBOOK (Pure Sémantique, Dual-Choice, Intent-based & Liens Directs)
+**Priorité** : CRITIQUE | **Estimation** : L
 
-## 📋 TÂCHES À RÉALISER
+**User Story** : 
+"En tant que Personal Shopper Jumia, je veux comprendre l'intention d'usage de l'utilisateur pour lui proposer systématiquement les **deux meilleurs Notebooks** avec leurs **liens directs Jumia**, sans aucun biais de score, en me basant uniquement sur la pertinence technique."
 
-### [PBI-901] TECH : Purge & Reset (Clean Slate)
-**Priorité** : High | **Estimation** : XS
-**User Story** : "En tant que Lead-Dev, je veux vider les données obsolètes pour repartir sur un catalogue 100% PC Portables."
-**Critères d'Acceptation** :
-- [ ] Vider le dossier `data/` (fichiers `.md` et `.csv`).
-- [ ] Supprimer et recréer la collection `jumia_products` dans Qdrant local.
+**Critères d'Acceptation (DoR/DoD)** :
+- [ ] **Action 1 : Nettoyage & Neutralité (RESET TOTAL)**
+  - Retrait définitif du VFM, Trust Score et de la gestion de Localisation (villes).
+  - **PURGE TOTALE** : Suppression physique de tous les fichiers `.md` existants dans `data/raw/markdown/notebooks/`.
+  - **RESET QDRANT** : Suppression et recréation de la collection `jumia_products`.
+- [ ] **Action 2 : Intelligence d'Usage**
+  - Mappage des intentions (Gaming, Études, Montage) vers des filtres techniques CPU/RAM/GPU.
+- [ ] **Action 3 : Structure "Top 2" & Liens**
+  - Présentation obligatoire de 2 options avec : Nom, Prix, Specs clés et **URL cliquable Jumia**.
+- [ ] **Action 4 : Diagnostic & "Full-Context Chunking"**
+  - **DIAGNOSTIC CHUNKING** : Le Lead-Dev doit fournir un log montrant le découpage (Chunking) d'un fichier `.md` type.
+  - **CONTRAINTE** : Bannir le découpage excessif. Viser **1 seul Chunk (Node) par produit** (si < 2000 tokens) pour garder l'unité de la fiche.
+  - **INTÉGRITÉ** : **Aucune métadonnée ne doit être masquée au LLM** (`excluded_llm_metadata_keys` interdit). Le LLM doit avoir accès à 100% des specs et des URLs.
+  - **INGESTION** : Scraping et ingestion de **30 articles Notebooks** maximum (Données 100% propres, sans scores).
 
-### [SPIKE-902] TEST : Extraction Micro-Batch (10 Produits)
-**Priorité** : High | **Estimation** : XS
-**User Story** : "En tant que Chef d'Orchestre, je veux tester l'extraction LLM sur 10 produits pour valider la qualité des métadonnées."
-**Critères d'Acceptation** :
-- [ ] Lancer le crawler sur `https://www.jumia.ma/notebooks/`.
-- [ ] **Limiter strictement à 10 produits**.
-- [ ] Extraire les specs : CPU, RAM, SSD, GPU, Écran, État (Neuf/Renewed).
-- [ ] Présenter le résultat JSON pour validation au Chef d'Orchestre.
+**Responsable** : Lead-Dev
 
-### [PBI-903] INGESTION : Préparation de l'Index Laptop
-**Priorité** : Medium | **Estimation** : XS
-- Configurer les nouveaux champs de métadonnées dans l'Auto-Retriever.
-
-## 🛠️ SPÉCIFICATIONS TECHNIQUES
-- **URL** : `https://www.jumia.ma/notebooks/#catalog-listing`
-- **Volume Test** : 10 produits.
-- **Extraction LLM** : Forçage du schéma Pydantic spécialisé PC.
-
-## ✅ DEFINITION OF DONE (DoD)
-- Les 10 premiers PC sont extraits proprement avec leurs specs.
-- Le Chef d'Orchestre a validé la structure des données.
-- On est prêt pour le "Full Scale" (5 pages).

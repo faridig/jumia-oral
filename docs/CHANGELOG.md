@@ -1,5 +1,11 @@
 # 📜 CHANGELOG
 
+## [0.9.0] - 2026-03-04
+### Added
+- **Purge & Reset (PBI-901)** : Nettoyage complet des anciennes données multi-catégories et réinitialisation de la collection Qdrant pour les PC Portables.
+- **Micro-Batch Test (SPIKE-902)** : Validation de l'extraction LLM sur les 10 premiers produits Notebooks. Confirmation de la qualité des métadonnées (CPU, RAM, SSD, GPU).
+- **Préparation de l'Index (PBI-903)** : Configuration de l'Auto-Retriever pour les nouveaux champs techniques PC.
+
 ## [0.8.0] - 2026-03-04
 ### Added
 - **Appairage WhatsApp (PBI-801)** : Activation de l'instance "Jumia-Oral-Agent" et connexion via scan QR Code.

@@ -8,22 +8,17 @@
 - **Isolation des données** : Collection dédiée `jumia_products`.
 - **WhatsApp Gateway** : Evolution API (Open Source Baileys-based).
 - **Mémoire Conversationnelle** : SimpleChatStore (Persistance JSON par numéro).
-- **Format de sortie** : Markdown avec Frontmatter YAML (metadata enrichies).
+- **Format de sortie** : Markdown avec Frontmatter YAML.
+- **Stratégie de Chunking** : **Full-Context Node** (1 produit = 1 chunk unique) pour préserver l'intégrité technique.
+- **Visibilité LLM** : 100% des métadonnées (Prix, URL, Specs) transmises au modèle.
 
 ## 🏛️ JOURNAL DES DÉCISIONS
 1. **[2026-02-26] Choix de Crawl4AI & LLM Extraction** : Pour garantir l'extraction des avis profonds et des specs techniques sans maintenance de sélecteurs.
-2. **[2026-02-26] WhatsApp via Evolution API** : Solution Open Source robuste pour transformer WhatsApp en canal de vente conversationnel.
-3. **[2026-02-26] Score de Confiance** : Implémentation d'un calcul `(Note * 0.7) + (log10(Avis) * 0.3)` pour classer les "meilleurs produits".
-4. **[2026-02-26] Ton Amical Marocain** : Personnalité "Personal Shopper" mixant Français et Darija.
-5. **[2026-02-28] Architecture Category-Agnostic** : Le schéma de données est conçu pour être extensible (Informatique, Cosmétique, Bricolage) en séparant les `core_metadata` (universels) des `category_specs` (dynamiques).
-6. **[2026-02-28] Normalisation via LLM** : L'extraction LLM doit forcer des unités standards (GB, MAD, ml, kg) pour permettre des calculs et des filtres numériques fiables dans le RAG.
-7. **[2026-02-28] Pivot RAG Avancé** : Intégration de Multi-Query Expansion et Auto-Retriever pour compenser les variations de langage (Darija/Français).
-8. **[2026-03-01] VFM Boost via MCP (Sales-Focused)** : Décision d'intégrer une recherche web via MCP pour enrichir le VFM avec des avis d'experts mondiaux et des arguments de vente "sociaux", SANS jamais citer de prix concurrents, afin de maximiser la conversion sur Jumia.
-9. **[2026-03-01] Seuil de Pertinence (Hard-Filter)** : Constat (Sprint 4) que le Trust Score peut biaiser les résultats vers des produits hors-sujet. Décision d'implémenter un filtre de similarité minimum avant le re-ranking.
-
-10. **[2026-03-04] Pivot Spécialisé PC Portables** : Décision de restreindre le catalogue RAG uniquement aux ordinateurs portables (`notebooks`) pour garantir une précision technique maximale (CPU, RAM, GPU) et une expertise verticale.
-11. **[2026-03-04] Réinitialisation Totale (Reset Data)** : Purge du dossier `data/` et de la collection Qdrant pour éliminer les anciennes données multi-catégories et repartir sur une base 100% Notebooks.
-12. **[2026-03-04] Transition Chat-Centric (PBI-1001)** : Abandon du modèle de requête unique pour un moteur de chat contextuel. Cette décision vise à transformer le bot en un véritable compagnon d'achat capable de gérer des dialogues complexes.
+...
+17. **[2026-03-05] Suppression de la Localisation & Focus Produit** : Décision de supprimer toute gestion de la localisation utilisateur (villes, livraison locale). L'agent est désormais strictement dédié à la recommandation produit technique.
+18. **[2026-03-05] Support Vocal & Darija Natif** : Décision d'intégrer le support des messages vocaux (STT). Le système doit être capable de comprendre le Darija parlé (via Whisper ou équivalent performant) et de répondre avec une structure grammaticale Darija authentique, dépassant le simple mélange de mots.
+19. **[2026-03-05] Recherche par Intention d'Usage** : Transition d'une recherche par mots-clés vers une compréhension des besoins métiers (Gaming, Montage, Études) pour filtrer automatiquement les specs techniques requises.
+20. **[2026-03-05] Stratégie "Full-Context Chunking"** : Abandon du découpage par phrases ou sections. Chaque fiche Notebook Jumia (< 2000 tokens) sera ingérée comme un **Node unique**. Cela garantit que le LLM a accès à toutes les specs techniques et à l'URL Jumia sans répétition inutile ou perte de lien entre les métadonnées et le descriptif.
 
 ## ✅ DEFINITION OF DONE (DoD)
 - Extraction : Données structurées validées par le schéma Pydantic (Enrichi Laptop).
@@ -32,12 +27,13 @@
 - Sécurité : Variables d'environnement pour toutes les clés API.
 - **Laptop Expertise** : Le bot doit être capable d'expliquer les différences techniques (RAM DDR4 vs DDR5, SSD NVMe) en Darija.
 - **Sales Compliance** : Aucun nom de concurrent ou prix externe ne doit filtrer dans les réponses.
-- **Qualité de Recommandation** : Aucun produit avec une similarité sémantique faible ne doit polluer les résultats (Hard-Filtering).
+- **Pertinence Pure** : Seule la similarité sémantique et les caractéristiques techniques réelles (CPU, RAM, Prix) guident la recommandation.
+- **Dual Proposal** : Chaque recommandation doit systématiquement présenter les deux meilleures options trouvées, en soulignant leurs différences.
 
 ## 📋 BACKLOG GÉNÉRAL
 
 ### [PBI-901] TECH : Purge & Reset (Clean Slate)
-**Status** : PENDING ⏳
+**Status** : DONE ✅
 **Priorité** : High | **Estimation** : XS
 **User Story** : "En tant que Lead-Dev, je veux vider les données obsolètes pour garantir que mon moteur RAG ne recommande que des PC Portables."
 **Critères d'Acceptation** :
@@ -45,7 +41,7 @@
 - [ ] Suppression et re-création de la collection `jumia_products` dans Qdrant.
 
 ### [SPIKE-902] TEST : Extraction "Micro-Batch" (10 Produits)
-**Status** : PENDING ⏳
+**Status** : DONE ✅
 **Priorité** : High | **Estimation** : XS
 **User Story** : "En tant que Chef d'Orchestre, je veux tester l'extraction LLM sur 10 produits pour valider la structure des métadonnées PC sans gaspiller de tokens."
 **Critères d'Acceptation** :
@@ -63,7 +59,7 @@
 - [ ] Stockage structuré dans `data/`.
 
 ### [PBI-903] INGESTION : Indexation Vectorielle PC Portables
-**Status** : PENDING ⏳
+**Status** : DONE ✅
 **Priorité** : High | **Estimation** : M
 - Ingestion des nouvelles données dans le moteur RAG.
 - Vérification de la recherche hybride sur des requêtes techniques (ex: "PC i7 16GB").
@@ -89,6 +85,96 @@
   - **GIVEN** Un utilisateur WhatsApp identifié par son numéro.
   - **WHEN** Plusieurs échanges ont lieu.
   - **THEN** Le `SimpleChatStore` doit sauvegarder et recharger l'historique pour maintenir la cohérence sur plusieurs jours.
+
+### [PBI-1002] TECH : Nettoyage & Retrait Context7 (Expert Advisor)
+**Status** : PENDING ⏳
+**Priorité** : High | **Estimation** : S
+**User Story** : "En tant que Lead-Dev, je veux supprimer les appels à l'Expert Advisor (MCP) dans le moteur RAG pour me baser uniquement sur les descriptions Jumia."
+**Critères d'Acceptation** :
+- [ ] Suppression de l'injection du `expert_node` dans `src/rag_engine.py`.
+- [ ] Désactivation/Suppression de `src/expert_advisor.py`.
+- [ ] Validation que les réponses LLM ne citent plus de sources externes.
+
+### [PBI-1003] TECH : Suppression totale du Score VFM
+**Status** : PENDING ⏳
+**Priorité** : High | **Estimation** : S
+**User Story** : "En tant que Lead-Dev, je veux retirer toute trace du score VFM (calcul, stockage et re-ranking) pour simplifier le modèle de données."
+**Critères d'Acceptation** :
+- [ ] Retrait du champ `value_for_money_score` dans le schéma Pydantic (`models.py`).
+- [ ] Suppression de l'instruction d'extraction VFM dans `src/scraper.py`.
+- [ ] Mise à jour du `JumiaReRanker` dans `src/rag_engine.py` pour n'utiliser que le `trust_score`.
+- [ ] Nettoyage de l'ingestion (`src/ingestion.py`).
+
+### [PBI-1004] TECH : Suppression totale du Trust Score
+**Status** : PENDING ⏳
+**Priorité** : High | **Estimation** : S
+**User Story** : "En tant que Lead-Dev, je veux supprimer le Trust Score et le JumiaReRanker pour ne garder que la pertinence sémantique LlamaIndex."
+**Critères d'Acceptation** :
+- [ ] Suppression de la fonction `calculate_trust_score` dans `src/scraper.py`.
+- [ ] Retrait de `trust_score` du modèle de données et du frontmatter Markdown.
+- [ ] Suppression (ou neutralisation) du `JumiaReRanker` dans `src/rag_engine.py`.
+- [ ] Mise à jour du prompt système pour ne plus mentionner les scores ou l'absence d'avis.
+
+### [PBI-1005] UX : Implémentation de la réponse "Dual-Choice"
+**Status** : PENDING ⏳
+**Priorité** : High | **Estimation** : S
+**User Story** : "En tant que Personal Shopper, je veux proposer systématiquement les 2 meilleures options au client, afin de faciliter son choix par la comparaison."
+**Critères d'Acceptation** :
+- [ ] Ajuster le `response_synthesizer` pour forcer la présentation de 2 produits.
+- [ ] Modifier le prompt de personnalité pour structurer la réponse avec : Option 1, Option 2, et un court conseil technique pour départager.
+- [ ] Gérer le cas où un seul produit est trouvé (réponse adaptée).
+
+### [PBI-1006] TECH/UX : Retrait de la gestion de Localisation
+**Status** : PENDING ⏳
+**Priorité** : High | **Estimation** : XS
+**User Story** : "En tant que Lead-Dev, je veux supprimer le flux d'onboarding lié à la ville et toute mention de localisation dans les réponses, pour me concentrer exclusivement sur les produits."
+**Critères d'Acceptation** :
+- [ ] Suppression du flux de demande de ville dans `src/session_manager.py`.
+- [ ] Retrait de la persistance de localisation dans le `SimpleChatStore`.
+- [ ] Mise à jour du prompt système pour interdire toute mention de ville ou de logistique locale.
+
+### [PBI-2000] LE COMPAGNON NOTEBOOK (Pure Sémantique, Dual-Choice, Intent-based & Liens Directs)
+**Status** : IN_PROGRESS 🚀 (Sprint 10)
+**Priorité** : CRITIQUE | **Estimation** : L
+**User Story** : "En tant que Personal Shopper Jumia, je veux comprendre l'intention d'usage de l'utilisateur pour lui proposer systématiquement les **deux meilleurs Notebooks** avec leurs **liens directs Jumia**, sans aucun biais de score, en me basant uniquement sur la pertinence technique."
+**Critères d'Acceptation** :
+- [ ] **Action 1 : Nettoyage & Neutralité (RESET TOTAL)**
+  - Retrait définitif du VFM, Trust Score et de la gestion de Localisation (villes).
+  - **PURGE TOTALE** : Suppression physique de tous les fichiers `.md` existants dans `data/raw/markdown/notebooks/`.
+  - **RESET QDRANT** : Suppression et recréation de la collection `jumia_products`.
+- [ ] **Action 2 : Intelligence d'Usage**
+  - Mappage des intentions (Gaming, Études, Montage) vers des filtres techniques CPU/RAM/GPU.
+- [ ] **Action 3 : Structure "Top 2" & Liens**
+  - Présentation obligatoire de 2 options avec : Nom, Prix, Specs clés et **URL cliquable Jumia**.
+- [ ] **Action 4 : Ingestion "Controlled Batch"**
+  - Scraping et ingestion de **30 articles Notebooks** maximum (Données 100% propres, sans scores).
+
+### [PBI-1101] PROMPT : Guide de Traduction "Darija-Tech" (Glossaire)
+**Status** : PENDING ⏳
+**Priorité** : Medium | **Estimation** : S
+**User Story** : "En tant qu'utilisateur marocain, je veux que le bot utilise des expressions techniques familières (ex: 'ra9a', 'madi', 'tayra') pour que les conseils soient plus naturels."
+**Critères d'Acceptation** :
+- [ ] Création d'un dictionnaire de correspondance Terme Tech <-> Expression Darija.
+- [ ] Intégration du glossaire dans le System Prompt.
+- [ ] Test de validation du ton avec le Chef d'Orchestre.
+
+### [PBI-1102] RAG : Mappage "Usage" vers "Specs" (Intention)
+**Status** : PENDING ⏳
+**Priorité** : High | **Estimation** : M
+**User Story** : "En tant que client non-expert, je veux exprimer mon besoin (ex: 'pour mes études') et que le bot identifie seul la RAM/CPU nécessaire."
+**Critères d'Acceptation** :
+- [ ] Implémenter une couche de raisonnement LLM qui transforme une intention d'usage en filtres techniques (ex: Études -> i3/R3 + 8GB).
+- [ ] Intégration dans l'Auto-Retriever de LlamaIndex.
+
+### [PBI-1103] TECH : Support Vocal WhatsApp & LLM Darija-Native
+**Status** : PENDING ⏳
+**Priorité** : Medium | **Estimation** : L
+**User Story** : "En tant qu'utilisateur, je veux parler en Darija et que le bot comprenne mes nuances culturelles pour me répondre dans un Darija parfait (et non un Français traduit)."
+**Critères d'Acceptation** :
+- [ ] Intégration de Whisper (ou API spécialisée) pour la transcription fidèle du Darija parlé.
+- [ ] Sélection/Fine-tuning du prompt pour un LLM (GPT-4o ou modèle spécialisé) capable de traiter la grammaire Darija sans passer par une traduction intermédiaire en Français.
+- [ ] Réponse générée en Darija fluide (Latin ou Arabe selon préférence user) respectant les codes de politesse marocains.
+- [ ] Validation de la compréhension des expressions idiomatiques ("mkhyr", "3la 9d l-jib", etc.).
 
 ### [PBI-000] SPRINT 0 : Infrastructure & Walking Skeleton
 **Status** : DONE ✅
@@ -167,10 +253,8 @@
 - Accueil interactif "Mrehba" fonctionnel sur WhatsApp.
 
 ### [PBI-310] Gestion de la Localisation Utilisateur (Onboarding)
-**Status** : DONE ✅
-**Priorité** : Medium | **Estimation** : S
-- Flux d'onboarding demandant la ville à l'utilisateur lors du premier échange.
-- Persistance de la localisation dans le `SimpleChatStore`.
+**Status** : CANCELLED ❌ (Retiré le 05/03 pour focus produit strict)
+**Priorité** : - | **Estimation** : S
 
 ## 📝 FEEDBACKS À AFFINER
 
@@ -198,15 +282,11 @@
 - [x] Tout produit en dessous du seuil doit être supprimé de la liste AVANT le calcul du boost business.
 - [x] **Test** : Une requête "Crème" ne doit jamais retourner une "Cartouche d'encre" même si cette dernière a un Trust Score de 5.0.
 
-### [PBI-502] TECH/UX : VFM Boost via Expertise Externe (MCP - Sales Focus)
-**Status** : DONE ✅
-**Priorité** : High | **Estimation** : M
-**User Story** : "En tant que Personal Shopper, je veux enrichir le score VFM avec des tests d'experts externes, afin de rassurer l'utilisateur et de **déclencher l'achat sur Jumia**."
-**Critères d'Acceptation** :
-- [x] Utiliser le MCP pour trouver des notes de tests professionnels (ex: DXOMARK, NotebookCheck).
-- [x] Extraire 2-3 arguments "chocs" (Pros/Cons) pour chaque produit.
-- [x] **Arbitrage de Confiance** : Si des avis experts sont trouvés, transformer le message "Manque d'avis" (PBI-402) en argument de "Nouveauté validée par les pros".
-- [x] Interdiction stricte de citer des prix concurrents ou des noms de boutiques externes.
-- [x] Intégrer ces arguments dans la réponse WhatsApp pour "vendre" le produit sélectionné.
+### [PBI-502] TECH/UX : VFM Boost via Expertise Externe (MCP) [REVERTED]
+**Status** : CANCELLED ❌ (Décision client du 05/03)
+**Priorité** : - | **Estimation** : M
+**User Story** : "En tant que Personal Shopper, je veux enrichir le score VFM avec des tests d'experts externes."
+**Note** : Fonctionnalité supprimée pour privilégier les données Jumia natives.
+
 
 
