@@ -25,16 +25,8 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-def calculate_trust_score(rating: float, review_count: int) -> float:
-    """Calcul du trust_score : (Note * 0.7) + (log10(Avis) * 0.3)"""
-    if review_count <= 0:
-        return round(rating * 0.7, 2)
-    log_reviews = math.log10(review_count)
-    score = (rating * 0.7) + (log_reviews * 0.3)
-    return round(score, 2)
-
-async def scrape_products(urls: List[str], limit: int = 5):
-    """Scrape les détails des produits en utilisant LLM"""
+async def scrape_products(urls: List[str], limit: int = 30):
+    """Scrape les détails des produits en utilisant LLM (Pure Sémantique)"""
     
     extraction_strategy = LLMExtractionStrategy(
         llm_config=LLMConfig(
@@ -53,8 +45,7 @@ async def scrape_products(urls: List[str], limit: int = 5):
             "   - GPU: (ex: Intel Iris Xe or NVIDIA RTX 3050)\n"
             "   - Screen: (ex: 15.6\" FHD IPS)\n"
             "   - Condition: (Neuf or Renewed/Reconditionné)\n"
-            "3. sentiment_analysis: Focus on Performance, Build Quality, Display, and Value.\n"
-            "4. value_for_money_score: (0-10) based on specs vs price.\n"
+            "3. sentiment_analysis: Focus on technical Rationale for Performance, Build Quality, and Display. NO NUMERIC SCORES.\n"
             "IMPORTANT: Prices and technical specs MUST be accurate. If a spec is not found, use 'N/A'."
         ),
         verbose=True
@@ -149,14 +140,9 @@ async def scrape_products(urls: List[str], limit: int = 5):
                     product_obj = CategoryAgnosticProduct(**data)
                     product_obj.core_metadata.url = url
                     
-                    # Trust score calculation (using rating from core_metadata if available)
-                    rating = product_obj.core_metadata.rating
-                    review_count = product_obj.core_metadata.review_count
-                    product_obj.trust_score = calculate_trust_score(float(rating or 0.0), int(review_count or 0))
-                    
                     final_data = product_obj.model_dump()
                     results.append(final_data)
-                    logger.info(f"Successfully scraped: {product_obj.core_metadata.name} (Score: {product_obj.trust_score})")
+                    logger.info(f"Successfully scraped: {product_obj.core_metadata.name}")
                     
                     # Sauvegarde incrémentale
                     path = save_to_markdown(final_data)
@@ -169,7 +155,7 @@ async def scrape_products(urls: List[str], limit: int = 5):
     return results
 
 def save_to_markdown(product: Dict):
-    """Sauvegarde le produit au format Markdown avec Frontmatter YAML"""
+    """Sauvegarde le produit au format Markdown avec Frontmatter YAML (Neutralité Technique)"""
     category = product.get('core_metadata', {}).get('category')
     if category:
         category = category.lower()
@@ -194,8 +180,6 @@ def save_to_markdown(product: Dict):
         "core_metadata": core,
         "category_specs": product.get("category_specs"),
         "sentiment_analysis": product.get("sentiment_analysis"),
-        "value_for_money_score": product.get("value_for_money_score"),
-        "trust_score": product.get("trust_score"),
         "seller_info": product.get("seller_info")
     }
     
@@ -216,7 +200,7 @@ def save_to_markdown(product: Dict):
 
     gallery_md = "\n".join([f"![Image {i+1}]({img})" for i, img in enumerate(gallery_images)])
     
-    sentiment_md = "\n".join([f"- **{s['axis']}**: {s['score']}/10 - {s['rationale']}" for s in product.get('sentiment_analysis', [])])
+    sentiment_md = "\n".join([f"- **{s['axis']}**: {s['rationale']}" for s in product.get('sentiment_analysis', [])])
     
     content = f"""---
 {json.dumps(frontmatter, indent=2)}
@@ -231,8 +215,6 @@ def save_to_markdown(product: Dict):
 
 ## Analyse de Sentiment
 {sentiment_md if sentiment_md else "Pas d'analyse de sentiment disponible."}
-
-**Score Rapport Qualité-Prix**: {product.get('value_for_money_score', 'N/A')}/10
 
 ## Détails du Vendeur
 {seller_md if seller_md else "Informations vendeur non disponibles."}
@@ -264,8 +246,8 @@ async def main():
         logger.error("No URLs found in product_urls.json.")
         return
 
-    # Spike: Limiter à 10 produits (On saute les 10 premiers déjà faits)
-    await scrape_products(urls[10:12], limit=2)
+    # Ingestion des 20 articles suivants (PBI-2000)
+    await scrape_products(urls[10:30], limit=20)
 
 if __name__ == "__main__":
     asyncio.run(main())

@@ -1,5 +1,19 @@
 # 📜 CHANGELOG
 
+## [1.0.0] - 2026-03-05
+### Added
+- **Compagnon Notebook (PBI-2000)** : Transformation du moteur RAG en expert "Personal Shopper" spécialisé PC Portables.
+- **Neutralité Technique** : Suppression totale des scores business (VFM/Trust) au profit d'une analyse technique pure basée sur les spécifications.
+- **Logique "Top 2"** : Implémentation d'une contrainte de réponse systématique sur les deux meilleures options avec liens Jumia directs.
+- **Full-Context Chunking** : Optimisation de l'ingestion garantissant l'intégrité des fiches techniques (1 seul Node par produit).
+- **Mappage d'Intentions** : Enrichissement des requêtes utilisateur via des filtres techniques (Gaming, Études, Montage).
+
+## [0.9.0] - 2026-03-04
+### Added
+- **Purge & Reset (PBI-901)** : Nettoyage complet des anciennes données multi-catégories et réinitialisation de la collection Qdrant pour les PC Portables.
+- **Micro-Batch Test (SPIKE-902)** : Validation de l'extraction LLM sur les 10 premiers produits Notebooks. Confirmation de la qualité des métadonnées (CPU, RAM, SSD, GPU).
+- **Préparation de l'Index (PBI-903)** : Configuration de l'Auto-Retriever pour les nouveaux champs techniques PC.
+
 ## [0.8.0] - 2026-03-04
 ### Added
 - **Appairage WhatsApp (PBI-801)** : Activation de l'instance "Jumia-Oral-Agent" et connexion via scan QR Code.
@@ -34,6 +48,12 @@
 - **Affinage de l'Auto-Retriever (PBI-403)** : Optimisation des filtres métadonnées pour éviter l'over-filtering sur les requêtes simples.
 
 ## 💡 LEÇONS APPRISES
+### Sprint 10 : Compagnon Notebook & Pureté Technique
+- **Efficacité de la contrainte "Top 2"** : Limiter le choix à deux options force le moteur RAG à être plus sélectif et précis, évitant ainsi la surcharge cognitive pour l'utilisateur. La justification technique devient alors le coeur de la valeur ajoutée.
+- **Suppression des Biais Business** : Le retrait des scores numériques (VFM/Trust) simplifie le modèle de données et renforce la crédibilité de l'expert, qui s'appuie désormais uniquement sur des faits techniques (CPU, RAM, GPU) et des justifications sémantiques.
+- **Intégrité par le Full-Context Chunking** : L'approche "un produit = un node" est la seule garantie contre la fragmentation des informations techniques. En évitant le découpage arbitraire, on s'assure que le LLM a toujours accès à la fiche complète lors de la synthèse.
+- **Cartographie des Intentions** : Le passage d'une recherche par mots-clés à un mappage par intentions d'usage (Gaming, Montage, Études) permet de traduire des besoins flous en contraintes matérielles rigides, augmentant drastiquement la pertinence de l'Auto-Retriever.
+
 ### Sprint 9 : Pivot PC Portables & Nettoyage
 - **Pivot Catégoriel & Performance** : Le passage à une spécialisation PC Portables réduit drastiquement le bruit sémantique. Le nettoyage de l'arborescence (`data/raw/markdown/notebooks`) permet d'accélérer l'indexation et la précision des réponses.
 - **Auto-Retriever & Métadonnées Techniques** : L'ajout de champs techniques (CPU, RAM, SSD) dans les métadonnées de l'Auto-Retriever est crucial pour les produits technologiques. Cela permet des filtres précis (ex: "8Go de RAM") que la recherche vectorielle seule pourrait rater.
