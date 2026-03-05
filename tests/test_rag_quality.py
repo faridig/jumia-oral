@@ -16,6 +16,8 @@ def test_notebook_compagnon_dual_choice():
         mock_response_str = "Mrehba! Voici deux options pour vous : \nOption 1: Dell Latitude \nOption 2: HP Probook \nConseil: Mzyan bzaaf."
         
         with unittest.mock.patch("src.rag_engine.get_rag_engine") as mock_get_engine, \
+             unittest.mock.patch("src.rag_engine.OpenAI"), \
+             unittest.mock.patch("src.rag_engine.OpenAIEmbedding"), \
              unittest.mock.patch("src.rag_engine.expand_query_darija", return_value=["laptop gaming"]):
             mock_engine = unittest.mock.Mock()
             # Mock de la réponse avec 2 nodes sources
@@ -48,7 +50,10 @@ def test_url_presence_pbi_2000():
     """
     if os.getenv("GITHUB_ACTIONS") == "true":
         mock_response_str = "Option 1: [Voir sur Jumia](https://www.jumia.ma/prod1)"
-        with unittest.mock.patch("src.rag_engine.get_rag_engine") as mock_get_engine:
+        with unittest.mock.patch("src.rag_engine.get_rag_engine") as mock_get_engine, \
+             unittest.mock.patch("src.rag_engine.OpenAI"), \
+             unittest.mock.patch("src.rag_engine.OpenAIEmbedding"), \
+             unittest.mock.patch("src.rag_engine.expand_query_darija", return_value=["test"]):
             mock_engine = unittest.mock.Mock()
             mock_res = unittest.mock.Mock()
             mock_res.source_nodes = [unittest.mock.Mock()]
@@ -67,10 +72,24 @@ def test_no_business_scores_pbi_2000():
     """
     Vérifie l'absence de scores numériques (VFM/Trust) dans la réponse.
     """
-    rag = MultiQueryAutoRAG()
-    # On mock le retour pour simuler une réponse du LLM
-    with unittest.mock.patch.object(rag.auto_engine._response_synthesizer, 'synthesize', return_value="Voici le top 2 sans scores."):
-        response = str(rag.query("laptop"))
+    if os.getenv("GITHUB_ACTIONS") == "true":
+        with unittest.mock.patch("src.rag_engine.get_rag_engine") as mock_get_engine, \
+             unittest.mock.patch("src.rag_engine.OpenAI"), \
+             unittest.mock.patch("src.rag_engine.OpenAIEmbedding"), \
+             unittest.mock.patch("src.rag_engine.expand_query_darija", return_value=["test"]):
+            mock_engine = unittest.mock.Mock()
+            mock_res = unittest.mock.Mock()
+            mock_res.source_nodes = [unittest.mock.Mock()]
+            mock_engine.query.return_value = mock_res
+            mock_engine._response_synthesizer.synthesize.return_value = "Voici le top 2 sans scores."
+            mock_get_engine.return_value = mock_engine
+            rag = MultiQueryAutoRAG()
+            response = str(rag.query("laptop"))
+    else:
+        rag = MultiQueryAutoRAG()
+        # On mock le retour pour simuler une réponse du LLM
+        with unittest.mock.patch.object(rag.auto_engine._response_synthesizer, 'synthesize', return_value="Voici le top 2 sans scores."):
+            response = str(rag.query("laptop"))
         
     forbidden = ["trust score", "value for money", "vfm", "/10", "/5"]
     response_lower = response.lower()
