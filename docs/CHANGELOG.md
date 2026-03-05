@@ -1,5 +1,15 @@
 # 📜 CHANGELOG
 
+## [1.1.0] - 2026-03-05
+### Added
+- **Le Compagnon Notebook (PBI-2000)** : Pivot majeur vers un moteur de recommandation pur sémantique et intentionnel.
+- **Neutralité Algorithmique** : Retrait total des scores VFM et Trust Score pour éliminer tout biais artificiel dans les recommandations.
+- **Dual Proposal Standard** : Contrainte de réponse présentant systématiquement deux options comparables avec liens Jumia cliquables.
+- **Intelligence d'Usage** : Capacité de traduire des besoins métiers (Gaming, Études, Montage) en contraintes techniques CPU/RAM/GPU.
+- **Reset Qdrant & Purge MD** : Réinitialisation complète de la base de données et suppression des anciens fichiers pour garantir l'intégrité des 30 produits Notebooks ingérés.
+- **Full-Context Node** : Stratégie d'ingestion "1 produit = 1 chunk" garantissant l'accès complet au descriptif technique pour le LLM.
+- **Épuration Qualitative** : Nettoyage de la Sentiment Analysis pour ne conserver que le rationale textuel (expertise) et supprimer les notes numériques.
+
 ## [1.0.0] - 2026-03-05
 ### Added
 - **Compagnon Notebook (PBI-2000)** : Transformation du moteur RAG en expert "Personal Shopper" spécialisé PC Portables.

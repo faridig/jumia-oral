@@ -1,28 +1,41 @@
-# 🏃 SPRINT PLAN - SPRINT 10
-**Objectif** : Pivoter vers un moteur de recommandation Notebook pur et intentionnel.
+# 🏃 SPRINT PLAN - SPRINT 11 : "MESURE & QUALITÉ"
 
-## 📋 TICKET UNIQUE SÉLECTIONNÉ
-### [PBI-2000] LE COMPAGNON NOTEBOOK (Pure Sémantique, Dual-Choice, Intent-based & Liens Directs)
-**Priorité** : CRITIQUE | **Estimation** : L
+**Objectif du Sprint** : Mettre en place un système de mesure automatisé (RAG Triad) pour garantir l'exactitude des informations techniques et de la pertinence des recommandations.
 
-**User Story** : 
-"En tant que Personal Shopper Jumia, je veux comprendre l'intention d'usage de l'utilisateur pour lui proposer systématiquement les **deux meilleurs Notebooks** avec leurs **liens directs Jumia**, sans aucun biais de score, en me basant uniquement sur la pertinence technique."
+---
 
-**Critères d'Acceptation (DoR/DoD)** :
-- [ ] **Action 1 : Nettoyage & Neutralité (RESET TOTAL)**
-  - Retrait définitif du VFM, Trust Score et de la gestion de Localisation (villes).
-  - **PURGE TOTALE** : Suppression physique de tous les fichiers `.md` existants dans `data/raw/markdown/notebooks/`.
-  - **RESET QDRANT** : Suppression et recréation de la collection `jumia_products`.
-- [ ] **Action 2 : Intelligence d'Usage**
-  - Mappage des intentions (Gaming, Études, Montage) vers des filtres techniques CPU/RAM/GPU.
-- [ ] **Action 3 : Structure "Top 2" & Liens**
-  - Présentation obligatoire de 2 options avec : Nom, Prix, Specs clés et **URL cliquable Jumia**.
-- [ ] **Action 4 : Diagnostic & "Full-Context Chunking"**
-  - **DIAGNOSTIC CHUNKING** : Le Lead-Dev doit fournir un log montrant le découpage (Chunking) d'un fichier `.md` type.
-  - **CONTRAINTE** : Bannir le découpage excessif. Viser **1 seul Chunk (Node) par produit** (si < 2000 tokens) pour garder l'unité de la fiche.
-  - **ÉPURATION** : **Suppression des notes numériques** (0-10) et de l'axe **"Value"** dans la Sentiment Analysis. Ne conserver que le **Rationale** (texte descriptif) pour l'expertise technique.
-  - **INTÉGRITÉ** : **Aucune métadonnée ne doit être masquée au LLM** (`excluded_llm_metadata_keys` interdit). Le LLM doit avoir accès à 100% des specs et des URLs.
-  - **INGESTION** : Scraping et ingestion de **30 articles Notebooks** maximum (Données 100% propres, sans scores).
+### [PBI-1200] EVAL : Implémentation du RAG Triad (DeepEval)
+**Priorité** : High | **Estimation** : M
 
-**Responsable** : Lead-Dev
+**User Story** : "En tant que Lead-Dev, je veux automatiser l'évaluation de la pertinence pour m'assurer que le bot ne donne pas de fausses informations techniques."
+**Dépendances** : Aucune
+**Critères d'Acceptation (Gherkin)** :
+- [ ] **Scenario 1 : Mesure de la Fidélité (Faithfulness)**
+  - **GIVEN** Un dataset de test avec questions et contextes Jumia.
+  - **WHEN** On lance l'évaluation via DeepEval.
+  - **THEN** Le score de Faithfulness doit identifier toute spec technique (RAM, CPU) inventée par le LLM.
+- [ ] **Scenario 2 : Dataset de Référence**
+  - **GIVEN** Le besoin de répétabilité.
+  - **WHEN** On crée `tests/eval_dataset.json`.
+  - **THEN** Il doit contenir au moins 5 paires (Question, Contexte, Ground Truth) représentatives.
+- [ ] **Scenario 3 : Rapport Automatisé**
+  - **GIVEN** L'exécution du script `scripts/evaluate_rag.py`.
+  - **WHEN** Le script se termine.
+  - **THEN** Il affiche un tableau récapitulatif des scores par metric.
 
+---
+
+### [PBI-1004] TECH : Suppression totale du Trust Score
+**Priorité** : Medium | **Estimation** : S
+**User Story** : "En tant que Lead-Dev, je veux supprimer le Trust Score pour ne garder que la pertinence sémantique, afin que l'évaluation soit basée sur des données pures."
+**Critères d'Acceptation** :
+- [ ] Retrait de `trust_score` du moteur RAG et du prompt.
+- [ ] Nettoyage des fichiers Markdown dans `data/`.
+
+---
+
+### [PBI-1003] TECH : Suppression totale du Score VFM
+**Priorité** : Medium | **Estimation** : S
+**User Story** : "En tant que Lead-Dev, je veux retirer le score VFM pour simplifier l'évaluation."
+**Critères d'Acceptation** :
+- [ ] Retrait du champ `value_for_money_score` du code et de l'extraction.
