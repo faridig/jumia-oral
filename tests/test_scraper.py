@@ -6,7 +6,7 @@ from src.models import CategoryAgnosticProduct, SentimentAxis
 from src.scraper import save_to_markdown
 
 def test_category_agnostic_product_schema_v2():
-    # Test valid data for PBI-120
+    # Test valid data for PBI-2000
     valid_data = {
         "core_metadata": {
             "name": "Laptop XPS 13",
@@ -25,18 +25,15 @@ def test_category_agnostic_product_schema_v2():
             "CPU": "Intel i7"
         },
         "sentiment_analysis": [
-            {"axis": "Performance", "score": 9.0, "rationale": "Very fast"},
-            {"axis": "Design", "score": 9.5, "rationale": "Sleek and light"},
-            {"axis": "Prix", "score": 7.0, "rationale": "Premium price"}
+            {"axis": "Performance", "rationale": "Very fast"},
+            {"axis": "Design", "rationale": "Sleek and light"}
         ],
-        "value_for_money_score": 8.5,
-        "trust_score": 4.2,
         "raw_review_summary": "Excellent laptop for professionals."
     }
     product = CategoryAgnosticProduct(**valid_data)
     assert product.core_metadata.name == "Laptop XPS 13"
     assert product.category_specs["RAM"] == "16 GB"
-    assert len(product.sentiment_analysis) == 3
+    assert len(product.sentiment_analysis) == 2
     assert product.sentiment_analysis[0].axis == "Performance"
 
     # Test invalid data (missing core_metadata)
@@ -62,10 +59,8 @@ def test_save_to_markdown_v2(tmp_path, monkeypatch):
             "Contenance": "50 ml"
         },
         "sentiment_analysis": [
-            {"axis": "Efficacité", "score": 8.0, "rationale": "Bonne hydratation"}
-        ],
-        "value_for_money_score": 8.0,
-        "trust_score": 4.0
+            {"axis": "Efficacité", "rationale": "Bonne hydratation"}
+        ]
     }
     
     filepath = save_to_markdown(product_data)
@@ -80,4 +75,4 @@ def test_save_to_markdown_v2(tmp_path, monkeypatch):
     assert "![Image Principale](http://example.com/cream.jpg)" in content
     assert "50 ml" in content
     assert "Efficacité" in content
-    assert "8.0/10" in content
+    assert "Bonne hydratation" in content

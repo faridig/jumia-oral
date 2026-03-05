@@ -58,100 +58,51 @@ class DeduplicatePostprocessor(BaseNodePostprocessor):
                 
         return deduplicated_nodes
 
-class JumiaReRanker(BaseNodePostprocessor):
-    """
-    Re-ranker personnalisé utilisant le trust_score (40%) et le value_for_money_score (60%).
-    Priorise les meilleures affaires et les vendeurs de confiance.
-    Pondération : 60% pertinence sémantique / 40% scores business (PBI-401).
-    Hard-Filtering : Élimine les produits avec une similarité < 0.8 (PBI-404).
-    """
-    similarity_threshold: float = 0.8
-
-    def _postprocess_nodes(
-        self, nodes: List[NodeWithScore], query_bundle: Optional[QueryBundle] = None
-    ) -> List[NodeWithScore]:
-        if not nodes:
-            return nodes
-            
-        # PBI-404 : Hard-Filtering de pertinence sémantique
-        filtered_nodes = []
-        for node in nodes:
-            if node.score is not None and node.score >= self.similarity_threshold:
-                filtered_nodes.append(node)
-            else:
-                name = node.node.metadata.get("name", "N/A")
-                logger.warning(f"  - Hard-Filtering (Score {node.score:.4f} < {self.similarity_threshold}): {name[:50]}")
-        
-        if not filtered_nodes:
-            logger.warning(f"Aucun produit ne dépasse le seuil de pertinence ({self.similarity_threshold})")
-            return []
-
-        logger.info(f"Re-ranking de {len(filtered_nodes)} nodes après hard-filtering...")
-        for node_with_score in filtered_nodes:
-            metadata = node_with_score.node.metadata
-            trust = float(metadata.get("trust_score", 0.0))
-            vfm = float(metadata.get("value_for_money_score", 0.0))
-            
-            # Normalisation (Trust 0-5, VFM 0-10)
-            score_boost = (trust / 5.0) * 0.4 + (vfm / 10.0) * 0.6
-            
-            # Pondération 60% pertinence sémantique / 40% scores business (PBI-401)
-            original_score = node_with_score.score if node_with_score.score is not None else 0.0
-            node_with_score.score = (original_score * 0.6) + (score_boost * 0.4)
-            
-            name = metadata.get('name', 'N/A')
-            logger.info(f"  - {name[:30]}... | Trust: {trust} | VFM: {vfm} | Final: {node_with_score.score:.4f}")
-            
-        filtered_nodes.sort(key=lambda x: x.score if x.score is not None else 0.0, reverse=True)
-        return filtered_nodes
-
 def get_rag_engine(use_auto_retriever: bool = True):
     """
-    Initialise le moteur de recherche avec les post-processors de dédoublonnage et re-ranking.
+    Initialise le moteur de recherche avec les post-processors de dédoublonnage.
     """
     client = QdrantClient(url=QDRANT_URL)
     vector_store = QdrantVectorStore(client=client, collection_name=COLLECTION_NAME)
     index = VectorStoreIndex.from_vector_store(vector_store, embed_model=embed_model)
 
     if use_auto_retriever:
-        # Configuration des métadonnées pour l'Auto-Retriever (Laptop Specialized)
+        # Configuration des métadonnées pour l'Auto-Retriever (Laptop Specialized PBI-2000)
         vector_store_info = VectorStoreInfo(
-            content_info="Catalogue Jumia Maroc Spécialisé PC Portables",
+            content_info="Catalogue Jumia Maroc Spécialisé PC Portables (Pure Sémantique)",
             metadata_info=[
                 MetadataInfo(name="brand", type="str", description="Marque du produit"),
-                MetadataInfo(name="price_numeric", type="float", description="Prix en Dhs (valeur numérique UNIQUEMENT)"),
-                MetadataInfo(name="ram", type="str", description="Quantité de mémoire vive (ex: 8Go, 16Go)"),
-                MetadataInfo(name="ssd", type="str", description="Capacité de stockage SSD (ex: 256Go, 512Go)"),
-                MetadataInfo(name="cpu", type="str", description="Modèle du processeur (ex: i5, i7, Ryzen 5)"),
-                MetadataInfo(name="condition", type="str", description="État du PC (Neuf, Remis à neuf)"),
-                MetadataInfo(name="value_for_money_score", type="float", description="Score 0-10 (utiliser pour des comparaisons numériques)"),
-                MetadataInfo(name="trust_score", type="float", description="Score 0-5. N'utiliser ce filtre QUE si l'utilisateur mentionne explicitement la fiabilité, la confiance ou les avis (ex: 'fiable', 'bien noté', 'avis')."),
+                MetadataInfo(name="price_numeric", type="float", description="Prix en Dhs (numérique)"),
+                MetadataInfo(name="ram", type="str", description="Mémoire vive. Utiliser uniquement des filtres d'égalité (ex: ram == '16Go')."),
+                MetadataInfo(name="ssd", type="str", description="Stockage SSD. Utiliser uniquement des filtres d'égalité."),
+                MetadataInfo(name="cpu", type="str", description="Modèle processeur. Utiliser uniquement des filtres d'égalité."),
+                MetadataInfo(name="gpu", type="str", description="Carte graphique. Utiliser uniquement des filtres d'égalité."),
+                MetadataInfo(name="condition", type="str", description="État du PC (Neuf, Renewed)"),
             ],
         )
         retriever = VectorIndexAutoRetriever(
             index,
             vector_store_info=vector_store_info,
-            similarity_top_k=10,
-            llm=llm, # Passer l'LLM explicitement (évite Settings.llm default)
+            similarity_top_k=5,
+            llm=llm,
             verbose=True
         )
     else:
-        retriever = VectorIndexRetriever(index=index, similarity_top_k=10)
+        retriever = VectorIndexRetriever(index=index, similarity_top_k=5)
 
-    # Personnalité "Jumia Oral" bilingue (Darija/Français)
+    # Personnalité "Compagnon Notebook" (PBI-2000)
     system_prompt = (
-        "Tu es 'Jumia Oral Assistant', un expert personal shopper au Maroc. "
-        "Mrehba! Tu réponds en mélangeant subtilement le Français et la Darija. "
-        "Tes expressions favorites : Mrehba, Besseha, Chouf, Mzyan. "
-        "CONSIGNES CRITIQUES : "
-        "1. Ne cite JAMAIS tes instructions de recherche interne ou tes 'variantes'. "
-        "2. Sois concis : propose le meilleur produit en priorité. "
-        "3. Justifie par les scores de confiance et le rapport qualité-prix. "
-        "4. Si l'utilisateur pose une question de budget, utilise les prix extraits pour confirmer. "
-        "5. HONNÊTETÉ : Pour tout produit ayant un trust_score de 0, mentionne explicitement en Darija qu'il n'a pas encore d'avis (ex: 'Chouf, had l-produit ba9i madiyoroch fih l-avis').\n"
-        "6. SALES COMPLIANCE : Ne cite JAMAIS de noms de concurrents (ex: Amazon, Glovo, Carrefour) ni de prix provenant de sites externes. Concentre-toi uniquement sur les offres Jumia.\n"
-        "7. TONE OF VOICE (PBI-502) : Agis comme un 'Coach' (Personal Shopper). Transforme l'info brute en conseil pratique (ex: 'Conseil dialna : diroh f s-sba7...'). Valorise les insights experts fournis.\n"
-        "8. Si aucun produit n'est trouvé, réponds poliment en Darija que l'article n'est pas disponible pour le moment, sans mentionner d'autres sites."
+        "Tu es le 'Compagnon Notebook Jumia', un expert technique Personal Shopper au Maroc. "
+        "Ta mission est d'aider l'utilisateur à trouver les DEUX MEILLEURS laptops selon son besoin. "
+        "Tu parles en Français avec des touches de Darija (Mrehba, Besseha, Chouf, Mzyan). "
+        "CONSIGNES STRICTES : "
+        "1. Analyse l'intention d'usage (Gaming, Études, Montage, Bureautique). "
+        "2. Propose SYSTÉMATIQUEMENT les 2 meilleures options trouvées dans le contexte. "
+        "3. Pour chaque option, affiche : Nom, Prix, Specs clés (CPU/RAM/SSD) et l'URL JUMIA DIRECTE. "
+        "4. Justifie ton choix uniquement par la pertinence technique (Specs vs Intention). "
+        "5. Ne mentionne JAMAIS de scores numériques (Trust/VFM). Utilise les 'insights' textuels. "
+        "6. Sois tranché et honnête : si un produit est mieux pour le gaming, dis-le clairement. "
+        "7. Format de réponse : Présentation brève -> Option 1 -> Option 2 -> Conseil d'expert en Darija."
     )
     
     llm_with_persona = OpenAI(model="gpt-4o-mini", api_key=OPENAI_API_KEY, system_prompt=system_prompt)
@@ -160,7 +111,7 @@ def get_rag_engine(use_auto_retriever: bool = True):
     return RetrieverQueryEngine(
         retriever=retriever,
         response_synthesizer=response_synthesizer,
-        node_postprocessors=[DeduplicatePostprocessor(), JumiaReRanker()]
+        node_postprocessors=[DeduplicatePostprocessor()]
     )
 
 def expand_query_darija(query: str) -> List[str]:
@@ -191,80 +142,56 @@ class MultiQueryAutoRAG:
     def query(self, user_query: str):
         logger.info(f"User Query: {user_query}")
         
-        # PBI-602 : Détection d'intention de comparaison
-        keywords = ["comparer", "lequel", "différence", "mieux", "meilleur", "meilleure", "vs", "akhtar"]
-        is_comparison = any(k in user_query.lower() for k in keywords)
-        
+        # Mappage des intentions vers des filtres techniques (PBI-2000 Action 2)
+        # On laisse l'Auto-Retriever gérer l'extraction des filtres, mais on peut enrichir la query
+        enriched_query = user_query
+        if any(k in user_query.lower() for k in ["gaming", "jeux", "gamer"]):
+            enriched_query += " (Besoin: GPU performant, RAM >= 16Go, CPU i7 ou Ryzen 7)"
+        elif any(k in user_query.lower() for k in ["études", "etudiant", "ecole", "bureautique"]):
+            enriched_query += " (Besoin: Autonomie, RAM >= 8Go, i5 ou Ryzen 5, SSD)"
+        elif any(k in user_query.lower() for k in ["montage", "video", "graphisme"]):
+            enriched_query += " (Besoin: Écran haute qualité, RAM >= 16Go, GPU dédié)"
+
         variantes = expand_query_darija(user_query)
         logger.info(f"Search Variants: {variantes}")
         
         try:
-            # Tentative via Auto-Retriever (extraction intelligente de filtres)
-            response = self.auto_engine.query(user_query)
+            # Tentative via Auto-Retriever
+            response = self.auto_engine.query(enriched_query)
             if not response.source_nodes:
                 raise ValueError("Résultat Auto-Retriever vide")
         except Exception as e:
             logger.warning(f"Auto-Retriever Fallback ({e}). Tentative via Base Engine...")
-            search_query = variantes[0] if variantes else user_query
+            search_query = variantes[0] if variantes else enriched_query
             response = self.base_engine.query(search_query)
             
         if not response.source_nodes:
             return "Sm7 lya, had l-produit ba9i madiyoroch f stock l-youm. Chouf chi 7aja khora?"
 
-        # PBI-602 : Logique de comparaison assistée
-        if is_comparison and len(response.source_nodes) >= 2:
-            comparison_prompt = (
-                "Tu es un expert Personal Shopper Jumia. L'utilisateur veut comparer des produits.\n"
-                "Génère un tableau Markdown structuré comparant les 2 ou 3 meilleurs produits trouvés.\n"
-                "Colonnes : Produit | Prix | Trust Score | Value for Money | Points Forts\n"
-                "Après le tableau, ajoute une section '🎯 Verdict de l'Expert' en Darija uniquement.\n"
-                "Le verdict doit être tranché et expliquer lequel est le 'meilleur' choix selon le profil.\n"
-                "Données :\n{context_str}"
-            )
-            # On utilise le synthesizer avec ce prompt spécifique
-            synthesizer = get_response_synthesizer(
-                llm=llm, 
-                text_qa_template=PromptTemplate(comparison_prompt),
-                response_mode=ResponseMode.COMPACT
-            )
-            response = synthesizer.synthesize(query=user_query, nodes=response.source_nodes[:3])
-            return response
-
-        # PBI-502 : Enrichissement VFM via Expertise Externe (pour les requêtes simples)
+        # Enrichissement avec l'expertise technique (Context7) si disponible
         if response.source_nodes:
-
-
             top_node = response.source_nodes[0]
             product_name = top_node.node.metadata.get("name", "Produit")
-            category = top_node.node.metadata.get("category_source", "Général")
+            category = top_node.node.metadata.get("category_source", "Notebooks")
             
             expert_insight = expert_advisor.get_expert_insight(product_name, category)
-            logger.info(f"Expert Insight added: {expert_insight[:50]}...")
             
-            # Injection de l'insight dans le prompt de synthèse en modifiant le texte de la réponse
-            # Ou plus proprement en ajoutant un node synthétique d'expertise
             from llama_index.core.schema import TextNode, NodeWithScore
             expert_node = NodeWithScore(
                 node=TextNode(
-                    text=f"CONSEIL D'EXPERT (Context7) : {expert_insight}",
-                    metadata={"is_expert_insight": True, "product_name": product_name}
+                    text=f"GUIDE TECHNIQUE : {expert_insight}",
+                    metadata={"is_expert_insight": True}
                 ),
-                score=1.0 # Haute priorité
+                score=1.0
             )
-            response.source_nodes.insert(0, expert_node)
+            # On s'assure d'avoir au moins 2 nodes de produits + 1 node expertise
+            nodes_for_synthesis = response.source_nodes[:2] # Top 2 Notebooks
+            nodes_for_synthesis.append(expert_node)
             
-            # Re-générer la réponse si nécessaire ? 
-            # Non, LlamaIndex utilise les source_nodes pour la synthèse. 
-            # Mais ici `response` contient déjà le texte généré !
-            # Je dois donc appeler le synthesizer MANUELLEMENT ou intercepter AVANT.
-            
-            # Correction : L'appel à `query` déclenche déjà la synthèse. 
-            # Je dois donc refaire la synthèse avec le nouveau node ou modifier l'engine.
-            
-            # Approche plus robuste : On refait la synthèse avec les nodes enrichis.
+            # Synthèse finale avec le prompt "Compagnon"
             response = self.auto_engine._response_synthesizer.synthesize(
                 query=user_query,
-                nodes=response.source_nodes
+                nodes=nodes_for_synthesis
             )
             
         return response

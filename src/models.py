@@ -3,8 +3,7 @@ from pydantic import BaseModel, Field
 
 class SentimentAxis(BaseModel):
     axis: str = Field(..., description="Axe d'analyse (ex: Performance, Design, Autonomie, Prix)")
-    score: Optional[float] = Field(None, description="Score de 0 à 10")
-    rationale: str = Field(..., description="Justification du score")
+    rationale: str = Field(..., description="Justification technique")
 
 class SellerInfo(BaseModel):
     name: Optional[str] = Field(None, description="Nom du vendeur")
@@ -30,7 +29,5 @@ class CategoryAgnosticProduct(BaseModel):
     core_metadata: CoreMetadata = Field(..., description="Métadonnées de base")
     category_specs: Dict[str, Any] = Field(..., description="Spécifications normalisées selon la catégorie")
     sentiment_analysis: List[SentimentAxis] = Field(default_factory=list, description="Analyse de sentiment par axe")
-    value_for_money_score: float = Field(0.0, description="Score rapport qualité-prix (0-10)")
-    trust_score: float = Field(0.0, description="Score de confiance basé sur les avis (0-5)")
     seller_info: Optional[SellerInfo] = Field(None, description="Informations sur le vendeur")
     raw_review_summary: str = Field("", description="Résumé brut des avis clients")
