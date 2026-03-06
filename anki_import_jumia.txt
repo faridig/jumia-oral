@@ -1,19 +1,22 @@
 #deck:Jumia Oral
-Qu'est-ce que la Fidélité (Faithfulness) dans un système RAG ?	C'est la mesure de l'hallucination. Elle vérifie si chaque affirmation technique dans la réponse (ex: 16GB RAM) est bien présente dans les documents sources (contexte Jumia). Elle évite que le bot n'invente des informations.
-Qu'est-ce que la Pertinence de la Réponse (Answer Relevancy) ?	C'est la mesure de l'adéquation entre la question et la réponse. Elle vérifie si le bot répond vraiment au besoin de l'utilisateur (ex: proposer un PC Gaming si l'utilisateur demande du Gaming) sans tenir compte de la source pour cette mesure précise.
-Qu'est-ce que la Précision du Contexte (Contextual Precision) ?	C'est la mesure de performance du moteur de recherche (Retriever/Qdrant). Elle vérifie si les documents les plus utiles pour répondre à la question sont classés en priorité dans les résultats remontés.
-Quel est le concept de "LLM-as-a-Judge" ?	C'est l'utilisation d'un modèle d'IA puissant (ex: GPT-4o) pour agir comme un arbitre. Il analyse la question, la réponse et le contexte pour attribuer des scores de qualité et justifier les erreurs détectées.
-Pourquoi utiliser un framework comme DeepEval ?	C'est le "Unit Testing" de l'IA. Il permet d'automatiser les tests de performance sur un grand nombre de scénarios (Gold Dataset) au lieu de faire des tests manuels fastidieux, garantissant ainsi la non-régression du système.
-Pourquoi la RAG Triad (Fidélité, Pertinence, Précision) est-elle cruciale pour Jumia ?	1. Fidélité : Évite les retours produits dus à de fausses specs. 2. Pertinence : Maximise les ventes en ciblant le bon besoin. 3. Précision : Garantit que les meilleurs produits du catalogue sortent en premier.
-Qu'est-ce que la RAG Triad ?	C'est l'ensemble des 3 metrics fondamentales pour évaluer un RAG sans référence : Faithfulness (Fidélité), Answer Relevancy (Pertinence) et Contextual Precision (Précision du contexte).
-Quelle est la différence entre Faithfulness et Answer Correctness ?	<b>Faithfulness</b> vérifie si le bot n'invente rien par rapport au contexte (sans corrigé). <b>Answer Correctness</b> vérifie si la réponse finale est identique au corrigé (Gold Dataset).
-Pourquoi le "Contextual Recall" nécessite-t-il un Gold Dataset ?	Parce qu'on doit savoir à l'avance quels documents <i>auraient dû</i> être trouvés pour calculer le taux d'oubli du moteur de recherche.
-Qu'est-ce que la génération de données synthétiques pour les tests ?	C'est l'utilisation d'un LLM pour créer automatiquement des couples Questions/Réponses à partir de documents réels, afin de stress-tester le système à grande échelle.
-Quelle est la différence entre Précision du Contexte et Rappel du Contexte (Recall) ?	La <b>Précision</b> vérifie que les documents trouvés sont utiles (pas de bruit). Le <b>Rappel (Recall)</b> vérifie que tous les documents nécessaires ont été trouvés (pas d'oubli).
-Quel est l'avantage de l'approche "LLM-as-a-Judge" ?	Elle permet d'obtenir une évaluation nuancée et argumentée (avec une explication textuelle de l'erreur) plutôt qu'un simple score binaire pass/fail.
-Quelles sont les 3 options technologiques pour créer un Gold Dataset ?	1. LlamaIndex <b>RagDatasetGenerator</b> (Natif). 2. <b>DeepEval</b> (Qualité Pro). 3. <b>Script Python + OpenAI</b> (Maîtrise Totale).
-Quel est l'avantage du <b>RagDatasetGenerator</b> de LlamaIndex ?	Il est <b>natif</b> et s'intègre parfaitement à l'écosystème LlamaIndex sans nouvelles dépendances complexes, idéal pour une mise en œuvre rapide.
-Qu'est-ce que la "Evolutionary Generation" dans <b>DeepEval</b> ?	C'est une méthode qui crée une question simple à partir d'un document, puis la <b>complexifie</b> (bruit, négations, raisonnement) pour tester les limites réelles du bot.
-Pourquoi choisir un <b>Script Python sur-mesure</b> pour générer le Gold Dataset ?	Pour la <b>maîtrise totale</b> du processus : on peut forcer le style (ex: Darija), cibler des specs précises (RAM, prix) et comprendre chaque étape de la génération.
-Quel est l'inconvénient majeur du <b>RagDatasetGenerator</b> natif ?	Il est un peu une <b>boîte noire</b> avec moins de contrôle sur le style et la langue (ex: difficulté pour le Darija/Français mixte).
-Quelle option est recommandée pour la <b>montée en compétence</b> technique sur la plomberie des données ?	L'<b>Option 3 (Script sur-mesure)</b>, car elle oblige à manipuler directement les fichiers, les prompts et les structures JSON.
+Qu'est-ce que la **Faithfulness** (Fidélité) ?	Mesure de l'**hallucination**. Vérifie si la réponse est supportée par le **contexte** (livre ouvert).
+Qu'est-ce que l'**Answer Relevancy** (Pertinence) ?	Vérifie si la réponse traite bien la **question** posée (indépendamment de la source).
+Qu'est-ce que la **Contextual Precision** ?	Mesure du **tri**. Vérifie si les documents utiles sont classés en **haut** de la pile par le moteur de recherche.
+Qu'est-ce que le **Contextual Recall** (Rappel) ?	Mesure de l'**oubli**. Vérifie si tous les documents nécessaires ont été trouvés par le moteur.
+Différence : Contextual **Precision** vs **Recall** ?	**Precision** : Pas de bruit (uniquement utile).<br>**Recall** : Pas d'oubli (tout ce qui est nécessaire).
+Qu'est-ce que la **RAG Triad** ?	Les 3 metrics évaluées **sans corrigé** :<br>1. Faithfulness<br>2. Answer Relevancy<br>3. Contextual Precision.
+Différence : **Faithfulness** vs **Answer Correctness** ?	**Faithfulness** : Cohérence interne avec le contexte.<br>**Answer Correctness** : Identité avec le **corrigé officiel** (Gold Dataset).
+Pourquoi le **Contextual Recall** nécessite-t-il un Gold Dataset ?	Car on doit savoir à l'avance quels documents **auraient dû** être trouvés pour calculer le taux d'oubli.
+C'est quoi un **Gold Dataset** (Ground Truth) ?	Un jeu de données de référence (Questions/Réponses parfaites) servant de **corrigé officiel** pour tester le RAG.
+Qu'est-ce que le **LLM-as-a-Judge** ?	Utiliser un LLM puissant (ex: GPT-4o) comme arbitre pour noter et justifier la qualité d'un système RAG.
+Analogie : Évaluation **SANS** Gold Dataset ?	Vérifier si un étudiant est **cohérent** et ne triche pas par rapport au livre qu'il a devant lui.
+Analogie : Évaluation **AVEC** Gold Dataset ?	Corriger la copie d'un étudiant par rapport au **corrigé officiel** du professeur.
+3 options pour créer un **Gold Dataset** ?	1. **RagDatasetGenerator** (Natif LlamaIndex).<br>2. **DeepEval** (Qualité Pro).<br>3. **Script Python + OpenAI** (Maîtrise Totale).
+Pourquoi choisir l'option **Script Python + OpenAI** ?	Pour la **maîtrise totale** : contrôle du style (Darija), ciblage des specs précises et montée en compétence technique.
+Inconvénient du **RagDatasetGenerator** natif ?	C'est une **boîte noire** : peu de contrôle sur la langue (Darija/Français) et le style des questions.
+Qu'est-ce que la **Evolutionary Generation** (DeepEval) ?	Méthode qui crée une question simple puis la **complexifie** (bruit, négations) pour stress-tester le bot.
+C'est quoi **Ragas** ?	Le **standard académique** de l'évaluation RAG, indispensable sur un CV d'ingénieur IA.
+C'est quoi **DeepEval** ?	Le framework orienté **Software Engineering** (DevOps), souvent appelé "le Pytest du RAG".
+Pourquoi utiliser **DeepEval** plutôt que Ragas pur ?	Pour sa syntaxe **Pytest** familière (assert) et son **tableau de bord visuel** de suivi des scores.
+Comment Ragas calcule-t-il la **Faithfulness** ?	Ratio : (Nombre d'affirmations vraies selon le contexte) / (Nombre total d'affirmations de la réponse).
+Pourquoi la **RAG Triad** est-elle cruciale pour Jumia ?	1. **Fidélité** : Pas d'erreurs techniques.<br>2. **Pertinence** : Conseils utiles.<br>3. **Précision** : Meilleurs produits en premier.
