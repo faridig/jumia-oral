@@ -20,6 +20,7 @@
 19. **[2026-03-05] Recherche par Intention d'Usage** : Transition d'une recherche par mots-clés vers une compréhension des besoins métiers (Gaming, Montage, Études) pour filtrer automatiquement les specs techniques requises.
 20. **[2026-03-05] Stratégie "Full-Context Chunking"** : Abandon du découpage par phrases ou sections. Chaque fiche Notebook Jumia (< 2000 tokens) sera ingérée comme un **Node unique**. Cela garantit que le LLM a accès à toutes les specs techniques et à l'URL Jumia sans répétition inutile ou perte de lien entre les métadonnées et le descriptif.
 21. **[2026-03-05] Épuration de la Sentiment Analysis (Pure Rationale)** : Pour être cohérent avec le retrait du VFM et du Trust Score, les **notes numériques** (scores 0-10) et l'axe **"Value"** sont supprimés de l'analyse de sentiment. On ne conserve que le **Rationale** (texte descriptif) pour les axes techniques (Performance, Build Quality, Display) afin de nourrir le RAG en arguments qualitatifs neutres.
+22. **[2026-03-06] Choix Technologique Gold Dataset (PBI-1200)** : Pour favoriser la montée en compétence technique et la maîtrise du style Darija, l'option **Script Python Sur-Mesure + OpenAI** est choisie à la place des outils natifs (LlamaIndex Generator) ou spécialisés (DeepEval). Cela permet un contrôle total sur l'extraction des specs critiques (RAM, CPU, Prix) et sur la langue de la question.
 
 ## ✅ DEFINITION OF DONE (DoD)
 - Extraction : Données structurées validées par le schéma Pydantic (Enrichi Laptop).
@@ -97,24 +98,24 @@
 - [ ] Validation que les réponses LLM ne citent plus de sources externes.
 
 ### [PBI-1003] TECH : Suppression totale du Score VFM
-**Status** : PENDING ⏳
+**Status** : DONE ✅
 **Priorité** : High | **Estimation** : S
 **User Story** : "En tant que Lead-Dev, je veux retirer toute trace du score VFM (calcul, stockage et re-ranking) pour simplifier le modèle de données."
 **Critères d'Acceptation** :
-- [ ] Retrait du champ `value_for_money_score` dans le schéma Pydantic (`models.py`).
-- [ ] Suppression de l'instruction d'extraction VFM dans `src/scraper.py`.
-- [ ] Mise à jour du `JumiaReRanker` dans `src/rag_engine.py` pour n'utiliser que le `trust_score`.
-- [ ] Nettoyage de l'ingestion (`src/ingestion.py`).
+- [x] Retrait du champ `value_for_money_score` dans le schéma Pydantic (`models.py`).
+- [x] Suppression de l'instruction d'extraction VFM dans `src/scraper.py`.
+- [x] Mise à jour du `JumiaReRanker` dans `src/rag_engine.py` (Neutralisé au profit d'une sémantique technique pure).
+- [x] Nettoyage de l'ingestion (`src/ingestion.py`).
 
 ### [PBI-1004] TECH : Suppression totale du Trust Score
-**Status** : PENDING ⏳
+**Status** : DONE ✅
 **Priorité** : High | **Estimation** : S
 **User Story** : "En tant que Lead-Dev, je veux supprimer le Trust Score et le JumiaReRanker pour ne garder que la pertinence sémantique LlamaIndex."
 **Critères d'Acceptation** :
-- [ ] Suppression de la fonction `calculate_trust_score` dans `src/scraper.py`.
-- [ ] Retrait de `trust_score` du modèle de données et du frontmatter Markdown.
-- [ ] Suppression (ou neutralisation) du `JumiaReRanker` dans `src/rag_engine.py`.
-- [ ] Mise à jour du prompt système pour ne plus mentionner les scores ou l'absence d'avis.
+- [x] Suppression de la fonction `calculate_trust_score` dans `src/scraper.py`.
+- [x] Retrait de `trust_score` du modèle de données et du frontmatter Markdown.
+- [x] Suppression (ou neutralisation) du `JumiaReRanker` dans `src/rag_engine.py`.
+- [x] Mise à jour du prompt système pour ne plus mentionner les scores ou l'absence d'avis.
 
 ### [PBI-1005] UX : Implémentation de la réponse "Dual-Choice"
 **Status** : PENDING ⏳
@@ -135,20 +136,29 @@
 - [ ] Mise à jour du prompt système pour interdire toute mention de ville ou de logistique locale.
 
 ### [PBI-2000] LE COMPAGNON NOTEBOOK (Pure Sémantique, Dual-Choice, Intent-based & Liens Directs)
-**Status** : IN_PROGRESS 🚀 (Sprint 10)
+**Status** : DONE ✅
 **Priorité** : CRITIQUE | **Estimation** : L
 **User Story** : "En tant que Personal Shopper Jumia, je veux comprendre l'intention d'usage de l'utilisateur pour lui proposer systématiquement les **deux meilleurs Notebooks** avec leurs **liens directs Jumia**, sans aucun biais de score, en me basant uniquement sur la pertinence technique."
 **Critères d'Acceptation** :
-- [ ] **Action 1 : Nettoyage & Neutralité (RESET TOTAL)**
+- [x] **Action 1 : Nettoyage & Neutralité (RESET TOTAL)**
   - Retrait définitif du VFM, Trust Score et de la gestion de Localisation (villes).
   - **PURGE TOTALE** : Suppression physique de tous les fichiers `.md` existants dans `data/raw/markdown/notebooks/`.
   - **RESET QDRANT** : Suppression et recréation de la collection `jumia_products`.
-- [ ] **Action 2 : Intelligence d'Usage**
+- [x] **Action 2 : Intelligence d'Usage**
   - Mappage des intentions (Gaming, Études, Montage) vers des filtres techniques CPU/RAM/GPU.
-- [ ] **Action 3 : Structure "Top 2" & Liens**
+- [x] **Action 3 : Structure "Top 2" & Liens**
   - Présentation obligatoire de 2 options avec : Nom, Prix, Specs clés et **URL cliquable Jumia**.
-- [ ] **Action 4 : Ingestion "Controlled Batch"**
+- [x] **Action 4 : Ingestion "Controlled Batch"**
   - Scraping et ingestion de **30 articles Notebooks** maximum (Données 100% propres, sans scores).
+
+### [PBI-1200] EVAL : Génération du Dataset Synthétique (Gold Dataset)
+**Status** : IN_PROGRESS 🚀
+**Priorité** : High | **Estimation** : M
+**User Story** : "En tant que Lead-Dev, je veux automatiser la création d'un dataset (Question/Contexte/Réponse attendue) pour m'assurer que le bot ne donne pas de fausses informations sur les laptops."
+**Critères d'Acceptation** :
+- [ ] Script de génération synthétique `scripts/generate_test_data.py`.
+- [ ] Création d'un dataset `tests/gold_dataset.json` (20-30 cas).
+- [ ] Mesure automatisée des metrics (S12).
 
 ### [PBI-1101] PROMPT : Guide de Traduction "Darija-Tech" (Glossaire)
 **Status** : PENDING ⏳

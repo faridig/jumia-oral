@@ -1,53 +1,27 @@
 # 📜 CHANGELOG
 
-## [1.0.0] - 2026-03-05
+## [1.2.0] - 2026-03-06
 ### Added
-- **Compagnon Notebook (PBI-2000)** : Transformation du moteur RAG en expert "Personal Shopper" spécialisé PC Portables.
-- **Neutralité Technique** : Suppression totale des scores business (VFM/Trust) au profit d'une analyse technique pure basée sur les spécifications.
-- **Logique "Top 2"** : Implémentation d'une contrainte de réponse systématique sur les deux meilleures options avec liens Jumia directs.
-- **Full-Context Chunking** : Optimisation de l'ingestion garantissant l'intégrité des fiches techniques (1 seul Node par produit).
-- **Mappage d'Intentions** : Enrichissement des requêtes utilisateur via des filtres techniques (Gaming, Études, Montage).
+- **Gold Dataset Evaluation (PBI-1200)** : Mise en place d'un jeu de données de référence (26 cas) pour la validation scientifique du bot.
+- **Automatisation de la Génération** : Script `scripts/generate_test_data.py` utilisant GPT-4o-mini pour transformer les fiches techniques en couples Question/Réponse réalistes.
+- **Tests de Structure Dataset** : Suite de tests `tests/test_pbi_1200.py` garantissant l'intégrité et la complétude du dataset de vérité.
 
-## [0.9.0] - 2026-03-04
+## [1.1.0] - 2026-03-05
 ### Added
-- **Purge & Reset (PBI-901)** : Nettoyage complet des anciennes données multi-catégories et réinitialisation de la collection Qdrant pour les PC Portables.
-- **Micro-Batch Test (SPIKE-902)** : Validation de l'extraction LLM sur les 10 premiers produits Notebooks. Confirmation de la qualité des métadonnées (CPU, RAM, SSD, GPU).
-- **Préparation de l'Index (PBI-903)** : Configuration de l'Auto-Retriever pour les nouveaux champs techniques PC.
-
-## [0.8.0] - 2026-03-04
-### Added
-- **Appairage WhatsApp (PBI-801)** : Activation de l'instance "Jumia-Oral-Agent" et connexion via scan QR Code.
-- **Tunneling & Webhooks (PBI-802)** : Exposition du serveur local via tunnel (Ngrok/LocalTunnel) et configuration des webhooks Evolution API.
-- **Récepteur FastAPI (PBI-803)** : Endpoint `/webhook` avec traitement asynchrone via `BackgroundTasks` pour garantir une réponse instantanée à WhatsApp.
-- **Onboarding Live (PBI-804)** : Accueil interactif "Mrehba" fonctionnel sur le téléphone du Chef d'Orchestre.
-
-## [0.7.0] - 2026-03-04
-### Added
-- **Gateway WhatsApp (PBI-301)** : Mise en service d'Evolution API via Docker et routage des webhooks vers FastAPI.
-- **Support Multimédia (PBI-601)** : Capacité d'envoi d'images produits sur WhatsApp via le SDK Evolution API.
-- **Comparaison Assistée (PBI-602)** : Nouveau module de comparaison de produits avec rendu en tableau Markdown et verdict en Darija.
-
-## [0.6.3] - 2026-03-03
-### Added
-- **Intégration OpenRTK (Plugin System)** : Déploiement du plugin de filtrage intelligent pour `rtk`. Ce plugin intercepte les commandes Git (notamment `git status`) pour fournir un affichage ultra-compact avec l'icône 📌 et des indicateurs visuels (📝, ❓).
-- **Audit de Performance CLI** : Validation de la suite de tests (56 tests passés) et vérification du PATH pour l'outil `rtk`.
-
-## [0.6.2] - 2026-03-03
-### Added
-- **Onboarding Localisation (PBI-310)** : Dialogue interactif en Darija pour identifier la ville de l'utilisateur et persistance de la session via `SimpleChatStore`.
-- **Logiciel d'Expertise Isolé (PBI-502)** : Nouveau module `ExpertAdvisor` pour injecter des conseils professionnels (Dermatologue, Tech Analyst, etc.) basés sur la catégorie produit.
-
-## [0.6.1] - 2026-03-01
-### Added
-- **Hard-Filtering de Pertinence (PBI-404)** : Instauration d'un seuil de similarité strict (0.8) pour éliminer les faux positifs sémantiques avant le re-ranking.
-
-## [0.6.0] - 2026-03-01
-### Added
-- **Ré-optimisation du Re-ranking (PBI-401)** : Ajustement de la pondération (60% Sémantique / 40% Business) pour garantir la pertinence des résultats.
-- **Transparence de Confiance (PBI-402)** : Mention systématique en Darija ("ba9i madiyoroch fih l-avis") pour les produits sans avis clients.
-- **Affinage de l'Auto-Retriever (PBI-403)** : Optimisation des filtres métadonnées pour éviter l'over-filtering sur les requêtes simples.
+- **Le Compagnon Notebook (PBI-2000)** : Pivot majeur vers un moteur de recommandation pur sémantique et intentionnel.
+- **Neutralité Algorithmique** : Retrait total des scores VFM et Trust Score pour éliminer tout biais artificiel dans les recommandations.
+- **Dual Proposal Standard** : Contrainte de réponse présentant systématiquement deux options comparables avec liens Jumia cliquables.
+- **Intelligence d'Usage** : Capacité de traduire des besoins métiers (Gaming, Études, Montage) en contraintes techniques CPU/RAM/GPU.
+- **Reset Qdrant & Purge MD** : Réinitialisation complète de la base de données et suppression des anciens fichiers pour garantir l'intégrité des 30 produits Notebooks ingérés.
+- **Full-Context Node** : Stratégie d'ingestion "1 produit = 1 chunk" garantissant l'accès complet au descriptif technique pour le LLM.
+- **Épuration Qualitative** : Nettoyage de la Sentiment Analysis pour ne conserver que le rationale textuel (expertise) et supprimer les notes numériques.
 
 ## 💡 LEÇONS APPRISES
+### Sprint 11 : Génération du Gold Dataset (Vérité Terrain)
+- **Maîtrise du Scripting sur-mesure** : Préférer un script Python personnalisé aux générateurs "boîte noire" (LlamaIndex/DeepEval) permet un contrôle fin sur l'extraction des specs critiques (RAM, CPU) et garantit que le dataset reflète exactement les données réelles du catalogue.
+- **Qualité vs Quantité** : Traiter l'intégralité du catalogue Notebook (26 produits) offre une couverture de test exhaustive. Chaque fiche produit devient un cas de test unique, ce qui est plus robuste qu'une génération purement aléatoire.
+- **Structure JSON stricte** : L'utilisation du `response_format={"type": "json_object"}` avec OpenAI est indispensable pour garantir que le dataset produit soit immédiatement exploitable par les scripts d'évaluation automatisés sans erreur de parsing.
+
 ### Sprint 10 : Compagnon Notebook & Pureté Technique
 - **Efficacité de la contrainte "Top 2"** : Limiter le choix à deux options force le moteur RAG à être plus sélectif et précis, évitant ainsi la surcharge cognitive pour l'utilisateur. La justification technique devient alors le coeur de la valeur ajoutée.
 - **Suppression des Biais Business** : Le retrait des scores numériques (VFM/Trust) simplifie le modèle de données et renforce la crédibilité de l'expert, qui s'appuie désormais uniquement sur des faits techniques (CPU, RAM, GPU) et des justifications sémantiques.

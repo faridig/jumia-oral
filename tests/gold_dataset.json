@@ -1,0 +1,175 @@
+[
+  {
+    "question": "Quelle est la capacité de la mémoire RAM de cet HP Elitebook ?",
+    "ground_truth": "Ce HP Elitebook X360 G2 dispose de 16 Go de RAM DDR4.",
+    "context": "Le produit a une mémoire RAM de 16GB DDR4.",
+    "product_name": "Hp Pc Portable Elitebook X360 G2 I5-7éme -16GB- 256GB SSD - Tactile - Remis À Neuf"
+  },
+  {
+    "question": "Quel type de processeur a ce PC portable et quelle est sa capacité de RAM ?",
+    "ground_truth": "Ce PC portable est équipé d'un processeur Intel Core i5-10310U et dispose de 16Go de RAM DDR4.",
+    "context": "Le produit dispose d'un CPU Intel Core i5-10310U et de 16Go DDR4 de RAM.",
+    "product_name": "Pc Portable HP EliteBook 830 G7 I5-10310U 10ème Génération RAM 16Go DDR4 256Gb SSD Ecran 13.3\" Tactile -QWERTZ Germany - REMIS A NEUF"
+  },
+  {
+    "question": "Quels sont les spécifications de l'HP EliteBook 845 G8 ?",
+    "ground_truth": "L'HP EliteBook 845 G8 est équipé d'un processeur AMD Ryzen™ 5 5650U à 2.3 GHz (jusqu'à 4.2 GHz), de 16Go de RAM DDR4, d'un SSD de 256Go NVMe, et d'un écran Full HD de 14 pouces. Il dispose également de graphiques AMD Radeon™ et est remis à neuf. Son prix est de 3790 Dhs.",
+    "context": "Le produit est équipé d'un processeur AMD Ryzen™ 5 5650U, 16Go de RAM, 256Go SSD NVMe, un écran de 14\" Full HD et est en condition remis à neuf.",
+    "product_name": "HP EliteBook 845 G8 AMD RYZEN 5 5650U 16Go Ram 256Go NVME Écran 14\" QWERTY - Remise à Neuf"
+  },
+  {
+    "question": "Quelle est la capacité de la mémoire RAM de l'Hp EliteBook X360 G3 ?",
+    "ground_truth": "L'Hp EliteBook X360 G3 est équipé de 8 Go de RAM DDR4.",
+    "context": "Le produit a 8 Go de RAM DDR4, ce qui permet une bonne performance pour les tâches multitâches.",
+    "product_name": "Hp EliteBook X360 G3 - Intel Core i5 - 8Go RAM - 512Go SSD - 13.3\" Tactile - (Remis à Neuf)"
+  },
+  {
+    "question": "Quelle est la capacité de stockage de l'Hp PC Portable Probook 650?",
+    "ground_truth": "Le Hp PC Portable Probook 650 dispose d'un disque dur de 500 Go HDD.",
+    "context": "Le produit comprend un disque dur de 500 Go HDD, essentiel pour le stockage.",
+    "product_name": "Hp PC Portable Probook 650 Core i3 G3- 7ème Génération- 500Go HDD- 8GB RAM -Ecran 15.6\"- GARANTIE 6 MOIS -remis a neuf - AZERTY"
+  },
+  {
+    "question": "Quelle est la capacité de la mémoire RAM de ce Lenovo ThinkPad X1 YOGA remis à neuf ?",
+    "ground_truth": "La capacité de la mémoire RAM de ce Lenovo ThinkPad X1 YOGA est de 16Go DDR4.",
+    "context": "Les spécifications du produit indiquent que la RAM est de 16Go DDR4.",
+    "product_name": "Lenovo Notebook ThinkPad X1 YOGA i7-16Go-256Go SSD-AVEC STYLET-TACTILE-REMIS A NEUF"
+  },
+  {
+    "question": "Quel est le type de processeur et la capacité de RAM de l'Hp PC PORTABLE EliteBook 840 ?",
+    "ground_truth": "Le Hp PC PORTABLE EliteBook 840 est équipé d'un processeur Intel Core i5 et possède 8 Go de RAM DDR3.",
+    "context": "Processeur : Intel Core i5, RAM : 8Go DDR3.",
+    "product_name": "Hp PC PORTABLE EliteBook 840-CORE INTEL i5-RAM 8Go- 500Go HDD -CARTABLE ET SOURIS GRATUIT-GARANTIE DE 6 MOIS -remise à neuf"
+  },
+  {
+    "question": "Quel est le processeur de ce PC portable Hp ?",
+    "ground_truth": "Ce PC portable Hp est équipé d'un processeur Intel Core i7-8650U.",
+    "context": "Le PC portable dispose d'un CPU Intel Core i7-8650U.",
+    "product_name": "Hp PC Portable ELITEBOOK X360 G3 I7-8éme -16GB- 256GB SSD-TACTILE-AZERTY-REMIS À NEUF"
+  },
+  {
+    "question": "Quel est le processeur et la mémoire RAM de l'HP EliteBook 840 ?",
+    "ground_truth": "L'HP EliteBook 840 est équipé d'un processeur Intel Core i5-4600U et dispose de 8GB de RAM DDR3.",
+    "context": {
+      "CPU": "Intel Core i5-4600U",
+      "RAM": "8GB DDR3"
+    },
+    "product_name": "Hp PC Portable EliteBook 840 - 14\" - Intel Core i5 - 8GB RAM + 500GB HDD - SOURIS GRATUIT- GARANTIE DE 6 MOISRemis à neuf"
+  },
+  {
+    "question": "Quel est le type de processeur de l'HP ProBook x360 435 G8?",
+    "ground_truth": "Le HP ProBook x360 435 G8 est équipé d'un processeur AMD Ryzen 7 Pro 5850U.",
+    "context": "Le produit est équipé d'un processeur AMD Ryzen 7 Pro 5850U.",
+    "product_name": "Hp Pc Portable ProBook x360 435 G8 Ryzen 7 Pro 5850U RAM 16Go DDR4 512Gb SSD QWERTY Tactile - REMIS A NEUF"
+  },
+  {
+    "question": "Quel est le processeur de ce DELL PC PORTABLE Latitude 7480 ?",
+    "ground_truth": "Le processeur est un Intel Core i5 6300U.",
+    "context": "Le produit est un DELL PC PORTABLE Latitude 7480 avec un processeur Intel Core i5 6300U, 8 Go de RAM, et un SSD de 256 Go.",
+    "product_name": "DELL PC PORTABLE Latitude 7480 -INTEL COR i5- RAM 8Go - 256Go SSD-REMIS A NEUF/"
+  },
+  {
+    "question": "Quel est le prix de l'Hp PC Portable ELITEBOOK X360 G3 ?",
+    "ground_truth": "Le prix de l'Hp PC Portable ELITEBOOK X360 G3 est de 3889 Dhs.",
+    "context": "Produit remis à neuf, équipé d'un processeur Intel® Core™ i5-8300U, 16GB de RAM, 512GB SSD et un écran tactile 13.3\" 4K Ultra HD.",
+    "product_name": "Hp PC Portable ELITEBOOK X360 G3 I5-8éme -16GB- 512GB SSD - TACTILE - REMIS À NEUF"
+  },
+  {
+    "question": "Quel est le prix du PC DELL Latitude 5490 remis à neuf ?",
+    "ground_truth": "Le prix du PC DELL Latitude 5490 remis à neuf est de 2359 Dhs.",
+    "context": "PC DELL Latitude 5490 avec un processeur Intel Core i5 de 8ème génération, 8Go de RAM, 256Go de SSD et un écran de 14\".",
+    "product_name": "PC DELL Latitude 5490 - Intel Core i5 - 8ème Génération - 8Go RAM - 256Go SSD - 14\" - QWERTY - Remis à Neuf"
+  },
+  {
+    "question": "Quel est le processeur de ce PC portable Hp ?",
+    "ground_truth": "Le PC portable Hp Probook 650 G3 est équipé d'un processeur Intel Core i3-7210M à 2,6GHz de 7ème génération.",
+    "context": "Processeur: Intel Core i3-7210M 2,6GHz - 7EME GENERATION",
+    "product_name": "Hp PC Portable Probook 650 G3 - Core i3 - 7eme GÉNÉRATION - 320Gb HDD- 4GB RAM- AZERTY-ECRAN 15.6\"-AVEC CARTABLE ET SOURIS GRATUIT -GARANTIE DE SIX MOIS -remis a neuf"
+  },
+  {
+    "question": "Quelle est la taille de l'écran du HP ELITEBOOK 840 G7 ?",
+    "ground_truth": "L'écran du HP PC Portable ELITEBOOK 840 G7 mesure 14 pouces.",
+    "context": "L'écran est spécifié comme étant de 14 pouces.",
+    "product_name": "Hp PC Portable ELITEBOOK 840 G7 -10810U- 10EME GENERATION -INTEL CORE I5-10éme -8GB- 256GB SSD- FHD - À NEUF/"
+  },
+  {
+    "question": "Quel est le prix de l'Hp UltraPortable 840 G3 et quelles sont ses principales spécifications techniques ?",
+    "ground_truth": "L'Hp UltraPortable 840 G3 est au prix de 2199 Dhs. Il est équipé d'un processeur Intel Core i5-6200U, de 8 Go de RAM, d'un SSD de 250 Go, et dispose d'un écran de 14\" Full HD. Il est remis à neuf.",
+    "context": "Processeur Intel Core i5-6200U, 8 Go de RAM, 250 Go de SSD, écran de 14\" Full HD, condition remis à neuf.",
+    "product_name": "Hp UltraPortable 840 G3 - Intel Core i5 - 8Go RAM - 250Go SSD - 14\" HD - (Remis à Neuf)"
+  },
+  {
+    "question": "Quel est le processeur de cet ordinateur portable ?",
+    "ground_truth": "Cet ordinateur portable est équipé d'un processeur Intel Core i5-8250U.",
+    "context": "Le PC portable est doté d'un processeur Intel Core i5-8250U, 16Go de RAM DDR4, 256Go de SSD et d'un écran de 14\" Full HD TACTILE.",
+    "product_name": "Hp EliteBook 840 G5 - Intel Core i5 - 16Go RAM - 256Go SSD - 14\" Full HD TACTILE- Cartable Gratuit - GARANTIE DE SIX MOIS- (Remis à Neuf)"
+  },
+  {
+    "question": "Quelles sont les spécifications de l'Hp PC Portable ELITEBOOK X360 G2 ?",
+    "ground_truth": "L'Hp PC Portable ELITEBOOK X360 G2 est équipé d'un processeur Intel Core i5-7300U, de 8 Go de RAM DDR4, d'un SSD de 256 Go, d'une carte graphique Intel HD Graphics 620 et d'un écran de 13,3\" 4K Ultra HD. Il est également remis à neuf.",
+    "context": "Processeur Intel Core i5-7300U, 8 Go de RAM DDR4, SSD de 256 Go, carte graphique Intel HD Graphics 620, écran de 13,3\" 4K Ultra HD, condition remise à neuf.",
+    "product_name": "Hp PC Portable ELITEBOOK X360 G2 I5-7éme -8GB- 256GB SSD - TACTILE -REMIS À NEUF"
+  },
+  {
+    "question": "Quelles sont les spécifications du PC Portable HP EliteBook 840 ?",
+    "ground_truth": "Le PC Portable HP EliteBook 840 est équipé d'un processeur Intel Core i5-4600U, 8 Go de RAM DDR3, un disque dur de 500 Go HDD, une carte graphique Intel HD Graphics 5500 et un écran de 14\" avec une résolution de 1366 x 768 pixels (HD). Il est remis à neuf et est proposé au prix de 1899 Dhs.",
+    "context": {
+      "CPU": "Intel Core i5-4600U",
+      "RAM": "8GB DDR3",
+      "SSD": "500GB HDD",
+      "GPU": "Intel HD Graphics 5500",
+      "Screen": "14\" 1366 x 768 pixels (HD)",
+      "Condition": "Remis à neuf"
+    },
+    "product_name": "PC Portable HP EliteBook 840 - 14\" - Intel Core i5 - 8GB RAM + 500 GO HDD - SOURIS GRATUIT - Remis à neuf"
+  },
+  {
+    "question": "Quelle est la capacité de la RAM de l'HP PC Portable ELITEBOOK 840 G7 ?",
+    "ground_truth": "La capacité de la RAM de l'HP PC Portable ELITEBOOK 840 G7 est de 16GB DDR4.",
+    "context": "Le produit est équipé d'une RAM de 16GB DDR4.",
+    "product_name": "Hp PC Portable ELITEBOOK 840 G7 -10810U -INTEL CORE I5-10éme -16GB- 256GB SSD- FHD - À NEUF/"
+  },
+  {
+    "question": "Quel type de processeur a le PC Portable HP Probook 650 ?",
+    "ground_truth": "Le PC Portable HP Probook 650 est équipé d'un processeur Intel Core i3-7200M de 7ème génération.",
+    "context": "Le produit est un PC portable remis à neuf avec un processeur Intel Core i3-7200M, 8 Go de RAM DDR4L, un disque dur de 500 Go, et un écran de 15.6\" HD (1366 x 768 pixels).",
+    "product_name": "PC Portable HP Probook 650 Core i3 G3- 7ème Génération- 500Go HDD- 8GB RAM -Ecran 15.6\"- GARANTIE 6 MOIS -remis a neuf - AZERTY"
+  },
+  {
+    "question": "Quel est le processeur de ce PC portable DELL ?",
+    "ground_truth": "Le DELL Ultraportable Latitude E5490 est équipé d'un processeur Intel Core i5-8250U.",
+    "context": "Le PC portable possède un processeur Intel Core i5-8250U, une RAM de 8GB DDR4 et un SSD de 256GB.",
+    "product_name": "DELL Ultraportable Latitude E5490- 14\" - Intel Core i5--8ÈME GÉNÉRATION- 8GB RAM- 256GB SSD - Windows - Full HD -CARTABLE ET SOURIS GRATUIT- Remis à neuf"
+  },
+  {
+    "question": "Quel est le processeur de l'Hp ProBook 640 ?",
+    "ground_truth": "L'Hp ProBook 640 est équipé d'un processeur Intel Core i3-6210M à 2,6GHz.",
+    "context": {
+      "CPU": "Intel Core i3-6210M 2,6GHz",
+      "RAM": "8Go DDR3",
+      "SSD": "320Go HDD",
+      "GPU": "Intel HD Graphics 4600",
+      "Screen": "14\" HD (1366 x 768 pixels)",
+      "Condition": "Remis à Neuf"
+    },
+    "product_name": "Hp ProBook 640 - Intel Core i3 (6ème Gen) - 8Go RAM - 320Go HDD - 14\" - AZERTY - (Remis à Neuf)"
+  },
+  {
+    "question": "Quel est le processeur du Lenovo ThinkPad L390 remis à neuf ?",
+    "ground_truth": "Le Lenovo ThinkPad L390 est équipé d'un processeur Intel Core i5 8365U.",
+    "context": "Le produit est un PC portable remis à neuf avec un processeur Intel Core i5 8365U.",
+    "product_name": "Lenovo ThinkPad L390 i5-8365U 8éme Génération 8GB 256GB SSD ECRAN 13.3\" AZERTY - REMIS A NEUF"
+  },
+  {
+    "question": "Quel est le prix du DELL Pc Portable Latitude 7420 ?",
+    "ground_truth": "Le DELL Pc Portable Latitude 7420 est au prix de 3690 Dhs.",
+    "context": "Produit avec processeur Intel Core i5-1145G7, 16Go de RAM, 256Go SSD, écran 14\" Full HD IPS et remis à neuf.",
+    "product_name": "DELL Pc Portable Latitude 7420 Intel Core I5-1145g7 11éme Génération RAM 16Go DDR4 256Gb SSD Ecran IPS 14\"QWERTY - REMIS A NEUF"
+  },
+  {
+    "question": "Quelle est la taille de l'écran du DELL Ultraportable Latitude E7480 ?",
+    "ground_truth": "L'écran du DELL Ultraportable Latitude E7480 mesure 14\" et est en Full HD.",
+    "context": "L'écran est spécifié comme étant de 14\" avec une résolution Full HD.",
+    "product_name": "DELL Ultraportable Latitude E7480- 14\" - Intel Core i5--6ÈME GÉNÉRATION- 8GB RAM- 256GB SSD - Windows - Full HD - Remis à neuf"
+  }
+]

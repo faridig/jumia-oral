@@ -1,28 +1,34 @@
-# 🏃 SPRINT PLAN - SPRINT 10
-**Objectif** : Pivoter vers un moteur de recommandation Notebook pur et intentionnel.
+# 🏃 SPRINT PLAN - SPRINT 11 : "GÉNÉRATION DU DATASET DE VÉRITÉ (GOLD DATASET)"
 
-## 📋 TICKET UNIQUE SÉLECTIONNÉ
-### [PBI-2000] LE COMPAGNON NOTEBOOK (Pure Sémantique, Dual-Choice, Intent-based & Liens Directs)
-**Priorité** : CRITIQUE | **Estimation** : L
+**Objectif du Sprint** : Créer un jeu de données de référence (Gold Dataset) basé sur les fiches produits réelles pour valider l'exactitude des informations techniques du bot.
 
-**User Story** : 
-"En tant que Personal Shopper Jumia, je veux comprendre l'intention d'usage de l'utilisateur pour lui proposer systématiquement les **deux meilleurs Notebooks** avec leurs **liens directs Jumia**, sans aucun biais de score, en me basant uniquement sur la pertinence technique."
+---
 
-**Critères d'Acceptation (DoR/DoD)** :
-- [ ] **Action 1 : Nettoyage & Neutralité (RESET TOTAL)**
-  - Retrait définitif du VFM, Trust Score et de la gestion de Localisation (villes).
-  - **PURGE TOTALE** : Suppression physique de tous les fichiers `.md` existants dans `data/raw/markdown/notebooks/`.
-  - **RESET QDRANT** : Suppression et recréation de la collection `jumia_products`.
-- [ ] **Action 2 : Intelligence d'Usage**
-  - Mappage des intentions (Gaming, Études, Montage) vers des filtres techniques CPU/RAM/GPU.
-- [ ] **Action 3 : Structure "Top 2" & Liens**
-  - Présentation obligatoire de 2 options avec : Nom, Prix, Specs clés et **URL cliquable Jumia**.
-- [ ] **Action 4 : Diagnostic & "Full-Context Chunking"**
-  - **DIAGNOSTIC CHUNKING** : Le Lead-Dev doit fournir un log montrant le découpage (Chunking) d'un fichier `.md` type.
-  - **CONTRAINTE** : Bannir le découpage excessif. Viser **1 seul Chunk (Node) par produit** (si < 2000 tokens) pour garder l'unité de la fiche.
-  - **ÉPURATION** : **Suppression des notes numériques** (0-10) et de l'axe **"Value"** dans la Sentiment Analysis. Ne conserver que le **Rationale** (texte descriptif) pour l'expertise technique.
-  - **INTÉGRITÉ** : **Aucune métadonnée ne doit être masquée au LLM** (`excluded_llm_metadata_keys` interdit). Le LLM doit avoir accès à 100% des specs et des URLs.
-  - **INGESTION** : Scraping et ingestion de **30 articles Notebooks** maximum (Données 100% propres, sans scores).
+### [PBI-1200] EVAL : Génération du Dataset Synthétique (Gold Dataset)
+**Priorité** : High | **Estimation** : M
+**Status** : READY 🚀
 
-**Responsable** : Lead-Dev
+**User Story** : "En tant que Lead-Dev, je veux automatiser la création d'un dataset (Question/Contexte/Réponse attendue) pour m'assurer que le bot ne donne pas de fausses informations sur les laptops (ex: erreur de RAM ou de prix)."
 
+**Dépendances** : Aucune (Se base sur les fichiers `.md` dans `data/raw/markdown/notebooks/`)
+
+**Critères d'Acceptation (Gherkin)** :
+- [ ] **Scenario 1 : Analyse des fichiers sources**
+  - **GIVEN** Les 26 fiches produits Notebooks dans le dossier `data/`.
+  - **WHEN** Le script de synthèse parcourt les fichiers.
+  - **THEN** Il doit extraire les spécifications techniques (CPU, RAM, Prix) sans erreur de parsing.
+- [ ] **Scenario 2 : Génération de Questions/Réponses (LLM Synth)**
+  - **GIVEN** Une fiche produit spécifique (ex: HP EliteBook 840 G7).
+  - **WHEN** On demande au LLM (GPT-4o-mini) de créer une question utilisateur réaliste.
+  - **THEN** Il génère un couple `(Question, Ground_Truth)` basé strictement sur les données de la fiche.
+- [ ] **Scenario 3 : Sortie JSON Structurée**
+  - **GIVEN** L'exécution du script `scripts/generate_test_data.py`.
+  - **WHEN** Le processus se termine.
+  - **THEN** Un fichier `tests/gold_dataset.json` est créé contenant au moins 20 cas de test (Question, Context, Réponse attendue).
+
+**Livrable Technique attendu** :
+1. Un script `scripts/generate_test_data.py`.
+2. Un fichier `tests/gold_dataset.json`.
+
+---
+*Note: Les autres PBI (Mémoire Contextuelle, Suppression ExpertAdvisor) sont repoussés au Sprint 12 pour garantir un focus total sur la qualité des données.*
