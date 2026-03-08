@@ -1,34 +1,39 @@
-# 🏃 SPRINT PLAN - SPRINT 11 : "GÉNÉRATION DU DATASET DE VÉRITÉ (GOLD DATASET)"
+# 🏃 SPRINT PLAN - SPRINT 12 : Hygiène & Alignement Documentaire
 
-**Objectif du Sprint** : Créer un jeu de données de référence (Gold Dataset) basé sur les fiches produits réelles pour valider l'exactitude des informations techniques du bot.
+**Objectif du Sprint** : Nettoyer le projet des traces de fonctionnalités obsolètes (Localisation, Trust Score) et mettre à jour la documentation pour refléter la vision "Compagnon Notebook" actuelle.
+
+---
+
+## 📋 TICKETS SÉLECTIONNÉS
+
+### [PBI-1006] TECH/UX : Retrait de la gestion de Localisation
+**Priorité** : High | **Estimation** : XS
+**User Story** : "En tant que Lead-Dev, je veux supprimer le flux d'onboarding lié à la ville et toute mention de localisation dans les réponses, pour me concentrer exclusivement sur les produits."
+**Critères d'Acceptation** :
+- [ ] Suppression du flux de demande de ville dans `src/session_manager.py`.
+- [ ] Retrait de la persistance de localisation dans le `SimpleChatStore`.
+- [ ] Mise à jour du prompt système pour interdire toute mention de ville ou de logistique locale.
+
+### [PBI-1201] DOC : Refonte du README.md (Alignement Vision Notebook)
+**Priorité** : High | **Estimation** : S
+**User Story** : "En tant qu'utilisateur, je veux un README à jour afin de comprendre la vision réelle du projet (Notebook Companion) sans être induit en erreur par d'anciennes fonctionnalités supprimées."
+**Critères d'Acceptation** :
+- [ ] Suppression des mentions Trust Score et VFM (obsolètes).
+- [ ] Suppression des sections sur la Localisation (villes, livraison).
+- [ ] Mise à jour de la Stack Technique (Crawl4AI, LlamaIndex Hybrid, Evolution API).
+- [ ] Actualisation de l'état d'avancement et de la vision "Pure Sémantique".
+
+### [PBI-1202] TECH : Nettoyage src/main.py (Alignement Démo)
+**Priorité** : High | **Estimation** : XS
+**User Story** : "En tant que développeur, je veux que le script de démo reflète le flux actuel du bot (sans localisation) pour éviter des erreurs d'exécution ou de compréhension."
+**Critères d'Acceptation** :
+- [ ] Retrait du message "Ana f Casablanca" et de la logique d'onboarding ville.
+- [ ] Mise à jour des messages de test pour se concentrer sur la recherche de Notebooks.
+- [ ] Mise à jour du print d'entête (Sprint 12).
 
 ---
 
-### [PBI-1200] EVAL : Génération du Dataset Synthétique (Gold Dataset)
-**Priorité** : High | **Estimation** : M
-**Status** : READY 🚀
-
-**User Story** : "En tant que Lead-Dev, je veux automatiser la création d'un dataset (Question/Contexte/Réponse attendue) pour m'assurer que le bot ne donne pas de fausses informations sur les laptops (ex: erreur de RAM ou de prix)."
-
-**Dépendances** : Aucune (Se base sur les fichiers `.md` dans `data/raw/markdown/notebooks/`)
-
-**Critères d'Acceptation (Gherkin)** :
-- [ ] **Scenario 1 : Analyse des fichiers sources**
-  - **GIVEN** Les 26 fiches produits Notebooks dans le dossier `data/`.
-  - **WHEN** Le script de synthèse parcourt les fichiers.
-  - **THEN** Il doit extraire les spécifications techniques (CPU, RAM, Prix) sans erreur de parsing.
-- [ ] **Scenario 2 : Génération de Questions/Réponses (LLM Synth)**
-  - **GIVEN** Une fiche produit spécifique (ex: HP EliteBook 840 G7).
-  - **WHEN** On demande au LLM (GPT-4o-mini) de créer une question utilisateur réaliste.
-  - **THEN** Il génère un couple `(Question, Ground_Truth)` basé strictement sur les données de la fiche.
-- [ ] **Scenario 3 : Sortie JSON Structurée**
-  - **GIVEN** L'exécution du script `scripts/generate_test_data.py`.
-  - **WHEN** Le processus se termine.
-  - **THEN** Un fichier `tests/gold_dataset.json` est créé contenant au moins 20 cas de test (Question, Context, Réponse attendue).
-
-**Livrable Technique attendu** :
-1. Un script `scripts/generate_test_data.py`.
-2. Un fichier `tests/gold_dataset.json`.
-
----
-*Note: Les autres PBI (Mémoire Contextuelle, Suppression ExpertAdvisor) sont repoussés au Sprint 12 pour garantir un focus total sur la qualité des données.*
+## 🏛️ RAPPEL TECHNIQUE
+- **Full-Context Node** : 1 produit = 1 chunk.
+- **Top 2** : Toujours proposer deux options.
+- **Zéro Localisation** : Plus de mentions de villes ou de logistique.
