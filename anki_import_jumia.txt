@@ -20,3 +20,10 @@ C'est quoi **DeepEval** ?	Le framework orienté **Software Engineering** (DevOps
 Pourquoi utiliser **DeepEval** plutôt que Ragas pur ?	Pour sa syntaxe **Pytest** familière (assert) et son **tableau de bord visuel** de suivi des scores.
 Comment Ragas calcule-t-il la **Faithfulness** ?	Ratio : (Nombre d'affirmations vraies selon le contexte) / (Nombre total d'affirmations de la réponse).
 Pourquoi la **RAG Triad** est-elle cruciale pour Jumia ?	1. **Fidélité** : Pas d'erreurs techniques.<br>2. **Pertinence** : Conseils utiles.<br>3. **Précision** : Meilleurs produits en premier.
+Qu'est-ce que **G-Eval** (DeepEval) ?	Un framework flexible qui permet d'utiliser un LLM comme juge sur des critères **personnalisés** (ex: "Le ton est-il bien Darija ?").
+Qu'est-ce que la **Citation Accuracy** ?	Vérifie si les **liens Jumia** ou sources cités dans la réponse correspondent réellement aux produits décrits (Crucial en e-commerce).
+Qu'est-ce que la **Knowledge Retention** ?	Métrique conversationnelle qui mesure si le bot conserve les informations clés au fil des échanges (ex: se souvenir du PC choisi).
+Différence : **Faithfulness** vs **Hallucination** (DeepEval) ?	**Faithfulness** : Est-ce supporté par le contexte ?<br>**Hallucination** : Y a-t-il des **contradictions** directes (erreurs factuelles).
+Stratégie : **Logs Users** vs **Gold Dataset** ?	**Logs Users** : Tester l'alignement et l'utilité réelle.<br>**Gold Dataset** : Tester la précision technique et l'intégrité (Recall).
+Qu'est-ce que le **Reasoning** (DeepEval) ?	La capacité du framework à fournir une **explication textuelle** détaillée pour justifier chaque note d'évaluation.
+Pourquoi coupler **DeepEval** à **Pytest** ?	Pour créer une **CI/CD** qui bloque automatiquement le déploiement si le bot commence à halluciner ou perd en qualité.

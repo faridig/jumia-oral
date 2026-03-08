@@ -154,6 +154,61 @@
 - [x] Mise à jour des messages de test pour se concentrer sur la recherche de Notebooks.
 - [x] Mise à jour du print d'entête (Sprint 12).
 
+## 🧪 EVALUATION & QUALITÉ (NOUVEL AXE SPRINT 13)
+
+### [PBI-1301] SETUP : Instrumentation DeepEval & LlamaIndex
+**Status** : IN_PROGRESS 🏗️
+**Priorité** : High | **Estimation** : S
+**User Story** : "En tant que Lead-Dev, je veux intégrer le framework DeepEval dans mon environnement de test pour automatiser la mesure de la qualité RAG."
+**Critères d'Acceptation** :
+- [ ] Installation de `deepeval` dans `requirements.txt`.
+- [ ] Configuration du `EvaluationDataset` pour lire le `gold_dataset.json`.
+- [ ] Création d'un premier test unitaire `tests/test_rag_metrics.py` avec une métrique de base.
+
+### [PBI-1302] DATA : Pipeline d'Analyse des Logs Utilisateurs (Conversations Réelles)
+**Status** : PENDING ⏳
+**Priorité** : High | **Estimation** : S
+**User Story** : "En tant que PO, je veux extraire les conversations réelles des utilisateurs (ou simulations réalistes) pour évaluer l'alignement du bot avec le besoin client."
+**Critères d'Acceptation** :
+- [ ] Script d'extraction des logs de session vers un format compatible DeepEval.
+- [ ] Anonymisation des données sensibles (numéros de téléphone).
+- [ ] Création d'un dataset de test "Real-World" basé sur ces logs.
+
+### [PBI-1303] EVAL : Audit "Intégrité Technique" (Source : Gold Dataset)
+**Status** : IN_PROGRESS 🏗️
+**Priorité** : High | **Estimation** : M
+**User Story** : "En tant qu'expert métier, je veux m'assurer que le bot ne donne aucune fausse information technique sur les PC Portables Jumia."
+**Critères d'Acceptation** :
+- [ ] Mesure de la **Faithfulness** (Fidélité au catalogue Jumia).
+- [ ] Mesure du **Contextual Recall** (Le bot trouve-t-il bien tous les PC pertinents ?).
+- [ ] Mesure de l'**Answer Correctness** (Comparaison avec le corrigé officiel).
+
+### [PBI-1304] EVAL : Audit "Alignement User" (Source : Logs Users)
+**Status** : PENDING ⏳
+**Priorité** : High | **Estimation** : M
+**User Story** : "En tant qu'utilisateur, je veux que l'assistant comprenne mon besoin (Darija/Fr) et propose des PC qui y répondent vraiment."
+**Critères d'Acceptation** :
+- [ ] Mesure de l'**Answer Relevancy** (La réponse est-elle utile au client ?).
+- [ ] Mesure de la **Contextual Precision** (Qdrant remonte-t-il les bons PC malgré le bruit du langage parlé ?).
+
+### [PBI-1305] UX : Métriques "Métier" (Citation Accuracy & Ton Darija)
+**Status** : PENDING ⏳
+**Priorité** : Medium | **Estimation** : S
+**User Story** : "En tant que Personal Shopper, je veux m'assurer que les liens Jumia sont valides et que le ton est culturellement authentique."
+**Critères d'Acceptation** :
+- [ ] Implémentation d'une métrique **Citation Accuracy** (Vérification lien Jumia <-> Produit).
+- [ ] Implémentation d'une métrique **G-Eval : Darija Technical Tone** (Note sur l'authenticité du ton local).
+
+### [PBI-1306] TECH : Observabilité & Tracing (Arize Phoenix)
+**Status** : IN_PROGRESS 🏗️
+**Priorité** : Medium | **Estimation** : S
+**User Story** : "En tant que Lead-Dev, je veux visualiser le cheminement complet de mes requêtes RAG (Tracing) pour identifier les goulots d'étranglement (latence) et les sources d'hallucination."
+**Critères d'Acceptation** :
+- [ ] Installation de `arize-phoenix` et `openinference-instrumentation-llama-index`.
+- [ ] Instrumentation du `rag_engine.py` via `LlamaIndexInstrumentor`.
+- [ ] Accès au dashboard local Phoenix pour l'analyse des traces OpenInference.
+- [ ] Capture automatique de la latence et de la consommation de tokens par requête.
+
 ### [PBI-2000] LE COMPAGNON NOTEBOOK (Pure Sémantique, Dual-Choice, Intent-based & Liens Directs)
 **Status** : DONE ✅
 **Priorité** : CRITIQUE | **Estimation** : L
