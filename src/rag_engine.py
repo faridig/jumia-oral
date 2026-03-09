@@ -21,8 +21,6 @@ from llama_index.llms.openai import OpenAI
 from llama_index.core.postprocessor.types import BaseNodePostprocessor
 from llama_index.core.schema import NodeWithScore
 
-from src.expert_advisor import expert_advisor
-
 # Configuration
 load_dotenv()
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -169,31 +167,11 @@ class MultiQueryAutoRAG:
         if not response.source_nodes:
             return "Sm7 lya, had l-produit ba9i madiyoroch f stock l-youm. Chouf chi 7aja khora?"
 
-        # Enrichissement avec l'expertise technique (Context7) si disponible
-        if response.source_nodes:
-            top_node = response.source_nodes[0]
-            product_name = top_node.node.metadata.get("name", "Produit")
-            category = top_node.node.metadata.get("category_source", "Notebooks")
-            
-            expert_insight = expert_advisor.get_expert_insight(product_name, category)
-            
-            from llama_index.core.schema import TextNode, NodeWithScore
-            expert_node = NodeWithScore(
-                node=TextNode(
-                    text=f"GUIDE TECHNIQUE : {expert_insight}",
-                    metadata={"is_expert_insight": True}
-                ),
-                score=1.0
-            )
-            # On s'assure d'avoir au moins 2 nodes de produits + 1 node expertise
-            nodes_for_synthesis = response.source_nodes[:2] # Top 2 Notebooks
-            nodes_for_synthesis.append(expert_node)
-            
-            # Synthèse finale avec le prompt "Compagnon"
-            response = self.auto_engine._response_synthesizer.synthesize(
-                query=user_query,
-                nodes=nodes_for_synthesis
-            )
+        # Synthèse finale avec le prompt "Compagnon"
+        response = self.auto_engine._response_synthesizer.synthesize(
+            query=user_query,
+            nodes=response.source_nodes[:2] # Top 2 Notebooks
+        )
             
         return response
 
