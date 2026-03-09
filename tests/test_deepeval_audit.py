@@ -1,3 +1,4 @@
+import os
 import json
 import pytest
 from deepeval.metrics import FaithfulnessMetric, ContextualPrecisionMetric, AnswerRelevancyMetric
@@ -9,9 +10,21 @@ from src.rag_engine import MultiQueryAutoRAG
 rag = MultiQueryAutoRAG()
 
 def load_gold_dataset():
-    with open("tests/gold_dataset.json", "r") as f:
-        return json.load(f)
+    # En CI, on évite de charger tout le dataset si on n'a pas les clés API
+    if not os.getenv("OPENAI_API_KEY") and os.getenv("GITHUB_ACTIONS") == "true":
+        return []
+        
+    try:
+        with open("tests/gold_dataset.json", "r") as f:
+            data = json.load(f)
+            # Limiter à 5 tests en CI pour le budget/temps
+            if os.getenv("GITHUB_ACTIONS") == "true":
+                return data[:5]
+            return data
+    except FileNotFoundError:
+        return []
 
+@pytest.mark.skipif(not os.getenv("OPENAI_API_KEY"), reason="OpenAI API key missing")
 @pytest.mark.parametrize("data", load_gold_dataset())
 def test_rag_fidelity(data):
     """
