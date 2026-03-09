@@ -11,3 +11,6 @@ openai
 pydantic
 requests
 pytest
+arize-phoenix
+openinference-instrumentation-llama-index
+deepeval

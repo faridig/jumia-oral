@@ -2,7 +2,15 @@ import os
 import logging
 from typing import List, Optional, Any, Set
 
+import phoenix as px
+from openinference.instrumentation.llama_index import LlamaIndexInstrumentor
 from dotenv import load_dotenv
+
+# Initialisation Phoenix (Observabilité PBI-1306)
+if os.getenv("PHOENIX_ENABLED", "true").lower() == "true":
+    px.launch_app()
+    LlamaIndexInstrumentor().instrument()
+
 from qdrant_client import QdrantClient
 from llama_index.core import (
     VectorStoreIndex,
