@@ -23,19 +23,21 @@
 - [ ] Dashboard Phoenix accessible en local.
 - [ ] Traces complètes (Retriever -> Synthesis) visibles pour chaque requête.
 
-### [PBI-1301/1303] EVAL : Audit "Intégrité Technique" (DeepEval + Gold Dataset)
+### [PBI-1301/1303] EVAL : Audit "Intégrité Technique" (DeepEval + Confident AI + Gold Dataset)
 **Priorité** : High | **Estimation** : M
 **User Story** : "En tant qu'expert, je veux un score scientifique de fidélité pour m'assurer que le bot ne ment jamais sur les specs techniques."
 **Critères d'Acceptation** :
 - [ ] Ajout de `deepeval` au `requirements.txt`.
 - [ ] Intégration de DeepEval avec le `gold_dataset.json`.
-- [ ] Rapport de **Faithfulness** (Fidélité) sur les produits.
+- [ ] Dashboard **Confident AI** actif pour le suivi des régressions.
+- [ ] Mesure des métriques : **Faithfulness**, **Contextual Precision**, **Answer Relevancy** et **Answer Correctness**.
 
 ---
 
 ## 🏛️ RAPPEL TECHNIQUE & BLOQUANTS
 1. **⚠️ DÉPENDANCES** : Le premier acte du sprint doit être la mise à jour du `requirements.txt` avec `deepeval` et `arize-phoenix`.
 2. **NETTOYAGE** : Le PBI-1002 est un prérequis pour éviter d'instrumenter du code (Expert Advisor) qui va être supprimé.
-3. **Phoenix** : Dashboard temps réel (Le "Comment").
-4. **DeepEval** : Validation scientifique (Le "Combien").
+3. **Phoenix** : Dashboard temps réel (Le "Comment" - Tracing Live).
+4. **DeepEval / Confident AI** : Validation scientifique et historique (Le "Combien" - Analyse des régressions).
 5. **Gold Dataset** : Source de vérité immuable.
+6. **QUALITÉ** : Application des scénarios "Black Belt" pour diagnostiquer les régressions de métriques.
