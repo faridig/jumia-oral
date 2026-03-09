@@ -3,6 +3,12 @@ import unittest.mock
 import pytest
 import warnings
 
+def pytest_addoption(parser):
+    # Option pour l'audit complet (Guidance Sprint 13)
+    parser.addoption(
+        "--full-audit", action="store_true", default=False, help="Lance l'audit complet sur tout le dataset"
+    )
+
 @pytest.fixture(autouse=True, scope="session")
 def silence_warnings():
     # Appliquer le Silence Technique (Guidance Sprint 13)

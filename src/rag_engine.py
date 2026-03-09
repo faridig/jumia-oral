@@ -77,13 +77,11 @@ def get_rag_engine(use_auto_retriever: bool = True):
         vector_store_info = VectorStoreInfo(
             content_info="Catalogue Jumia Maroc Spécialisé PC Portables (Pure Sémantique)",
             metadata_info=[
-                MetadataInfo(name="brand", type="str", description="Marque du produit"),
+                MetadataInfo(name="brand", type="str", description="Marque du produit (ex: HP, Dell, Lenovo)"),
                 MetadataInfo(name="price_numeric", type="float", description="Prix en Dhs (numérique)"),
-                MetadataInfo(name="ram", type="str", description="Mémoire vive. Utiliser uniquement des filtres d'égalité (ex: ram == '16Go')."),
-                MetadataInfo(name="ssd", type="str", description="Stockage SSD. Utiliser uniquement des filtres d'égalité."),
-                MetadataInfo(name="cpu", type="str", description="Modèle processeur. Utiliser uniquement des filtres d'égalité."),
-                MetadataInfo(name="gpu", type="str", description="Carte graphique. Utiliser uniquement des filtres d'égalité."),
-                MetadataInfo(name="condition", type="str", description="État du PC (Neuf, Renewed)"),
+                MetadataInfo(name="ram", type="str", description="Mémoire vive (ex: 8Go, 16Go)"),
+                MetadataInfo(name="ssd", type="str", description="Stockage SSD (ex: 256Go, 512Go)"),
+                MetadataInfo(name="condition", type="str", description="État du PC. Valeurs possibles: 'Neuf' ou 'Remis à Neuf'"),
             ],
         )
         retriever = VectorIndexAutoRetriever(
@@ -96,22 +94,17 @@ def get_rag_engine(use_auto_retriever: bool = True):
     else:
         retriever = VectorIndexRetriever(index=index, similarity_top_k=5)
 
-    # Personnalité "Compagnon Notebook" Hybride (Sprint 13)
+    # Persona "Compagnon" Économe & Précis (Sprint 13 guidance - v2)
     system_prompt = (
-        "Tu es le 'Compagnon Notebook Jumia', un expert technique Personal Shopper au Maroc. "
-        "Ta mission est d'aider l'utilisateur à trouver les MEILLEURS laptops. "
-        "Tu parles en Français avec des touches de Darija (Mrehba, Besseha, Chouf, Mzyan). "
-        "CONSIGNES STRICTES : "
-        "1. RÉPONSE DIRECTE : Si l'utilisateur pose une question factuelle précise (ex: prix d'un modèle, spec d'un PC), "
-        "RÉPONDS DIRECTEMENT et brièvement à cette question en premier. "
-        "2. ANALYSE & RECOMMANDATIONS : Après la réponse directe, analyse l'intention et propose SYSTÉMATIQUEMENT "
-        "les 2 meilleures options trouvées dans le contexte (dont le modèle demandé s'il est pertinent). "
-        "3. FICHE PRODUIT : Pour chaque option, affiche : Nom, Prix, Specs clés (CPU/RAM/SSD) et l'URL JUMIA DIRECTE. "
-        "4. JUSTIFICATION : Justifie tes choix uniquement par la pertinence technique (Specs vs Intention). "
-        "5. ZÉRO SCORE : Ne mentionne JAMAIS de scores numériques (Trust/VFM). Utilise les 'insights' textuels. "
-        "6. FRANCHISE : Sois tranché et honnête : si un produit est mieux pour le gaming, dis-le clairement. "
-        "7. ZÉRO LOCALISATION : Ne mentionne jamais de villes ou de logistique. "
-        "8. FORMAT : Réponse directe -> Option 1 -> Option 2 -> Conseil d'expert en Darija."
+        "Tu es l'Expert Jumia. "
+        "CONSIGNES DE RÉPONSE : "
+        "1. PRÉCISION : Réponds d'abord DIRECTEMENT à la question. Pas de salutations inutiles. "
+        "2. CONCISION : Si la question porte sur un détail (prix, CPU, RAM), donne l'info et arrête-toi là ou sois très bref. "
+        "3. RECOMMANDATIONS : Ne propose des alternatives QUE si l'utilisateur demande un conseil ou si sa recherche est large. "
+        "Pour une question factuelle sur un modèle précis, n'ajoute pas d'autres produits. "
+        "4. DARIJA : Utilise un Darija très discret (ex: 'Mzyan', 'Chouf'). "
+        "5. ZÉRO HALLUCINATION : Ne mentionne que ce qui est dans le contexte. Si plusieurs configs existent, liste-les. "
+        "6. FORMAT : Réponse directe -> (Optionnel) Conseil expert court."
     )
     
     llm_with_persona = OpenAI(model="gpt-4o-mini", api_key=OPENAI_API_KEY, system_prompt=system_prompt)
