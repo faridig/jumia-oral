@@ -89,7 +89,17 @@
   - **THEN** Le `SimpleChatStore` doit sauvegarder et recharger l'historique pour maintenir la cohérence sur plusieurs jours.
 
 ### [PBI-1002] TECH : Nettoyage & Retrait Context7 (Expert Advisor)
-**Status** : PENDING ⏳
+**Status** : IN_PROGRESS 🏗️ (Emergency cleanup for Sprint 13)
+**Priorité** : High | **Estimation** : S
+**User Story** : "En tant que Lead-Dev, je veux supprimer les appels à l'Expert Advisor (MCP) dans le moteur RAG pour me baser uniquement sur les descriptions Jumia."
+**Critères d'Acceptation** :
+- [ ] Suppression de l'import et de l'usage de `expert_advisor` dans `src/rag_engine.py`.
+- [ ] Suppression physique du fichier `src/expert_advisor.py`.
+- [ ] Suppression de la logique de `expert_node` dans la synthèse de réponse.
+- [ ] Validation que les réponses LLM ne citent plus de sources externes.
+
+### [PBI-1301] SETUP : Instrumentation DeepEval & LlamaIndex
+**Status** : BLOCKED 🛑 (Missing `deepeval` in requirements.txt)
 **Priorité** : High | **Estimation** : S
 **User Story** : "En tant que Lead-Dev, je veux supprimer les appels à l'Expert Advisor (MCP) dans le moteur RAG pour me baser uniquement sur les descriptions Jumia."
 **Critères d'Acceptation** :
@@ -175,7 +185,7 @@
 - [ ] Création d'un dataset de test "Real-World" basé sur ces logs.
 
 ### [PBI-1303] EVAL : Audit "Intégrité Technique" (Source : Gold Dataset)
-**Status** : IN_PROGRESS 🏗️
+**Status** : BLOCKED 🛑 (Depends on PBI-1301)
 **Priorité** : High | **Estimation** : M
 **User Story** : "En tant qu'expert métier, je veux m'assurer que le bot ne donne aucune fausse information technique sur les PC Portables Jumia."
 **Critères d'Acceptation** :
@@ -200,7 +210,7 @@
 - [ ] Implémentation d'une métrique **G-Eval : Darija Technical Tone** (Note sur l'authenticité du ton local).
 
 ### [PBI-1306] TECH : Observabilité & Tracing (Arize Phoenix)
-**Status** : IN_PROGRESS 🏗️
+**Status** : BLOCKED 🛑 (Missing `arize-phoenix` in requirements.txt)
 **Priorité** : Medium | **Estimation** : S
 **User Story** : "En tant que Lead-Dev, je veux visualiser le cheminement complet de mes requêtes RAG (Tracing) pour identifier les goulots d'étranglement (latence) et les sources d'hallucination."
 **Critères d'Acceptation** :
