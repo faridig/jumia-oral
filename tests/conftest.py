@@ -1,6 +1,14 @@
 import os
 import unittest.mock
 import pytest
+import warnings
+
+@pytest.fixture(autouse=True, scope="session")
+def silence_warnings():
+    # Appliquer le Silence Technique (Guidance Sprint 13)
+    warnings.filterwarnings("ignore", category=DeprecationWarning)
+    warnings.filterwarnings("ignore", message=".*urllib3.*")
+    yield
 
 @pytest.fixture(autouse=True)
 def mock_openai_if_ci():

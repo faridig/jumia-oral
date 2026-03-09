@@ -6,6 +6,9 @@ from deepeval.test_case import LLMTestCase
 from deepeval import assert_test
 from src.rag_engine import MultiQueryAutoRAG
 
+# Stabilisation DeepEval (Sprint 13)
+os.environ["DEEPEVAL_PER_ATTEMPT_TIMEOUT_SECONDS_OVERRIDE"] = "300"
+
 # Initialisation du moteur RAG
 rag = MultiQueryAutoRAG()
 
