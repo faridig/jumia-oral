@@ -131,7 +131,7 @@ def expand_query_darija(query: str) -> List[str]:
     prompt = PromptTemplate(
         "Tu es un expert en PC portables. Analyse cette requête (Darija ou Français).\n"
         "Génère 2 variantes de recherche techniques en Français qui :\n"
-        "1. CONSERVENT impérativement les noms de modèles, marques et numéros (ex: 5490, G3, i7).\n"
+        "1. CONSERVE impérativement les noms de modèles, marques et numéros présents dans la requête originale. INTERDICTION d'ajouter des références techniques (modèles, CPU) non mentionnées par l'utilisateur.\n"
         "2. AJOUTENT des termes sémantiques équivalents.\n"
         "RÉPONDS SEULEMENT AVEC LES VARIANTES, UNE PAR LIGNE.\n"
         "Requête: {query}\n"
