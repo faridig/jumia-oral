@@ -29,9 +29,9 @@ def load_gold_dataset(request):
     try:
         with open("tests/gold_dataset.json", "r") as f:
             data = json.load(f)
-            # Mode Low-Cost : 3 cas aléatoires par défaut (Guidance Sprint 13)
+            # Mode Low-Cost : 5 cas aléatoires (Guidance Sprint 13)
             if not request.config.getoption("--full-audit"):
-                return random.sample(data, min(3, len(data)))
+                return random.sample(data, min(5, len(data)))
             return data
     except FileNotFoundError:
         return []
@@ -49,12 +49,18 @@ def test_rag_fidelity(gold_data_sample):
         question = data["question"]
         ground_truth = data["ground_truth"]
         
-        # Exécution de la requête RAG
-        response = rag.auto_engine.query(question)
+        # Exécution de la requête RAG (Utilisation du moteur complet avec expansion)
+        response = rag.query(question)
         actual_output = str(response)
+        
+        # Récupération des nodes sources pour l'évaluateur
+        source_nodes = []
+        if hasattr(response, 'source_nodes'):
+            source_nodes = response.source_nodes
+            
         # Optimisation Contextuelle (Guidance Audit Point 2) : 
         # Limiter à 2 nodes (le top 2 utilisé par la synthèse) et tronquer chaque node.
-        retrieval_context = [node.get_content()[:1500] for node in response.source_nodes[:2]]
+        retrieval_context = [node.get_content()[:1500] for node in source_nodes[:2]]
 
         # Création du cas de test
         test_case = LLMTestCase(

@@ -83,13 +83,13 @@ def get_rag_engine(use_auto_retriever: bool = True):
     if use_auto_retriever:
         # Configuration des métadonnées pour l'Auto-Retriever (Laptop Specialized PBI-2000)
         vector_store_info = VectorStoreInfo(
-            content_info="Catalogue complet des ordinateurs portables (Laptops) chez Jumia Maroc.",
+            content_info="Catalogue Jumia Maroc (Notebooks). Contient des specs techniques (CPU, RAM, SSD) et l'état du produit.",
             metadata_info=[
-                MetadataInfo(name="brand", type="str", description="Marque du laptop (ex: HP, Dell, Lenovo, Apple, Asus, Acer, Microsoft)"),
-                MetadataInfo(name="price_numeric", type="float", description="Prix du produit en Dirhams (Dhs)"),
-                MetadataInfo(name="ram", type="str", description="Capacité RAM (ex: 8GB, 16GB, 4GB)"),
-                MetadataInfo(name="ssd", type="str", description="Capacité de stockage SSD/HDD (ex: 256GB, 512GB, 1TB)"),
-                MetadataInfo(name="condition", type="str", description="État du produit: 'Neuf' ou 'Remis à neuf'"),
+                MetadataInfo(name="brand", type="str", description="Marque du laptop (ex: HP, DELL, Lenovo)"),
+                MetadataInfo(name="price_numeric", type="float", description="Prix en Dhs"),
+                MetadataInfo(name="ram", type="str", description="RAM (ex: 8GB, 16GB)"),
+                MetadataInfo(name="ssd", type="str", description="Stockage (ex: 256GB, 512GB)"),
+                # Condition retirée des filtres structurés car trop incohérente dans l'index (Remis à neuf vs Remis à Neuf)
             ],
         )
         retriever = VectorIndexAutoRetriever(
@@ -126,20 +126,21 @@ def get_rag_engine(use_auto_retriever: bool = True):
 
 def expand_query_darija(query: str) -> List[str]:
     """
-    Transforme la requête Darija en termes techniques Français propres pour la recherche vectorielle.
+    Enrichit la requête Darija/Français avec des termes techniques tout en préservant les références.
     """
     prompt = PromptTemplate(
-        "Transforme cette requête Darija/Français en 3 termes de recherche techniques et précis en Français.\n"
-        "RÉPONS SEULEMENT AVEC LES TERMES, UN PAR LIGNE, SANS INTRODUCTION NI NUMÉROTATION.\n"
+        "Tu es un expert en PC portables. Analyse cette requête (Darija ou Français).\n"
+        "Génère 2 variantes de recherche techniques en Français qui :\n"
+        "1. CONSERVENT impérativement les noms de modèles, marques et numéros (ex: 5490, G3, i7).\n"
+        "2. AJOUTENT des termes sémantiques équivalents.\n"
+        "RÉPONDS SEULEMENT AVEC LES VARIANTES, UNE PAR LIGNE.\n"
         "Requête: {query}\n"
-        "Termes:"
+        "Variantes:"
     )
     response = llm.complete(prompt.format(query=query))
-    # Nettoyage strict des hallucinations textuelles
     lines = [l.strip().lstrip("123. -\"*") for l in response.text.strip().split("\n") if l.strip()]
-    # Filtrage des phrases d'intro/outro
     variantes = [l for l in lines if len(l.split()) >= 1 and ":" not in l]
-    return variantes[:3]
+    return variantes[:2]
 
 class MultiQueryAutoRAG:
     """
@@ -152,28 +153,28 @@ class MultiQueryAutoRAG:
     def query(self, user_query: str):
         logger.info(f"User Query: {user_query}")
         
-        # Mappage des intentions vers des filtres techniques (PBI-2000 Action 2)
-        # On laisse l'Auto-Retriever gérer l'extraction des filtres, mais on peut enrichir la query
+        # 1. Expansion Sémantique (Hybridé)
+        variantes = expand_query_darija(user_query)
+        # On garde la query originale comme pivot central
+        hybrid_query = f"{user_query} {' '.join(variantes)}"
+        logger.info(f"Hybrid Query: {hybrid_query}")
+
+        # 2. Enrichissement d'intention (Optionnel pour l'Auto-Retriever)
         enriched_query = user_query
         if any(k in user_query.lower() for k in ["gaming", "jeux", "gamer"]):
-            enriched_query += " (Besoin: GPU performant, RAM >= 16Go, CPU i7 ou Ryzen 7)"
-        elif any(k in user_query.lower() for k in ["études", "etudiant", "ecole", "bureautique"]):
-            enriched_query += " (Besoin: Autonomie, RAM >= 8Go, i5 ou Ryzen 5, SSD)"
-        elif any(k in user_query.lower() for k in ["montage", "video", "graphisme"]):
-            enriched_query += " (Besoin: Écran haute qualité, RAM >= 16Go, GPU dédié)"
-
-        variantes = expand_query_darija(user_query)
-        logger.info(f"Search Variants: {variantes}")
+            enriched_query += " (Besoin: GPU performant, RAM >= 16Go)"
+        elif any(k in user_query.lower() for k in ["études", "etudiant", "ecole"]):
+            enriched_query += " (Besoin: Autonomie, RAM >= 8Go)"
         
         try:
-            # Tentative via Auto-Retriever
+            # Tentative via Auto-Retriever (Utilise la query originale enrichie d'intention)
             response = self.auto_engine.query(enriched_query)
             if not response.source_nodes:
                 raise ValueError("Résultat Auto-Retriever vide")
         except Exception as e:
             logger.warning(f"Auto-Retriever Fallback ({e}). Tentative via Base Engine...")
-            search_query = variantes[0] if variantes else enriched_query
-            response = self.base_engine.query(search_query)
+            # Fallback sur le Base Engine avec la Hybrid Query (Original + Expansion)
+            response = self.base_engine.query(hybrid_query)
             
         if not response.source_nodes:
             return "Sm7 lya, had l-produit ba9i madiyoroch f stock l-youm. Chouf chi 7aja khora?"
