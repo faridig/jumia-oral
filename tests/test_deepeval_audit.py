@@ -47,7 +47,9 @@ def test_rag_fidelity(gold_data_sample):
         # Exécution de la requête RAG
         response = rag.auto_engine.query(question)
         actual_output = str(response)
-        retrieval_context = [node.get_content() for node in response.source_nodes]
+        # Optimisation Contextuelle (Guidance Audit Point 2) : 
+        # Limiter à 2 nodes (le top 2 utilisé par la synthèse) et tronquer chaque node.
+        retrieval_context = [node.get_content()[:1500] for node in response.source_nodes[:2]]
 
         # Création du cas de test
         test_case = LLMTestCase(

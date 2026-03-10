@@ -29,9 +29,17 @@ from llama_index.llms.openai import OpenAI
 from llama_index.core.postprocessor.types import BaseNodePostprocessor
 from llama_index.core.schema import NodeWithScore
 
+# Configuration du Silence Technique (Guidance Sprint 13)
+import warnings
+warnings.filterwarnings("ignore")
+os.environ["PYTHONWARNINGS"] = "ignore"
+
 # Configuration
 load_dotenv()
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+# Désactivation des logs verbeux des bibliothèques tierces
+for logger_name in ["arize_phoenix", "openinference", "httpx", "openai", "qdrant_client"]:
+    logging.getLogger(logger_name).setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
 
 QDRANT_URL = os.getenv("QDRANT_URL", "http://localhost:6343")
@@ -75,13 +83,13 @@ def get_rag_engine(use_auto_retriever: bool = True):
     if use_auto_retriever:
         # Configuration des métadonnées pour l'Auto-Retriever (Laptop Specialized PBI-2000)
         vector_store_info = VectorStoreInfo(
-            content_info="Catalogue Jumia Maroc Spécialisé PC Portables (Pure Sémantique)",
+            content_info="Catalogue complet des ordinateurs portables (Laptops) chez Jumia Maroc.",
             metadata_info=[
-                MetadataInfo(name="brand", type="str", description="Marque du produit (ex: HP, Dell, Lenovo)"),
-                MetadataInfo(name="price_numeric", type="float", description="Prix en Dhs (numérique)"),
-                MetadataInfo(name="ram", type="str", description="Mémoire vive (ex: 8Go, 16Go)"),
-                MetadataInfo(name="ssd", type="str", description="Stockage SSD (ex: 256Go, 512Go)"),
-                MetadataInfo(name="condition", type="str", description="État du PC. Valeurs possibles: 'Neuf' ou 'Remis à Neuf'"),
+                MetadataInfo(name="brand", type="str", description="Marque du laptop (ex: HP, Dell, Lenovo, Apple, Asus, Acer, Microsoft)"),
+                MetadataInfo(name="price_numeric", type="float", description="Prix du produit en Dirhams (Dhs)"),
+                MetadataInfo(name="ram", type="str", description="Capacité RAM (ex: 8GB, 16GB, 4GB)"),
+                MetadataInfo(name="ssd", type="str", description="Capacité de stockage SSD/HDD (ex: 256GB, 512GB, 1TB)"),
+                MetadataInfo(name="condition", type="str", description="État du produit: 'Neuf' ou 'Remis à neuf'"),
             ],
         )
         retriever = VectorIndexAutoRetriever(
@@ -94,17 +102,15 @@ def get_rag_engine(use_auto_retriever: bool = True):
     else:
         retriever = VectorIndexRetriever(index=index, similarity_top_k=5)
 
-    # Persona "Compagnon" Économe & Précis (Sprint 13 guidance - v2)
+    # Persona "Compagnon" (Spécialisé & Intelligent - PBI-2000)
     system_prompt = (
-        "Tu es l'Expert Jumia. "
-        "CONSIGNES DE RÉPONSE : "
-        "1. PRÉCISION : Réponds d'abord DIRECTEMENT à la question. Pas de salutations inutiles. "
-        "2. CONCISION : Si la question porte sur un détail (prix, CPU, RAM), donne l'info et arrête-toi là ou sois très bref. "
-        "3. RECOMMANDATIONS : Ne propose des alternatives QUE si l'utilisateur demande un conseil ou si sa recherche est large. "
-        "Pour une question factuelle sur un modèle précis, n'ajoute pas d'autres produits. "
-        "4. DARIJA : Utilise un Darija très discret (ex: 'Mzyan', 'Chouf'). "
-        "5. ZÉRO HALLUCINATION : Ne mentionne que ce qui est dans le contexte. Si plusieurs configs existent, liste-les. "
-        "6. FORMAT : Réponse directe -> (Optionnel) Conseil expert court."
+        "Tu es le 'Compagnon Notebook Jumia', un conseiller expert en PC portables au Maroc. "
+        "CONSIGNES : "
+        "1. RÉPONSE À LA QUESTION : Si la question est factuelle (prix, CPU, RAM, etc.), donne l'information exacte IMMÉDIATEMENT. Ne propose pas d'autres produits SAUF si l'utilisateur demande explicitement un conseil ou si le produit n'est pas disponible. "
+        "2. MODE CONSEIL : Si l'utilisateur demande un avis, une recommandation ou a un besoin flou, propose systématiquement 2 options (Option 1 / Option 2) pour l'aider à comparer. "
+        "3. TON & DARIJA : Utilise un ton amical avec des touches de Darija (Mrehba, Mzyan, Besseha). "
+        "4. ZÉRO HALLUCINATION : Ne mentionne que les spécifications techniques présentes dans le contexte. "
+        "5. LIENS : Ajoute toujours le lien Jumia [Voir sur Jumia](URL) pour chaque produit cité."
     )
     
     llm_with_persona = OpenAI(model="gpt-4o-mini", api_key=OPENAI_API_KEY, system_prompt=system_prompt)
