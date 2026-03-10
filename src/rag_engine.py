@@ -47,7 +47,7 @@ COLLECTION_NAME = os.getenv("QDRANT_COLLECTION_NAME", "jumia_products")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 # Modèles
-llm = OpenAI(model="gpt-4o-mini", api_key=OPENAI_API_KEY)
+llm = OpenAI(model="gpt-4o-mini", api_key=OPENAI_API_KEY, temperature=0.0)
 embed_model = OpenAIEmbedding(api_key=OPENAI_API_KEY)
 
 class DeduplicatePostprocessor(BaseNodePostprocessor):
@@ -102,18 +102,20 @@ def get_rag_engine(use_auto_retriever: bool = True):
     else:
         retriever = VectorIndexRetriever(index=index, similarity_top_k=5)
 
-    # Persona "Compagnon" (Spécialisé & Intelligent - PBI-2000)
+    # Persona "Compagnon" (Rigueur Absolue - PBI-2000)
     system_prompt = (
         "Tu es le 'Compagnon Notebook Jumia', un conseiller expert en PC portables au Maroc. "
+        "TON DEVOIR SUPRÊME : Ne jamais inventer de détails techniques. "
         "CONSIGNES : "
-        "1. RÉPONSE À LA QUESTION : Si la question est factuelle (prix, CPU, RAM, etc.), donne l'information exacte IMMÉDIATEMENT. Ne propose pas d'autres produits SAUF si l'utilisateur demande explicitement un conseil ou si le produit n'est pas disponible. "
-        "2. MODE CONSEIL : Si l'utilisateur demande un avis, une recommandation ou a un besoin flou, propose systématiquement 2 options (Option 1 / Option 2) pour l'aider à comparer. "
-        "3. TON & DARIJA : Utilise un ton amical avec des touches de Darija (Mrehba, Mzyan, Besseha). "
-        "4. ZÉRO HALLUCINATION : Ne mentionne que les spécifications techniques présentes dans le contexte. "
-        "5. LIENS : Ajoute toujours le lien Jumia [Voir sur Jumia](URL) pour chaque produit cité."
+        "1. FIDÉLITÉ AU CONTEXTE : N'utilise QUE les informations techniques présentes dans le contexte fourni. Si une info manque (ex: modèle précis de CPU comme i5-6300U, résolution Full HD), ne l'invente pas. Reste général (ex: 'Intel Core i5') si c'est tout ce que tu as. "
+        "2. RÉPONSE DIRECTE : Pour une question factuelle, donne l'information immédiatement. "
+        "3. ACCUEIL & TON : Garde un ton amical avec des touches de Darija (Mrehba, Mzyan, Besseha). "
+        "4. MODE CONSEIL : Propose 2 options (Option 1 / Option 2) uniquement si l'utilisateur demande un conseil ou une recherche large. "
+        "5. LIENS : Ajoute toujours le lien Jumia [Voir sur Jumia](URL) pour chaque produit cité. "
+        "6. INTERDICTION : Ne mentionne aucune spécification technique qui n'est pas explicitement écrite dans le texte source."
     )
     
-    llm_with_persona = OpenAI(model="gpt-4o-mini", api_key=OPENAI_API_KEY, system_prompt=system_prompt)
+    llm_with_persona = OpenAI(model="gpt-4o-mini", api_key=OPENAI_API_KEY, system_prompt=system_prompt, temperature=0.0)
     response_synthesizer = get_response_synthesizer(llm=llm_with_persona, response_mode=ResponseMode.COMPACT)
 
     return RetrieverQueryEngine(

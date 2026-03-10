@@ -2,8 +2,13 @@ import os
 import json
 import pytest
 import random
-from deepeval.metrics import FaithfulnessMetric, AnswerRelevancyMetric
-from deepeval.test_case import LLMTestCase
+from deepeval.metrics import (
+    FaithfulnessMetric, 
+    AnswerRelevancyMetric, 
+    ContextualPrecisionMetric,
+    GEval
+)
+from deepeval.test_case import LLMTestCase, LLMTestCaseParams
 from deepeval import assert_test
 from src.rag_engine import MultiQueryAutoRAG
 
@@ -24,7 +29,7 @@ def load_gold_dataset(request):
     try:
         with open("tests/gold_dataset.json", "r") as f:
             data = json.load(f)
-            # Mode Low-Cost : 3 cas aléatoires par défaut
+            # Mode Low-Cost : 3 cas aléatoires par défaut (Guidance Sprint 13)
             if not request.config.getoption("--full-audit"):
                 return random.sample(data, min(3, len(data)))
             return data
@@ -59,11 +64,24 @@ def test_rag_fidelity(gold_data_sample):
             retrieval_context=retrieval_context
         )
 
-        # Définition des métriques avec évaluateur économique
+        # Définition des métriques (PBI-1301/1303 : Les 4 piliers)
         faithfulness_metric = FaithfulnessMetric(threshold=0.7, model=EVAL_MODEL)
         relevancy_metric = AnswerRelevancyMetric(threshold=0.7, model=EVAL_MODEL)
+        precision_metric = ContextualPrecisionMetric(threshold=0.7, model=EVAL_MODEL)
+        correctness_metric = GEval(
+            name="Correctness",
+            criteria="Determine whether the actual output is factually correct based on the expected output. Ignore differences in greetings, welcoming tone (Darija words like Mrehba, Besseha), or the presence of URLs, as long as the core technical facts match.",
+            evaluation_params=[LLMTestCaseParams.ACTUAL_OUTPUT, LLMTestCaseParams.EXPECTED_OUTPUT],
+            threshold=0.7,
+            model=EVAL_MODEL
+        )
         
-        assert_test(test_case, [faithfulness_metric, relevancy_metric])
+        assert_test(test_case, [
+            faithfulness_metric, 
+            relevancy_metric, 
+            precision_metric, 
+            correctness_metric
+        ])
 
 if __name__ == "__main__":
     # Démo rapide
