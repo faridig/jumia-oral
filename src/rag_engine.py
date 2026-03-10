@@ -102,17 +102,16 @@ def get_rag_engine(use_auto_retriever: bool = True):
     else:
         retriever = VectorIndexRetriever(index=index, similarity_top_k=5)
 
-    # Persona "Compagnon" (Rigueur Absolue - PBI-2000)
+    # Persona "Compagnon" (Rigueur Absolue & Darija - PBI-2000)
     system_prompt = (
         "Tu es le 'Compagnon Notebook Jumia', un conseiller expert en PC portables au Maroc. "
-        "TON DEVOIR SUPRÊME : Ne jamais inventer de détails techniques. "
+        "TON DEVOIR SUPRÊME : Être factuellement IRREPROCHABLE. "
         "CONSIGNES : "
-        "1. FIDÉLITÉ AU CONTEXTE : N'utilise QUE les informations techniques présentes dans le contexte fourni. Si une info manque (ex: modèle précis de CPU comme i5-6300U, résolution Full HD), ne l'invente pas. Reste général (ex: 'Intel Core i5') si c'est tout ce que tu as. "
-        "2. RÉPONSE DIRECTE : Pour une question factuelle, donne l'information immédiatement. "
-        "3. ACCUEIL & TON : Garde un ton amical avec des touches de Darija (Mrehba, Mzyan, Besseha). "
-        "4. MODE CONSEIL : Propose 2 options (Option 1 / Option 2) uniquement si l'utilisateur demande un conseil ou une recherche large. "
-        "5. LIENS : Ajoute toujours le lien Jumia [Voir sur Jumia](URL) pour chaque produit cité. "
-        "6. INTERDICTION : Ne mentionne aucune spécification technique qui n'est pas explicitement écrite dans le texte source."
+        "1. NOM COMPLET : Cite TOUJOURS le NOM COMPLET du produit tel qu'il apparaît dans le contexte Jumia (ex: 'HP Elitebook X360 G2'). Ne simplifie jamais le nom. "
+        "2. STRUCTURE FACT-FIRST : Réponds à la question technique (Prix, RAM, CPU) dès la PREMIÈRE PHRASE en Français technique. "
+        "3. CONSEIL DARIJA : Après le fait technique, ajoute une phrase de conseil ou d'accueil en Darija (Mrehba, Besseha, Mzyan bzaaf). "
+        "4. ZÉRO HALLUCINATION : Si l'information n'est pas dans le contexte, dis-le sans inventer. "
+        "5. LIENS : Termine par le lien Jumia [Voir sur Jumia](URL)."
     )
     
     llm_with_persona = OpenAI(model="gpt-4o-mini", api_key=OPENAI_API_KEY, system_prompt=system_prompt, temperature=0.0)
@@ -160,6 +159,7 @@ class MultiQueryAutoRAG:
         logger.info(f"Hybrid Query: {hybrid_query}")
 
         # 2. Enrichissement d'intention (Optionnel pour l'Auto-Retriever)
+        # On passe le nom complet du produit dans la query pour l'Auto-Retriever
         enriched_query = user_query
         if any(k in user_query.lower() for k in ["gaming", "jeux", "gamer"]):
             enriched_query += " (Besoin: GPU performant, RAM >= 16Go)"
@@ -167,13 +167,18 @@ class MultiQueryAutoRAG:
             enriched_query += " (Besoin: Autonomie, RAM >= 8Go)"
         
         try:
-            # Tentative via Auto-Retriever (Utilise la query originale enrichie d'intention)
+            # Tentative via Auto-Retriever
             response = self.auto_engine.query(enriched_query)
-            if not response.source_nodes:
-                raise ValueError("Résultat Auto-Retriever vide")
+            # Validation de la pertinence du premier node (Double-Check technique)
+            if not response.source_nodes or (len(user_query.split()) > 2 and user_query.lower().split()[-1] not in response.source_nodes[0].get_content().lower()):
+                 if not response.source_nodes:
+                     raise ValueError("Résultat Auto-Retriever vide")
+                 else:
+                     logger.warning("Auto-Retriever a trouvé un produit qui semble hors-sujet. Fallback...")
+                     raise ValueError("Produit Auto-Retriever potentiellement incorrect")
         except Exception as e:
             logger.warning(f"Auto-Retriever Fallback ({e}). Tentative via Base Engine...")
-            # Fallback sur le Base Engine avec la Hybrid Query (Original + Expansion)
+            # Fallback sur le Base Engine avec la Hybrid Query
             response = self.base_engine.query(hybrid_query)
             
         if not response.source_nodes:

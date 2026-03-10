@@ -70,13 +70,22 @@ def test_rag_fidelity(gold_data_sample):
             retrieval_context=retrieval_context
         )
 
-        # Définition des métriques (PBI-1301/1303 : Les 4 piliers)
+        # Définition des métriques (PBI-1301/1303 : Shield Ajusté)
         faithfulness_metric = FaithfulnessMetric(threshold=0.7, model=EVAL_MODEL)
-        relevancy_metric = AnswerRelevancyMetric(threshold=0.7, model=EVAL_MODEL)
         precision_metric = ContextualPrecisionMetric(threshold=0.7, model=EVAL_MODEL)
+        
+        # Client Relevancy (Remplace AnswerRelevancyMetric)
+        relevancy_metric = GEval(
+            name="Client Relevancy",
+            criteria="Determine if the response is technically relevant AND maintains a warm, bilingual tone (Darija). Greetings and local expressions (Mrehba, Besseha, etc.) should be treated as a quality bonus, NOT as noise or irrelevance.",
+            evaluation_params=[LLMTestCaseParams.INPUT, LLMTestCaseParams.ACTUAL_OUTPUT],
+            threshold=0.7,
+            model=EVAL_MODEL
+        )
+        
         correctness_metric = GEval(
             name="Correctness",
-            criteria="Determine whether the actual output is factually correct based on the expected output. Ignore differences in greetings, welcoming tone (Darija words like Mrehba, Besseha), or the presence of URLs, as long as the core technical facts match.",
+            criteria="Determine whether the actual output is factually correct based on the expected output. Ignore differences in greetings, welcoming tone (Darija), or the presence of URLs, as long as the core technical facts match.",
             evaluation_params=[LLMTestCaseParams.ACTUAL_OUTPUT, LLMTestCaseParams.EXPECTED_OUTPUT],
             threshold=0.7,
             model=EVAL_MODEL
