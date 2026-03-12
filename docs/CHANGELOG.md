@@ -1,23 +1,21 @@
 # 📜 CHANGELOG
 
-## [1.2.0] - 2026-03-06
+## [1.3.0] - 2026-03-08
 ### Added
-- **Gold Dataset Evaluation (PBI-1200)** : Mise en place d'un jeu de données de référence (26 cas) pour la validation scientifique du bot.
-- **Automatisation de la Génération** : Script `scripts/generate_test_data.py` utilisant GPT-4o-mini pour transformer les fiches techniques en couples Question/Réponse réalistes.
-- **Tests de Structure Dataset** : Suite de tests `tests/test_pbi_1200.py` garantissant l'intégrité et la complétude du dataset de vérité.
+- **Alignement Vision "Notebook Companion" (PBI-1201)** : Refonte totale du README pour refléter la spécialisation exclusive sur les PC Portables et la suppression des biais business.
+- **Hygiène du Code & Démo (PBI-1202)** : Mise à jour de `src/main.py` pour refléter le flux conversationnel actuel, débarrassé des étapes d'onboarding géographiques.
 
-## [1.1.0] - 2026-03-05
-### Added
-- **Le Compagnon Notebook (PBI-2000)** : Pivot majeur vers un moteur de recommandation pur sémantique et intentionnel.
-- **Neutralité Algorithmique** : Retrait total des scores VFM et Trust Score pour éliminer tout biais artificiel dans les recommandations.
-- **Dual Proposal Standard** : Contrainte de réponse présentant systématiquement deux options comparables avec liens Jumia cliquables.
-- **Intelligence d'Usage** : Capacité de traduire des besoins métiers (Gaming, Études, Montage) en contraintes techniques CPU/RAM/GPU.
-- **Reset Qdrant & Purge MD** : Réinitialisation complète de la base de données et suppression des anciens fichiers pour garantir l'intégrité des 30 produits Notebooks ingérés.
-- **Full-Context Node** : Stratégie d'ingestion "1 produit = 1 chunk" garantissant l'accès complet au descriptif technique pour le LLM.
-- **Épuration Qualitative** : Nettoyage de la Sentiment Analysis pour ne conserver que le rationale textuel (expertise) et supprimer les notes numériques.
+### Changed
+- **Retrait de la Localisation (PBI-1006)** : Suppression définitive de la gestion des villes et de la logistique dans le moteur de session et le prompt système pour un focus produit maximal.
 
 ## 💡 LEÇONS APPRISES
+### Sprint 12 : Hygiène & Alignement
+- **Importance de la Cohérence Documentaire** : Un README obsolète peut freiner l'adoption du projet ou induire les futurs développeurs en erreur. Aligner la documentation dès qu'un pivot technique est stabilisé est crucial.
+- **Simplification du Flux (Less is More)** : En retirant la localisation, on réduit les points de friction lors de l'onboarding utilisateur sur WhatsApp, permettant d'entrer directement dans le coeur de la valeur : le conseil expert.
+- **Script de Démo comme Documentation Vivante** : Maintenir `src/main.py` à jour permet de tester instantanément la chaîne RAG complète sans dépendre de l'infrastructure WhatsApp complexe.
+
 ### Sprint 11 : Génération du Gold Dataset (Vérité Terrain)
+
 - **Maîtrise du Scripting sur-mesure** : Préférer un script Python personnalisé aux générateurs "boîte noire" (LlamaIndex/DeepEval) permet un contrôle fin sur l'extraction des specs critiques (RAM, CPU) et garantit que le dataset reflète exactement les données réelles du catalogue.
 - **Qualité vs Quantité** : Traiter l'intégralité du catalogue Notebook (26 produits) offre une couverture de test exhaustive. Chaque fiche produit devient un cas de test unique, ce qui est plus robuste qu'une génération purement aléatoire.
 - **Structure JSON stricte** : L'utilisation du `response_format={"type": "json_object"}` avec OpenAI est indispensable pour garantir que le dataset produit soit immédiatement exploitable par les scripts d'évaluation automatisés sans erreur de parsing.

@@ -32,6 +32,34 @@
 - **Pertinence Pure** : Seule la similarité sémantique et les caractéristiques techniques réelles (CPU, RAM, Prix) guident la recommandation.
 - **Dual Proposal** : Chaque recommandation doit systématiquement présenter les deux meilleures options trouvées, en soulignant leurs différences.
 
+## 🎯 STRATÉGIE D'ÉVALUATION & QUALITÉ
+
+### 🧪 LABO (AUDIT PRÉ-PROD) - The Shield
+- **Source** : `tests/gold_dataset.json`.
+- **Objectif** : Non-régression technique et intégrité des specs.
+- **Fréquence** : À chaque commit (CI/CD via Pytest).
+- **Métriques Critiques** :
+    - **Faithfulness** : Zéro hallucination sur les specs Jumia.
+    - **Answer Correctness** : Identité sémantique avec le corrigé "Gold".
+    - **Contextual Recall** : Capacité à trouver les pépites du catalogue.
+
+### 📡 TERRAIN (MONITORING LIVE) - The Cockpit
+- **Source** : Logs réels (Evolution API / Phoenix).
+- **Objectif** : Alignement avec le besoin client et authenticité Darija.
+- **Fréquence** : Échantillonnage hebdomadaire (50 convs).
+- **Métriques Critiques** :
+    - **Answer Relevancy** : Utilité du conseil pour l'utilisateur.
+    - **Contextual Precision** : Audit du Top 2 sur des requêtes réelles.
+    - **G-Eval : Darija Tone** : Note sur le naturel et la culture marocaine.
+
+### 🥋 STANDARDS "BLACK BELT" (SCÉNARIOS DE DIAGNOSTIC)
+- **L'Honnête Inutile** : High Faithfulness / Low Relevancy. (Le bot ne ment pas mais ne sert à rien).
+- **Le Chercheur Bruyant** : High Recall / Low Precision. (Le bot trouve le bon produit mais le noie dans le bruit).
+- **Le Chanceux Halluciné** : Low Faithfulness / High Correctness. (Le bot a raison par chance mais ignore les données Jumia).
+- **Le Sniper Aveugle** : Low Recall / High Precision. (Le bot est très précis mais ignore 90% des alternatives).
+
+---
+
 ## 📋 BACKLOG GÉNÉRAL
 
 ### [PBI-901] TECH : Purge & Reset (Clean Slate)
@@ -89,70 +117,61 @@
   - **THEN** Le `SimpleChatStore` doit sauvegarder et recharger l'historique pour maintenir la cohérence sur plusieurs jours.
 
 ### [PBI-1002] TECH : Nettoyage & Retrait Context7 (Expert Advisor)
-**Status** : PENDING ⏳
+**Status** : IN_PROGRESS 🏗️ (Emergency cleanup for Sprint 13)
 **Priorité** : High | **Estimation** : S
 **User Story** : "En tant que Lead-Dev, je veux supprimer les appels à l'Expert Advisor (MCP) dans le moteur RAG pour me baser uniquement sur les descriptions Jumia."
 **Critères d'Acceptation** :
-- [ ] Suppression de l'injection du `expert_node` dans `src/rag_engine.py`.
-- [ ] Désactivation/Suppression de `src/expert_advisor.py`.
+- [ ] Suppression de l'import et de l'usage de `expert_advisor` dans `src/rag_engine.py`.
+- [ ] Suppression physique du fichier `src/expert_advisor.py`.
+- [ ] Suppression de la logique de `expert_node` dans la synthèse de réponse.
 - [ ] Validation que les réponses LLM ne citent plus de sources externes.
 
-### [PBI-1003] TECH : Suppression totale du Score VFM
-**Status** : DONE ✅
+### [PBI-1301] SETUP : Instrumentation DeepEval, Confident AI & LlamaIndex
+**Status** : BLOCKED 🛑 (Missing `deepeval` in requirements.txt)
 **Priorité** : High | **Estimation** : S
-**User Story** : "En tant que Lead-Dev, je veux retirer toute trace du score VFM (calcul, stockage et re-ranking) pour simplifier le modèle de données."
+**User Story** : "En tant que Lead-Dev, je veux intégrer le framework DeepEval et la plateforme Confident AI pour automatiser la mesure de la qualité RAG et le suivi des régressions."
 **Critères d'Acceptation** :
-- [x] Retrait du champ `value_for_money_score` dans le schéma Pydantic (`models.py`).
-- [x] Suppression de l'instruction d'extraction VFM dans `src/scraper.py`.
-- [x] Mise à jour du `JumiaReRanker` dans `src/rag_engine.py` (Neutralisé au profit d'une sémantique technique pure).
-- [x] Nettoyage de l'ingestion (`src/ingestion.py`).
+- [ ] Installation de `deepeval` dans `requirements.txt`.
+- [ ] Exécution de `deepeval login` pour l'envoi des résultats vers **Confident AI**.
+- [ ] Configuration du `EvaluationDataset` pour charger le `gold_dataset.json`.
+- [ ] **Implementation Tip** : Utiliser `deepeval.test_case.LLMTestCase` pour encapsuler les résultats (Input, Actual Output, Retrieval Context, Expected Output).
 
-### [PBI-1004] TECH : Suppression totale du Trust Score
-**Status** : DONE ✅
-**Priorité** : High | **Estimation** : S
-**User Story** : "En tant que Lead-Dev, je veux supprimer le Trust Score et le JumiaReRanker pour ne garder que la pertinence sémantique LlamaIndex."
+### [PBI-1303] EVAL : Audit "Intégrité Technique" (Source : Gold Dataset)
+**Status** : BLOCKED 🛑 (Depends on PBI-1301)
+**Priorité** : High | **Estimation** : M
+**User Story** : "En tant qu'expert métier, je veux m'assurer que le bot ne donne aucune fausse information technique sur les PC Portables Jumia."
 **Critères d'Acceptation** :
-- [x] Suppression de la fonction `calculate_trust_score` dans `src/scraper.py`.
-- [x] Retrait de `trust_score` du modèle de données et du frontmatter Markdown.
-- [x] Suppression (ou neutralisation) du `JumiaReRanker` dans `src/rag_engine.py`.
-- [x] Mise à jour du prompt système pour ne plus mentionner les scores ou l'absence d'avis.
+- [ ] Utilisation de `deepeval.metrics.FaithfulnessMetric` (Seuil: 0.8) pour l'hallucination.
+- [ ] Utilisation de `deepeval.metrics.ContextualRecallMetric` (Seuil: 0.7) pour l'oubli.
+- [ ] Utilisation de `deepeval.metrics.ContextualPrecisionMetric` (Seuil: 0.7) pour le Top 2.
+- [ ] Utilisation de `deepeval.metrics.AnswerRelevancyMetric` (Seuil: 0.7) pour la pertinence.
+- [ ] Utilisation de `deepeval.metrics.AnswerCorrectnessMetric` (Seuil: 0.7) pour le score Gold.
+- [ ] **Technical Guideline** : Créer un script `tests/test_rag_metrics.py` qui itère sur le `gold_dataset.json` et appelle `deepeval.evaluate()`.
 
-### [PBI-1005] UX : Implémentation de la réponse "Dual-Choice"
+### [PBI-1304] EVAL : Audit "Alignement User" (Source : Logs Users)
 **Status** : PENDING ⏳
-**Priorité** : High | **Estimation** : S
-**User Story** : "En tant que Personal Shopper, je veux proposer systématiquement les 2 meilleures options au client, afin de faciliter son choix par la comparaison."
+**Priorité** : High | **Estimation** : M
+**User Story** : "En tant qu'utilisateur, je veux que l'assistant comprenne mon besoin (Darija/Fr) et propose des PC qui y répondent vraiment."
 **Critères d'Acceptation** :
-- [ ] Ajuster le `response_synthesizer` pour forcer la présentation de 2 produits.
-- [ ] Modifier le prompt de personnalité pour structurer la réponse avec : Option 1, Option 2, et un court conseil technique pour départager.
-- [ ] Gérer le cas où un seul produit est trouvé (réponse adaptée).
+- [ ] Mesure de l'**Answer Relevancy** (Live via LLM-as-a-Judge).
+- [ ] Mesure de la **Contextual Precision** (Audit du Top K sur requêtes réelles).
+- [ ] **Implementation Tip** : Utiliser les `deepeval.integrations.llama_index.DeepEvalCallbackHandler` pour capturer les traces live si nécessaire.
 
-### [PBI-1006] TECH/UX : Retrait de la gestion de Localisation
-**Status** : IN_PROGRESS 🏗️
-**Priorité** : High | **Estimation** : XS
-**User Story** : "En tant que Lead-Dev, je veux supprimer le flux d'onboarding lié à la ville et toute mention de localisation dans les réponses, pour me concentrer exclusivement sur les produits."
+### [PBI-1306] TECH : Observabilité & Tracing (Arize Phoenix)
+**Status** : BLOCKED 🛑 (Missing `arize-phoenix` in requirements.txt)
+**Priorité** : Medium | **Estimation** : S
+**User Story** : "En tant que Lead-Dev, je veux visualiser le cheminement complet de mes requêtes RAG (Tracing) pour identifier les goulots d'étranglement (latence) et les sources d'hallucination."
 **Critères d'Acceptation** :
-- [ ] Suppression du flux de demande de ville dans `src/session_manager.py`.
-- [ ] Retrait de la persistance de localisation dans le `SimpleChatStore`.
-- [ ] Mise à jour du prompt système pour interdire toute mention de ville ou de logistique locale.
-
-### [PBI-1201] DOC : Refonte du README.md (Alignement Vision Notebook)
-**Status** : IN_PROGRESS 🏗️
-**Priorité** : High | **Estimation** : S
-**User Story** : "En tant qu'utilisateur, je veux un README à jour afin de comprendre la vision réelle du projet (Notebook Companion) sans être induit en erreur par d'anciennes fonctionnalités supprimées."
-**Critères d'Acceptation** :
-- [ ] Suppression des mentions Trust Score et VFM (obsolètes).
-- [ ] Suppression des sections sur la Localisation (villes, livraison).
-- [ ] Mise à jour de la Stack Technique (Crawl4AI, LlamaIndex Hybrid, Evolution API).
-- [ ] Actualisation de l'état d'avancement et de la vision "Pure Sémantique".
-
-### [PBI-1202] TECH : Nettoyage src/main.py (Alignement Démo)
-**Status** : IN_PROGRESS 🏗️
-**Priorité** : High | **Estimation** : XS
-**User Story** : "En tant que développeur, je veux que le script de démo reflète le flux actuel du bot (sans localisation) pour éviter des erreurs d'exécution ou de compréhension."
-**Critères d'Acceptation** :
-- [ ] Retrait du message "Ana f Casablanca" et de la logique d'onboarding ville.
-- [ ] Mise à jour des messages de test pour se concentrer sur la recherche de Notebooks.
-- [ ] Mise à jour du print d'entête (Sprint 12).
+- [ ] Installation de `arize-phoenix` et `openinference-instrumentation-llama-index`.
+- [ ] **Instrumentation Code** : 
+  ```python
+  from openinference.instrumentation.llama_index import LlamaIndexInstrumentor
+  from phoenix.otel import register
+  tracer_provider = register(project_name="jumia-rag-companion")
+  LlamaIndexInstrumentor().instrument(tracer_provider=tracer_provider)
+  ```
+- [ ] Accès au dashboard local Phoenix (généralement port 6006) pour l'analyse des traces.
+- [ ] Capture automatique de la latence et de la consommation de tokens par requête.
 
 ### [PBI-2000] LE COMPAGNON NOTEBOOK (Pure Sémantique, Dual-Choice, Intent-based & Liens Directs)
 **Status** : DONE ✅

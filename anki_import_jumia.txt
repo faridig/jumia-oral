@@ -17,6 +17,22 @@ Inconvénient du **RagDatasetGenerator** natif ?	C'est une **boîte noire** : pe
 Qu'est-ce que la **Evolutionary Generation** (DeepEval) ?	Méthode qui crée une question simple puis la **complexifie** (bruit, négations) pour stress-tester le bot.
 C'est quoi **Ragas** ?	Le **standard académique** de l'évaluation RAG, indispensable sur un CV d'ingénieur IA.
 C'est quoi **DeepEval** ?	Le framework orienté **Software Engineering** (DevOps), souvent appelé "le Pytest du RAG".
-Pourquoi utiliser **DeepEval** plutôt que Ragas pur ?	Pour sa syntaxe **Pytest** familière (assert) et son **tableau de bord visuel** de suivi des scores.
+Pourquoi coupler **DeepEval** à **Confident AI** ?	Pour avoir un **tableau de bord centralisé**, suivre l'historique des metrics et obtenir des recommandations de correction via le **Reasoning**.
 Comment Ragas calcule-t-il la **Faithfulness** ?	Ratio : (Nombre d'affirmations vraies selon le contexte) / (Nombre total d'affirmations de la réponse).
 Pourquoi la **RAG Triad** est-elle cruciale pour Jumia ?	1. **Fidélité** : Pas d'erreurs techniques.<br>2. **Pertinence** : Conseils utiles.<br>3. **Précision** : Meilleurs produits en premier.
+Qu'est-ce que **G-Eval** (DeepEval) ?	Un framework flexible qui permet d'utiliser un LLM comme juge sur des critères **personnalisés** (ex: "Le ton est-il bien Darija ?").
+Qu'est-ce que la **Citation Accuracy** ?	Vérifie si les **liens Jumia** ou sources cités dans la réponse correspondent réellement aux produits décrits (Crucial en e-commerce).
+Qu'est-ce que la **Knowledge Retention** ?	Métrique conversationnelle qui mesure si le bot conserve les informations clés au fil des échanges (ex: se souvenir du PC choisi).
+Différence : **Faithfulness** vs **Hallucination** (DeepEval) ?	**Faithfulness** : Est-ce supporté par le contexte ?<br>**Hallucination** : Y a-t-il des **contradictions** directes (erreurs factuelles).
+Analogie : **The Shield** (Bouclier) vs **The Cockpit** ?	**The Shield** (DeepEval/Gold) : Audit avant production (Crash Test).<br>**The Cockpit** (Phoenix/Logs) : Monitoring en temps réel (Pilotage).
+Qu'est-ce que le **Reasoning** (DeepEval) ?	La capacité du framework à fournir une **explication textuelle** détaillée pour justifier chaque note d'évaluation.
+Pourquoi coupler **DeepEval** à **Pytest** ?	Pour créer une **CI/CD** qui bloque automatiquement le déploiement si le bot commence à halluciner ou perd en qualité.
+Qu'est-ce qu'**Arize Phoenix** ?	Un outil d'**Observabilité** (Tracing) qui permet de visualiser tout le cheminement d'une requête RAG et de détecter les goulots d'étranglement.
+Pourquoi la **Contextual Precision** est-elle critique pour le "Top 2" ?	Car si le meilleur produit arrive en 5ème position, il ne sera jamais sélectionné par le bot qui ne regarde que les 2 premiers résultats.
+Différence : **Precision Gold** vs **Precision Live** ?	**Gold** : Vérifie l'ordre par rapport à un corrigé fixe (Crash Test).<br>**Live** : Utilise un **LLM-as-a-Judge** pour noter l'ordre sur des requêtes réelles.
+Comment utiliser le **Reasoning** comme outil de recommandation ?	En lisant l'explication de l'échec (ex: "Prix incorrect") pour savoir s'il faut ajuster le prompt, le scraper ou le chunking.
+[SCÉNARIO] **Faithfulness 1.0** / **Answer Relevancy 0.2** : Quel est le problème ?	Le bot est un **"Honnête Inutile"** : il ne ment pas (tout vient du texte), mais il répond totalement à côté de la question.
+[SCÉNARIO] **Contextual Recall 1.0** / **Contextual Precision 0.1** : Quel est le problème ?	Le bot est un **"Chercheur Bruyant"** : il trouve bien le bon produit, mais il le noie au milieu de résultats inutiles.
+[SCÉNARIO] **Faithfulness 0.2** / **Answer Correctness 1.0** : Quel est le problème ?	Le bot est un **"Chanceux Halluciné"** : il a donné la bonne réponse (par chance ou connaissance interne), mais elle n'est pas du tout supportée par les documents Jumia fournis.
+[SCÉNARIO] **Recall 0.1** / **Precision 1.0** : Quel est le problème ?	Le bot est un **"Sniper Aveugle"** : ce qu'il ramène est ultra-précis, mais il passe à côté de 90% du catalogue pertinent.
+[SCÉNARIO] **Low Citation Accuracy** mais **High Answer Correctness** : Quel est le problème ?	Le bot donne la bonne info technique, mais les **liens Jumia** sont cassés ou pointent vers le mauvais produit.

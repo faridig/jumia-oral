@@ -2,13 +2,24 @@ import os
 import logging
 from typing import List, Optional, Any, Set
 
+import phoenix as px
+from openinference.instrumentation.llama_index import LlamaIndexInstrumentor
 from dotenv import load_dotenv
+
+# Initialisation Phoenix (Observabilité PBI-1306)
+if os.getenv("PHOENIX_ENABLED", "true").lower() == "true":
+    px.launch_app()
+    from phoenix.otel import register
+    register(project_name="Jumia-Oral-RAG")
+    LlamaIndexInstrumentor().instrument()
+
 from qdrant_client import QdrantClient
 from llama_index.core import (
     VectorStoreIndex,
     StorageContext,
     QueryBundle,
     PromptTemplate,
+    Response,
     get_response_synthesizer
 )
 from llama_index.core.response_synthesizers import ResponseMode
@@ -21,11 +32,17 @@ from llama_index.llms.openai import OpenAI
 from llama_index.core.postprocessor.types import BaseNodePostprocessor
 from llama_index.core.schema import NodeWithScore
 
-from src.expert_advisor import expert_advisor
+# Configuration du Silence Technique (Guidance Sprint 13)
+import warnings
+warnings.filterwarnings("ignore")
+os.environ["PYTHONWARNINGS"] = "ignore"
 
 # Configuration
 load_dotenv()
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+# Désactivation des logs verbeux des bibliothèques tierces
+for logger_name in ["arize_phoenix", "openinference", "httpx", "openai", "qdrant_client"]:
+    logging.getLogger(logger_name).setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
 
 QDRANT_URL = os.getenv("QDRANT_URL", "http://localhost:6343")
@@ -33,7 +50,7 @@ COLLECTION_NAME = os.getenv("QDRANT_COLLECTION_NAME", "jumia_products")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 # Modèles
-llm = OpenAI(model="gpt-4o-mini", api_key=OPENAI_API_KEY)
+llm = OpenAI(model="gpt-4o-mini", api_key=OPENAI_API_KEY, temperature=0.0)
 embed_model = OpenAIEmbedding(api_key=OPENAI_API_KEY)
 
 class DeduplicatePostprocessor(BaseNodePostprocessor):
@@ -69,15 +86,13 @@ def get_rag_engine(use_auto_retriever: bool = True):
     if use_auto_retriever:
         # Configuration des métadonnées pour l'Auto-Retriever (Laptop Specialized PBI-2000)
         vector_store_info = VectorStoreInfo(
-            content_info="Catalogue Jumia Maroc Spécialisé PC Portables (Pure Sémantique)",
+            content_info="Catalogue Jumia Maroc (Notebooks). Contient des specs techniques (CPU, RAM, SSD) et l'état du produit.",
             metadata_info=[
-                MetadataInfo(name="brand", type="str", description="Marque du produit"),
-                MetadataInfo(name="price_numeric", type="float", description="Prix en Dhs (numérique)"),
-                MetadataInfo(name="ram", type="str", description="Mémoire vive. Utiliser uniquement des filtres d'égalité (ex: ram == '16Go')."),
-                MetadataInfo(name="ssd", type="str", description="Stockage SSD. Utiliser uniquement des filtres d'égalité."),
-                MetadataInfo(name="cpu", type="str", description="Modèle processeur. Utiliser uniquement des filtres d'égalité."),
-                MetadataInfo(name="gpu", type="str", description="Carte graphique. Utiliser uniquement des filtres d'égalité."),
-                MetadataInfo(name="condition", type="str", description="État du PC (Neuf, Renewed)"),
+                MetadataInfo(name="brand", type="str", description="Marque du laptop (ex: HP, DELL, Lenovo)"),
+                MetadataInfo(name="price_numeric", type="float", description="Prix en Dhs"),
+                MetadataInfo(name="ram", type="str", description="RAM sous forme de texte (ex: '8GB', '16GB'). INTERDICTION d'utiliser des comparaisons numériques (gte, lte), utiliser uniquement l'égalité."),
+                MetadataInfo(name="ssd", type="str", description="Stockage sous forme de texte (ex: '256GB', '512GB'). INTERDICTION d'utiliser des comparaisons numériques, utiliser l'égalité."),
+                # Condition retirée des filtres structurés car trop incohérente dans l'index (Remis à neuf vs Remis à Neuf)
             ],
         )
         retriever = VectorIndexAutoRetriever(
@@ -90,23 +105,20 @@ def get_rag_engine(use_auto_retriever: bool = True):
     else:
         retriever = VectorIndexRetriever(index=index, similarity_top_k=5)
 
-    # Personnalité "Compagnon Notebook" (PBI-2000)
+    # Persona "Compagnon" (Rigueur Absolue & Darija - PBI-2000)
     system_prompt = (
-        "Tu es le 'Compagnon Notebook Jumia', un expert technique Personal Shopper au Maroc. "
-        "Ta mission est d'aider l'utilisateur à trouver les DEUX MEILLEURS laptops selon son besoin. "
-        "Tu parles en Français avec des touches de Darija (Mrehba, Besseha, Chouf, Mzyan). "
-        "CONSIGNES STRICTES : "
-        "1. Analyse l'intention d'usage (Gaming, Études, Montage, Bureautique). "
-        "2. Propose SYSTÉMATIQUEMENT les 2 meilleures options trouvées dans le contexte. "
-        "3. Pour chaque option, affiche : Nom, Prix, Specs clés (CPU/RAM/SSD) et l'URL JUMIA DIRECTE. "
-        "4. Justifie ton choix uniquement par la pertinence technique (Specs vs Intention). "
-        "5. Ne mentionne JAMAIS de scores numériques (Trust/VFM). Utilise les 'insights' textuels. "
-        "6. Sois tranché et honnête : si un produit est mieux pour le gaming, dis-le clairement. "
-        "7. ZÉRO LOCALISATION : Ne mentionne jamais de villes, de délais de livraison locaux ou de logistique. "
-        "8. Format de réponse : Présentation brève -> Option 1 -> Option 2 -> Conseil d'expert en Darija."
+        "Tu es le 'Compagnon Notebook Jumia', un conseiller expert en PC portables au Maroc. "
+        "TON DEVOIR SUPRÊME : Être factuellement IRREPROCHABLE. "
+        "CONSIGNES : "
+        "1. PROPOSITION DOUBLE : Propose SYSTÉMATIQUEMENT 2 options (PC portables) à l'utilisateur pour lui donner le choix. Si un seul produit correspond, cherche une alternative proche. "
+        "2. NOM COMPLET : Cite TOUJOURS le NOM COMPLET du produit tel qu'il apparaît dans le contexte Jumia (ex: 'HP Elitebook X360 G2'). "
+        "3. STRUCTURE FACT-FIRST : Réponds à la question technique (Prix, RAM, CPU, GPU, Écran) dès la PREMIÈRE PHRASE. Tu DOIS inclure TOUTES les spécifications techniques importantes trouvées dans le contexte (CPU, RAM, Stockage, Carte Graphique, Résolution écran) pour chaque produit cité. "
+        "4. CONSEIL DARIJA : Après le fait technique, ajoute une phrase de conseil ou d'accueil en Darija (Mrehba, Besseha, Mzyan bzaaf). "
+        "5. ALTERNATIVES : Si aucun produit ne correspond exactement à la demande (ex: pas de PC Gaming), NE REFUSE PAS la réponse. Propose à la place les deux meilleurs notebooks disponibles dans le contexte en expliquant qu'ils sont les meilleures alternatives. "
+        "6. LIENS : Termine par le lien Jumia [Voir sur Jumia](URL)."
     )
     
-    llm_with_persona = OpenAI(model="gpt-4o-mini", api_key=OPENAI_API_KEY, system_prompt=system_prompt)
+    llm_with_persona = OpenAI(model="gpt-4o-mini", api_key=OPENAI_API_KEY, system_prompt=system_prompt, temperature=0.0)
     response_synthesizer = get_response_synthesizer(llm=llm_with_persona, response_mode=ResponseMode.COMPACT)
 
     return RetrieverQueryEngine(
@@ -117,20 +129,21 @@ def get_rag_engine(use_auto_retriever: bool = True):
 
 def expand_query_darija(query: str) -> List[str]:
     """
-    Transforme la requête Darija en termes techniques Français propres pour la recherche vectorielle.
+    Enrichit la requête Darija/Français avec des termes techniques tout en préservant les références.
     """
     prompt = PromptTemplate(
-        "Transforme cette requête Darija/Français en 3 termes de recherche techniques et précis en Français.\n"
-        "RÉPONS SEULEMENT AVEC LES TERMES, UN PAR LIGNE, SANS INTRODUCTION NI NUMÉROTATION.\n"
+        "Tu es un expert en PC portables. Analyse cette requête (Darija ou Français).\n"
+        "Génère 2 variantes de recherche techniques en Français qui :\n"
+        "1. CONSERVE impérativement les noms de modèles, marques et numéros présents dans la requête originale. INTERDICTION d'ajouter des références techniques (modèles, CPU) non mentionnées par l'utilisateur.\n"
+        "2. AJOUTENT des termes sémantiques équivalents.\n"
+        "RÉPONDS SEULEMENT AVEC LES VARIANTES, UNE PAR LIGNE.\n"
         "Requête: {query}\n"
-        "Termes:"
+        "Variantes:"
     )
     response = llm.complete(prompt.format(query=query))
-    # Nettoyage strict des hallucinations textuelles
     lines = [l.strip().lstrip("123. -\"*") for l in response.text.strip().split("\n") if l.strip()]
-    # Filtrage des phrases d'intro/outro
     variantes = [l for l in lines if len(l.split()) >= 1 and ":" not in l]
-    return variantes[:3]
+    return variantes[:2]
 
 class MultiQueryAutoRAG:
     """
@@ -140,60 +153,49 @@ class MultiQueryAutoRAG:
         self.auto_engine = get_rag_engine(use_auto_retriever=True)
         self.base_engine = get_rag_engine(use_auto_retriever=False)
         
-    def query(self, user_query: str):
+    def query(self, user_query: str) -> Response:
         logger.info(f"User Query: {user_query}")
         
-        # Mappage des intentions vers des filtres techniques (PBI-2000 Action 2)
-        # On laisse l'Auto-Retriever gérer l'extraction des filtres, mais on peut enrichir la query
+        # 1. Expansion Sémantique (Hybridé)
+        variantes = expand_query_darija(user_query)
+        # On garde la query originale comme pivot central
+        hybrid_query = f"{user_query} {' '.join(variantes)}"
+        logger.info(f"Hybrid Query: {hybrid_query}")
+
+        # 2. Enrichissement d'intention (Optionnel pour l'Auto-Retriever)
         enriched_query = user_query
         if any(k in user_query.lower() for k in ["gaming", "jeux", "gamer"]):
-            enriched_query += " (Besoin: GPU performant, RAM >= 16Go, CPU i7 ou Ryzen 7)"
-        elif any(k in user_query.lower() for k in ["études", "etudiant", "ecole", "bureautique"]):
-            enriched_query += " (Besoin: Autonomie, RAM >= 8Go, i5 ou Ryzen 5, SSD)"
-        elif any(k in user_query.lower() for k in ["montage", "video", "graphisme"]):
-            enriched_query += " (Besoin: Écran haute qualité, RAM >= 16Go, GPU dédié)"
-
-        variantes = expand_query_darija(user_query)
-        logger.info(f"Search Variants: {variantes}")
+            enriched_query += " (Besoin: GPU performant, RAM >= 16Go)"
+        elif any(k in user_query.lower() for k in ["études", "etudiant", "ecole"]):
+            enriched_query += " (Besoin: Autonomie, RAM >= 8Go)"
         
         try:
             # Tentative via Auto-Retriever
             response = self.auto_engine.query(enriched_query)
+            # Validation de la pertinence (PBI-2000: Robustesse)
             if not response.source_nodes:
-                raise ValueError("Résultat Auto-Retriever vide")
+                 raise ValueError("Résultat Auto-Retriever vide")
         except Exception as e:
             logger.warning(f"Auto-Retriever Fallback ({e}). Tentative via Base Engine...")
-            search_query = variantes[0] if variantes else enriched_query
-            response = self.base_engine.query(search_query)
+            # Fallback sur le Base Engine avec la Hybrid Query
+            response = self.base_engine.query(hybrid_query)
             
+        # 3. Fallback d'alternatives si toujours rien (PBI-2000: Persona Compagnon)
         if not response.source_nodes:
-            return "Sm7 lya, had l-produit ba9i madiyoroch f stock l-youm. Chouf chi 7aja khora?"
+            logger.info("Aucun match exact. Recherche d'alternatives pour le client...")
+            response = self.base_engine.query("notebook portable laptop")
 
-        # Enrichissement avec l'expertise technique (Context7) si disponible
-        if response.source_nodes:
-            top_node = response.source_nodes[0]
-            product_name = top_node.node.metadata.get("name", "Produit")
-            category = top_node.node.metadata.get("category_source", "Notebooks")
-            
-            expert_insight = expert_advisor.get_expert_insight(product_name, category)
-            
-            from llama_index.core.schema import TextNode, NodeWithScore
-            expert_node = NodeWithScore(
-                node=TextNode(
-                    text=f"GUIDE TECHNIQUE : {expert_insight}",
-                    metadata={"is_expert_insight": True}
-                ),
-                score=1.0
+        if not response.source_nodes:
+            return Response(
+                response="Sm7 lya, had l-produit ba9i madiyoroch f stock l-youm. Chouf chi 7aja khora?",
+                source_nodes=[]
             )
-            # On s'assure d'avoir au moins 2 nodes de produits + 1 node expertise
-            nodes_for_synthesis = response.source_nodes[:2] # Top 2 Notebooks
-            nodes_for_synthesis.append(expert_node)
-            
-            # Synthèse finale avec le prompt "Compagnon"
-            response = self.auto_engine._response_synthesizer.synthesize(
-                query=user_query,
-                nodes=nodes_for_synthesis
-            )
+
+        # Synthèse finale avec le prompt "Compagnon" (Garantit les 2 options)
+        response = self.auto_engine._response_synthesizer.synthesize(
+            query=user_query,
+            nodes=response.source_nodes[:5] # On donne du choix pour que le Persona sélectionne les 2 meilleures options
+        )
             
         return response
 

@@ -1,39 +1,43 @@
-# 🏃 SPRINT PLAN - SPRINT 12 : Hygiène & Alignement Documentaire
+# 🏃 SPRINT PLAN - SPRINT 13 : "THE COCKPIT & THE SHIELD"
 
-**Objectif du Sprint** : Nettoyer le projet des traces de fonctionnalités obsolètes (Localisation, Trust Score) et mettre à jour la documentation pour refléter la vision "Compagnon Notebook" actuelle.
+**Objectif du Sprint** : Assainir le code en retirant les composants obsolètes et mettre en place les deux piliers de l'efficacité RAG : l'**Observabilité** (Cockpit Phoenix) et l'**Audit de Fidélité** (Shield DeepEval).
 
 ---
 
 ## 📋 TICKETS SÉLECTIONNÉS
 
-### [PBI-1006] TECH/UX : Retrait de la gestion de Localisation
-**Priorité** : High | **Estimation** : XS
-**User Story** : "En tant que Lead-Dev, je veux supprimer le flux d'onboarding lié à la ville et toute mention de localisation dans les réponses, pour me concentrer exclusivement sur les produits."
+### [PBI-1002] TECH : Nettoyage & Retrait Context7 (Expert Advisor)
+**Priorité** : CRITIQUE | **Estimation** : S
+**User Story** : "En tant que Lead-Dev, je veux supprimer les appels à l'Expert Advisor (MCP) dans le moteur RAG pour me baser uniquement sur les descriptions Jumia."
 **Critères d'Acceptation** :
-- [ ] Suppression du flux de demande de ville dans `src/session_manager.py`.
-- [ ] Retrait de la persistance de localisation dans le `SimpleChatStore`.
-- [ ] Mise à jour du prompt système pour interdire toute mention de ville ou de logistique locale.
+- [ ] Suppression de l'import et de l'usage de `expert_advisor` dans `src/rag_engine.py`.
+- [ ] Suppression physique du fichier `src/expert_advisor.py`.
+- [ ] Suppression de la logique de `expert_node` dans la synthèse de réponse.
+- [ ] Validation (via tests unitaires) que le flux RAG fonctionne sans ce composant.
 
-### [PBI-1201] DOC : Refonte du README.md (Alignement Vision Notebook)
+### [PBI-1306] TECH : Observabilité & Tracing (Arize Phoenix)
 **Priorité** : High | **Estimation** : S
-**User Story** : "En tant qu'utilisateur, je veux un README à jour afin de comprendre la vision réelle du projet (Notebook Companion) sans être induit en erreur par d'anciennes fonctionnalités supprimées."
+**User Story** : "En tant que Lead-Dev, je veux visualiser le cheminement complet de mes requêtes RAG pour identifier les latences et les sources d'erreur."
 **Critères d'Acceptation** :
-- [ ] Suppression des mentions Trust Score et VFM (obsolètes).
-- [ ] Suppression des sections sur la Localisation (villes, livraison).
-- [ ] Mise à jour de la Stack Technique (Crawl4AI, LlamaIndex Hybrid, Evolution API).
-- [ ] Actualisation de l'état d'avancement et de la vision "Pure Sémantique".
+- [ ] Ajout de `arize-phoenix` et `openinference-instrumentation-llama-index` au `requirements.txt`.
+- [ ] Dashboard Phoenix accessible en local.
+- [ ] Traces complètes (Retriever -> Synthesis) visibles pour chaque requête.
 
-### [PBI-1202] TECH : Nettoyage src/main.py (Alignement Démo)
-**Priorité** : High | **Estimation** : XS
-**User Story** : "En tant que développeur, je veux que le script de démo reflète le flux actuel du bot (sans localisation) pour éviter des erreurs d'exécution ou de compréhension."
+### [PBI-1301/1303] EVAL : Audit "Intégrité Technique" (DeepEval + Confident AI + Gold Dataset)
+**Priorité** : High | **Estimation** : M
+**User Story** : "En tant qu'expert, je veux un score scientifique de fidélité pour m'assurer que le bot ne ment jamais sur les specs techniques."
 **Critères d'Acceptation** :
-- [ ] Retrait du message "Ana f Casablanca" et de la logique d'onboarding ville.
-- [ ] Mise à jour des messages de test pour se concentrer sur la recherche de Notebooks.
-- [ ] Mise à jour du print d'entête (Sprint 12).
+- [ ] Ajout de `deepeval` au `requirements.txt`.
+- [ ] Intégration de DeepEval avec le `gold_dataset.json`.
+- [ ] Dashboard **Confident AI** actif pour le suivi des régressions.
+- [ ] Mesure des métriques : **Faithfulness**, **Contextual Precision**, **Answer Relevancy** et **Answer Correctness**.
 
 ---
 
-## 🏛️ RAPPEL TECHNIQUE
-- **Full-Context Node** : 1 produit = 1 chunk.
-- **Top 2** : Toujours proposer deux options.
-- **Zéro Localisation** : Plus de mentions de villes ou de logistique.
+## 🏛️ RAPPEL TECHNIQUE & BLOQUANTS
+1. **⚠️ DÉPENDANCES** : Le premier acte du sprint doit être la mise à jour du `requirements.txt` avec `deepeval` et `arize-phoenix`.
+2. **NETTOYAGE** : Le PBI-1002 est un prérequis pour éviter d'instrumenter du code (Expert Advisor) qui va être supprimé.
+3. **Phoenix** : Dashboard temps réel (Le "Comment" - Tracing Live).
+4. **DeepEval / Confident AI** : Validation scientifique et historique (Le "Combien" - Analyse des régressions).
+5. **Gold Dataset** : Source de vérité immuable.
+6. **QUALITÉ** : Application des scénarios "Black Belt" pour diagnostiquer les régressions de métriques.
