@@ -9,6 +9,8 @@ from dotenv import load_dotenv
 # Initialisation Phoenix (Observabilité PBI-1306)
 if os.getenv("PHOENIX_ENABLED", "true").lower() == "true":
     px.launch_app()
+    from phoenix.otel import register
+    register(project_name="Jumia-Oral-RAG")
     LlamaIndexInstrumentor().instrument()
 
 from qdrant_client import QdrantClient
@@ -17,6 +19,7 @@ from llama_index.core import (
     StorageContext,
     QueryBundle,
     PromptTemplate,
+    Response,
     get_response_synthesizer
 )
 from llama_index.core.response_synthesizers import ResponseMode
@@ -87,8 +90,8 @@ def get_rag_engine(use_auto_retriever: bool = True):
             metadata_info=[
                 MetadataInfo(name="brand", type="str", description="Marque du laptop (ex: HP, DELL, Lenovo)"),
                 MetadataInfo(name="price_numeric", type="float", description="Prix en Dhs"),
-                MetadataInfo(name="ram", type="str", description="RAM (ex: 8GB, 16GB)"),
-                MetadataInfo(name="ssd", type="str", description="Stockage (ex: 256GB, 512GB)"),
+                MetadataInfo(name="ram", type="str", description="RAM sous forme de texte (ex: '8GB', '16GB'). INTERDICTION d'utiliser des comparaisons numériques (gte, lte), utiliser uniquement l'égalité."),
+                MetadataInfo(name="ssd", type="str", description="Stockage sous forme de texte (ex: '256GB', '512GB'). INTERDICTION d'utiliser des comparaisons numériques, utiliser l'égalité."),
                 # Condition retirée des filtres structurés car trop incohérente dans l'index (Remis à neuf vs Remis à Neuf)
             ],
         )
@@ -107,11 +110,12 @@ def get_rag_engine(use_auto_retriever: bool = True):
         "Tu es le 'Compagnon Notebook Jumia', un conseiller expert en PC portables au Maroc. "
         "TON DEVOIR SUPRÊME : Être factuellement IRREPROCHABLE. "
         "CONSIGNES : "
-        "1. NOM COMPLET : Cite TOUJOURS le NOM COMPLET du produit tel qu'il apparaît dans le contexte Jumia (ex: 'HP Elitebook X360 G2'). Ne simplifie jamais le nom. "
-        "2. STRUCTURE FACT-FIRST : Réponds à la question technique (Prix, RAM, CPU) dès la PREMIÈRE PHRASE en Français technique. "
-        "3. CONSEIL DARIJA : Après le fait technique, ajoute une phrase de conseil ou d'accueil en Darija (Mrehba, Besseha, Mzyan bzaaf). "
-        "4. ZÉRO HALLUCINATION : Si l'information n'est pas dans le contexte, dis-le sans inventer. "
-        "5. LIENS : Termine par le lien Jumia [Voir sur Jumia](URL)."
+        "1. PROPOSITION DOUBLE : Propose SYSTÉMATIQUEMENT 2 options (PC portables) à l'utilisateur pour lui donner le choix. Si un seul produit correspond, cherche une alternative proche. "
+        "2. NOM COMPLET : Cite TOUJOURS le NOM COMPLET du produit tel qu'il apparaît dans le contexte Jumia (ex: 'HP Elitebook X360 G2'). "
+        "3. STRUCTURE FACT-FIRST : Réponds à la question technique (Prix, RAM, CPU, GPU, Écran) dès la PREMIÈRE PHRASE. Tu DOIS inclure TOUTES les spécifications techniques importantes trouvées dans le contexte (CPU, RAM, Stockage, Carte Graphique, Résolution écran) pour chaque produit cité. "
+        "4. CONSEIL DARIJA : Après le fait technique, ajoute une phrase de conseil ou d'accueil en Darija (Mrehba, Besseha, Mzyan bzaaf). "
+        "5. ALTERNATIVES : Si aucun produit ne correspond exactement à la demande (ex: pas de PC Gaming), NE REFUSE PAS la réponse. Propose à la place les deux meilleurs notebooks disponibles dans le contexte en expliquant qu'ils sont les meilleures alternatives. "
+        "6. LIENS : Termine par le lien Jumia [Voir sur Jumia](URL)."
     )
     
     llm_with_persona = OpenAI(model="gpt-4o-mini", api_key=OPENAI_API_KEY, system_prompt=system_prompt, temperature=0.0)
@@ -149,7 +153,7 @@ class MultiQueryAutoRAG:
         self.auto_engine = get_rag_engine(use_auto_retriever=True)
         self.base_engine = get_rag_engine(use_auto_retriever=False)
         
-    def query(self, user_query: str):
+    def query(self, user_query: str) -> Response:
         logger.info(f"User Query: {user_query}")
         
         # 1. Expansion Sémantique (Hybridé)
@@ -159,7 +163,6 @@ class MultiQueryAutoRAG:
         logger.info(f"Hybrid Query: {hybrid_query}")
 
         # 2. Enrichissement d'intention (Optionnel pour l'Auto-Retriever)
-        # On passe le nom complet du produit dans la query pour l'Auto-Retriever
         enriched_query = user_query
         if any(k in user_query.lower() for k in ["gaming", "jeux", "gamer"]):
             enriched_query += " (Besoin: GPU performant, RAM >= 16Go)"
@@ -169,25 +172,29 @@ class MultiQueryAutoRAG:
         try:
             # Tentative via Auto-Retriever
             response = self.auto_engine.query(enriched_query)
-            # Validation de la pertinence du premier node (Double-Check technique)
-            if not response.source_nodes or (len(user_query.split()) > 2 and user_query.lower().split()[-1] not in response.source_nodes[0].get_content().lower()):
-                 if not response.source_nodes:
-                     raise ValueError("Résultat Auto-Retriever vide")
-                 else:
-                     logger.warning("Auto-Retriever a trouvé un produit qui semble hors-sujet. Fallback...")
-                     raise ValueError("Produit Auto-Retriever potentiellement incorrect")
+            # Validation de la pertinence (PBI-2000: Robustesse)
+            if not response.source_nodes:
+                 raise ValueError("Résultat Auto-Retriever vide")
         except Exception as e:
             logger.warning(f"Auto-Retriever Fallback ({e}). Tentative via Base Engine...")
             # Fallback sur le Base Engine avec la Hybrid Query
             response = self.base_engine.query(hybrid_query)
             
+        # 3. Fallback d'alternatives si toujours rien (PBI-2000: Persona Compagnon)
         if not response.source_nodes:
-            return "Sm7 lya, had l-produit ba9i madiyoroch f stock l-youm. Chouf chi 7aja khora?"
+            logger.info("Aucun match exact. Recherche d'alternatives pour le client...")
+            response = self.base_engine.query("notebook portable laptop")
 
-        # Synthèse finale avec le prompt "Compagnon"
+        if not response.source_nodes:
+            return Response(
+                response="Sm7 lya, had l-produit ba9i madiyoroch f stock l-youm. Chouf chi 7aja khora?",
+                source_nodes=[]
+            )
+
+        # Synthèse finale avec le prompt "Compagnon" (Garantit les 2 options)
         response = self.auto_engine._response_synthesizer.synthesize(
             query=user_query,
-            nodes=response.source_nodes[:2] # Top 2 Notebooks
+            nodes=response.source_nodes[:5] # On donne du choix pour que le Persona sélectionne les 2 meilleures options
         )
             
         return response
