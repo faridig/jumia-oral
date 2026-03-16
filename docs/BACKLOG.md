@@ -22,6 +22,13 @@
 21. **[2026-03-05] Épuration de la Sentiment Analysis (Pure Rationale)** : Pour être cohérent avec le retrait du VFM et du Trust Score, les **notes numériques** (scores 0-10) et l'axe **"Value"** sont supprimés de l'analyse de sentiment. On ne conserve que le **Rationale** (texte descriptif) pour les axes techniques (Performance, Build Quality, Display) afin de nourrir le RAG en arguments qualitatifs neutres.
 22. **[2026-03-06] Choix Technologique Gold Dataset (PBI-1200)** : Pour favoriser la montée en compétence technique et la maîtrise du style Darija, l'option **Script Python Sur-Mesure + OpenAI** est choisie à la place des outils natifs (LlamaIndex Generator) ou spécialisés (DeepEval). Cela permet un contrôle total sur l'extraction des specs critiques (RAM, CPU, Prix) et sur la langue de la question.
 
+## 🧠 SYNCHRONISATION INTER-AGENTS (DANS LE BACKLOG)
+1.  **Pour le REVIEWER** : Voir section DoD ci-dessous.
+2.  **Pour le LEAD-DEV** : Voir le Journal des Décisions.
+3.  **Pour l'UX & Présentation** : 
+    - [Schéma d'Architecture & Parcours Client](PROJECT_ARCHITECTURE.md)
+    - [Stratégie de Prompting](PROMPT_STRATEGY.md)
+
 ## ✅ DEFINITION OF DONE (DoD)
 - Extraction : Données structurées validées par le schéma Pydantic (Enrichi Laptop).
 - RAG : Capacité de comparaison entre 2 modèles de PC (ex: i5 vs i7).
@@ -80,7 +87,7 @@
 - [ ] Validation manuelle du résultat par le Chef d'Orchestre avant passage à l'échelle.
 
 ### [PBI-902b] SCRAPING : Extraction Totale "Notebooks" (5 Pages)
-**Status** : PENDING ⏳
+**Status** : DONE ✅
 **Priorité** : High | **Estimation** : M
 **User Story** : "En tant que Personal Shopper, je veux extraire les fiches techniques des 5 premières pages de Jumia Notebooks après validation du Spike."
 **Critères d'Acceptation** :
@@ -95,7 +102,7 @@
 - Vérification de la recherche hybride sur des requêtes techniques (ex: "PC i7 16GB").
 
 ### [PBI-1001] TECH/UX : Mémoire Contextuelle de Recherche (Shopping Dialogue)
-**Status** : PENDING ⏳
+**Status** : DONE ✅
 **Priorité** : High | **Estimation** : M
 
 **User Story** : "En tant que Personal Shopper, je veux que le bot se souvienne des produits précédemment cités, afin que l'utilisateur puisse poser des questions de suivi (ex: 'Et son autonomie ?') sans répétition fastidieuse."
@@ -117,7 +124,7 @@
   - **THEN** Le `SimpleChatStore` doit sauvegarder et recharger l'historique pour maintenir la cohérence sur plusieurs jours.
 
 ### [PBI-1002] TECH : Nettoyage & Retrait Context7 (Expert Advisor)
-**Status** : IN_PROGRESS 🏗️ (Emergency cleanup for Sprint 13)
+**Status** : DONE ✅
 **Priorité** : High | **Estimation** : S
 **User Story** : "En tant que Lead-Dev, je veux supprimer les appels à l'Expert Advisor (MCP) dans le moteur RAG pour me baser uniquement sur les descriptions Jumia."
 **Critères d'Acceptation** :
@@ -127,7 +134,7 @@
 - [ ] Validation que les réponses LLM ne citent plus de sources externes.
 
 ### [PBI-1301] SETUP : Instrumentation DeepEval, Confident AI & LlamaIndex
-**Status** : BLOCKED 🛑 (Missing `deepeval` in requirements.txt)
+**Status** : DONE ✅
 **Priorité** : High | **Estimation** : S
 **User Story** : "En tant que Lead-Dev, je veux intégrer le framework DeepEval et la plateforme Confident AI pour automatiser la mesure de la qualité RAG et le suivi des régressions."
 **Critères d'Acceptation** :
@@ -137,7 +144,7 @@
 - [ ] **Implementation Tip** : Utiliser `deepeval.test_case.LLMTestCase` pour encapsuler les résultats (Input, Actual Output, Retrieval Context, Expected Output).
 
 ### [PBI-1303] EVAL : Audit "Intégrité Technique" (Source : Gold Dataset)
-**Status** : BLOCKED 🛑 (Depends on PBI-1301)
+**Status** : DONE ✅
 **Priorité** : High | **Estimation** : M
 **User Story** : "En tant qu'expert métier, je veux m'assurer que le bot ne donne aucune fausse information technique sur les PC Portables Jumia."
 **Critères d'Acceptation** :
@@ -158,7 +165,7 @@
 - [ ] **Implementation Tip** : Utiliser les `deepeval.integrations.llama_index.DeepEvalCallbackHandler` pour capturer les traces live si nécessaire.
 
 ### [PBI-1306] TECH : Observabilité & Tracing (Arize Phoenix)
-**Status** : BLOCKED 🛑 (Missing `arize-phoenix` in requirements.txt)
+**Status** : DONE ✅
 **Priorité** : Medium | **Estimation** : S
 **User Story** : "En tant que Lead-Dev, je veux visualiser le cheminement complet de mes requêtes RAG (Tracing) pour identifier les goulots d'étranglement (latence) et les sources d'hallucination."
 **Critères d'Acceptation** :
@@ -199,7 +206,7 @@
 - [ ] Mesure automatisée des metrics (S12).
 
 ### [PBI-1101] PROMPT : Guide de Traduction "Darija-Tech" (Glossaire)
-**Status** : PENDING ⏳
+**Status** : DONE ✅
 **Priorité** : Medium | **Estimation** : S
 **User Story** : "En tant qu'utilisateur marocain, je veux que le bot utilise des expressions techniques familières (ex: 'ra9a', 'madi', 'tayra') pour que les conseils soient plus naturels."
 **Critères d'Acceptation** :
@@ -207,13 +214,15 @@
 - [ ] Intégration du glossaire dans le System Prompt.
 - [ ] Test de validation du ton avec le Chef d'Orchestre.
 
-### [PBI-1102] RAG : Mappage "Usage" vers "Specs" (Intention)
+### [PBI-1102] TECH/UX : Intelligence d'Intention & Stabilité (Usage Mapping)
 **Status** : PENDING ⏳
 **Priorité** : High | **Estimation** : M
-**User Story** : "En tant que client non-expert, je veux exprimer mon besoin (ex: 'pour mes études') et que le bot identifie seul la RAM/CPU nécessaire."
+**User Story** : "En tant que client non-expert, je veux exprimer mon besoin (ex: 'pour mes études') et que le bot identifie seul la RAM/CPU nécessaire, tout en profitant d'un système stable sans erreurs de type."
 **Critères d'Acceptation** :
-- [ ] Implémenter une couche de raisonnement LLM qui transforme une intention d'usage en filtres techniques (ex: Études -> i3/R3 + 8GB).
-- [ ] Intégration dans l'Auto-Retriever de LlamaIndex.
+- [ ] **Fix Stabilité** : Correction de l'erreur de type `RESPONSE_TYPE` dans `src/rag_engine.py` en utilisant le type Union correct de LlamaIndex (`Response | StreamingResponse | AsyncStreamingResponse`).
+- [ ] **Schéma de Métadonnées** : Définition rigoureuse des `AttributeInfo` pour l'Auto-Retriever (RAM: int, CPU: string, Price: float).
+- [ ] **Mappage Intention (Prompting)** : Intégration d'un System Prompt dédié à l'Auto-Retriever expliquant les correspondances métier (ex: Gaming = GPU dédié + 16GB RAM).
+- [ ] **Validation Technique** : Test de l'Auto-Retriever via `VectorIndexAutoRetriever` et vérification des filtres générés dans les logs Phoenix.
 
 ### [PBI-1103] TECH : Support Vocal WhatsApp & LLM Darija-Native
 **Status** : PENDING ⏳

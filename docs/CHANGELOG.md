@@ -1,5 +1,19 @@
 # 📜 CHANGELOG
 
+## [1.5.0] - 2026-03-16
+### Added
+- **Mémoire Contextuelle (PBI-1001)** : Transition vers `ContextChatEngine` et `SimpleChatStore`. Le bot conserve désormais l'historique des échanges par numéro WhatsApp, permettant des questions de suivi naturelles sur les produits cités.
+- **Expansion du Catalogue (PBI-902b)** : Scraping et indexation de 5 pages de la catégorie Notebooks (~200 produits). Extraction enrichie des métadonnées techniques (CPU, RAM, SSD) via LLM.
+- **Naturalité Darija (PBI-1101)** : Implémentation d'un glossaire technique "Darija-Tech" dans le System Prompt pour aligner les recommandations avec le langage familier des utilisateurs marocains.
+
+## [1.4.0] - 2026-03-12
+### Added
+- **Observabilité & Tracing (PBI-1306)** : Intégration de **Arize Phoenix**. Tracing complet du flux RAG (Retriever -> Synthesis) pour monitorer la latence et les coûts de tokens en temps réel.
+- **Audit d'Intégrité Technique (PBI-1301/1303)** : Mise en place de **DeepEval** et **Confident AI**. Évaluation scientifique automatisée basée sur le `gold_dataset.json` avec mesure des métriques : Faithfulness, Contextual Recall, et Answer Relevancy.
+
+### Removed
+- **Nettoyage Expert Advisor (PBI-1002)** : Suppression définitive de la dépendance à Context7/Expert Advisor. Le moteur RAG se concentre désormais exclusivement sur les données natives Jumia pour éviter tout bruit externe.
+
 ## [1.3.0] - 2026-03-08
 ### Added
 - **Alignement Vision "Notebook Companion" (PBI-1201)** : Refonte totale du README pour refléter la spécialisation exclusive sur les PC Portables et la suppression des biais business.
