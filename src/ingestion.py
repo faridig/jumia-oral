@@ -1,8 +1,9 @@
 import os
 import json
 import logging
+import re
 from pathlib import Path
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 
 from dotenv import load_dotenv
 from qdrant_client import QdrantClient
@@ -21,6 +22,17 @@ logger = logging.getLogger(__name__)
 QDRANT_URL = os.getenv("QDRANT_URL", "http://localhost:6343")
 COLLECTION_NAME = os.getenv("QDRANT_COLLECTION_NAME", "jumia_products")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+
+def extract_numeric_value(text: Any) -> Optional[int]:
+    """
+    Extrait le premier nombre d'une chaîne (ex: '16GB' -> 16).
+    """
+    if text is None:
+        return None
+    if isinstance(text, (int, float)):
+        return int(text)
+    match = re.search(r'(\d+)', str(text))
+    return int(match.group(1)) if match else None
 
 def extract_metadata_from_markdown(file_path: Path) -> tuple[Dict[str, Any], str]:
     """
@@ -62,8 +74,8 @@ def extract_metadata_from_markdown(file_path: Path) -> tuple[Dict[str, Any], str
             "file_name": file_path.name,
             # Laptop Specs (PBI-901/2000)
             "cpu": specs.get("CPU"),
-            "ram": specs.get("RAM"),
-            "ssd": specs.get("SSD"),
+            "ram": extract_numeric_value(specs.get("RAM")),
+            "ssd": extract_numeric_value(specs.get("SSD")),
             "gpu": specs.get("GPU"),
             "screen": specs.get("Screen"),
             "condition": specs.get("Condition")
