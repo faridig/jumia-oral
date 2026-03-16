@@ -1,43 +1,34 @@
-# 🏃 SPRINT PLAN - SPRINT 13 : "THE COCKPIT & THE SHIELD"
+# 🏃 SPRINT PLAN - SPRINT 15 : "INTELLIGENCE STABLE"
 
-**Objectif du Sprint** : Assainir le code en retirant les composants obsolètes et mettre en place les deux piliers de l'efficacité RAG : l'**Observabilité** (Cockpit Phoenix) et l'**Audit de Fidélité** (Shield DeepEval).
+**Objectif du Sprint** : Assurer la stabilité technique du moteur de chat et permettre la recherche par intention d'usage (ex: "PC pour étudiant") sans que l'utilisateur n'ait à connaître les specs techniques.
 
 ---
 
 ## 📋 TICKETS SÉLECTIONNÉS
 
-### [PBI-1002] TECH : Nettoyage & Retrait Context7 (Expert Advisor)
-**Priorité** : CRITIQUE | **Estimation** : S
-**User Story** : "En tant que Lead-Dev, je veux supprimer les appels à l'Expert Advisor (MCP) dans le moteur RAG pour me baser uniquement sur les descriptions Jumia."
-**Critères d'Acceptation** :
-- [ ] Suppression de l'import et de l'usage de `expert_advisor` dans `src/rag_engine.py`.
-- [ ] Suppression physique du fichier `src/expert_advisor.py`.
-- [ ] Suppression de la logique de `expert_node` dans la synthèse de réponse.
-- [ ] Validation (via tests unitaires) que le flux RAG fonctionne sans ce composant.
-
-### [PBI-1306] TECH : Observabilité & Tracing (Arize Phoenix)
-**Priorité** : High | **Estimation** : S
-**User Story** : "En tant que Lead-Dev, je veux visualiser le cheminement complet de mes requêtes RAG pour identifier les latences et les sources d'erreur."
-**Critères d'Acceptation** :
-- [ ] Ajout de `arize-phoenix` et `openinference-instrumentation-llama-index` au `requirements.txt`.
-- [ ] Dashboard Phoenix accessible en local.
-- [ ] Traces complètes (Retriever -> Synthesis) visibles pour chaque requête.
-
-### [PBI-1301/1303] EVAL : Audit "Intégrité Technique" (DeepEval + Confident AI + Gold Dataset)
+### [PBI-1102] TECH/UX : Intelligence d'Intention & Stabilité (Usage Mapping)
 **Priorité** : High | **Estimation** : M
-**User Story** : "En tant qu'expert, je veux un score scientifique de fidélité pour m'assurer que le bot ne ment jamais sur les specs techniques."
-**Critères d'Acceptation** :
-- [ ] Ajout de `deepeval` au `requirements.txt`.
-- [ ] Intégration de DeepEval avec le `gold_dataset.json`.
-- [ ] Dashboard **Confident AI** actif pour le suivi des régressions.
-- [ ] Mesure des métriques : **Faithfulness**, **Contextual Precision**, **Answer Relevancy** et **Answer Correctness**.
+
+**User Story** : "En tant que client non-expert, je veux exprimer mon besoin (ex: 'pour mes études') et que le bot identifie seul la RAM/CPU nécessaire, tout en profitant d'un système stable sans erreurs de type."
+
+**Dépendances** : PBI-1001 (Mémoire Contextuelle)
+
+**Critères d'Acceptation (Gherkin)** :
+- [ ] **Scenario 1 : Correction de la Dette Technique (Context7 Best Practice)**
+  - **GIVEN** Le fichier `src/rag_engine.py` présente une erreur de type sur `RESPONSE_TYPE`.
+  - **WHEN** Le Lead-Dev utilise l'import correct `from llama_index.core.base.response.schema import RESPONSE_TYPE`.
+  - **THEN** Le moteur de chat s'exécute sans avertissement de type.
+- [ ] **Scenario 2 : Recherche par Intention Automatisée**
+  - **GIVEN** Un utilisateur demande "Je cherche un laptop pour faire du montage vidéo".
+  - **WHEN** Le `VectorIndexAutoRetriever` est sollicité avec un schéma `AttributeInfo` enrichi.
+  - **THEN** Les logs Phoenix montrent une extraction correcte des filtres techniques (ex: `RAM >= 16`).
+- [ ] **Scenario 3 : Fiabilité des Filtres Métadonnées**
+  - **GIVEN** Un besoin métier (ex: Gaming).
+  - **WHEN** Le LLM déduit les specs nécessaires.
+  - **THEN** Le filtre `MetadataFilter` est appliqué avec l'opérateur `FilterOperator.GTE` ou `EQ` selon les cas, conformément à la documentation LlamaIndex.
 
 ---
 
 ## 🏛️ RAPPEL TECHNIQUE & BLOQUANTS
-1. **⚠️ DÉPENDANCES** : Le premier acte du sprint doit être la mise à jour du `requirements.txt` avec `deepeval` et `arize-phoenix`.
-2. **NETTOYAGE** : Le PBI-1002 est un prérequis pour éviter d'instrumenter du code (Expert Advisor) qui va être supprimé.
-3. **Phoenix** : Dashboard temps réel (Le "Comment" - Tracing Live).
-4. **DeepEval / Confident AI** : Validation scientifique et historique (Le "Combien" - Analyse des régressions).
-5. **Gold Dataset** : Source de vérité immuable.
-6. **QUALITÉ** : Application des scénarios "Black Belt" pour diagnostiquer les régressions de métriques.
+1. **STABILITÉ D'ABORD** : Le ticket ne peut être validé que si l'alerte de type dans `src/rag_engine.py` est levée.
+2. **COÛT LLM** : L'étape de raisonnement pour l'intention consomme des tokens. Veiller à utiliser un prompt compact.
