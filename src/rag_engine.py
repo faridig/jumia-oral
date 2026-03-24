@@ -22,10 +22,11 @@ from llama_index.core import (
     Response,
     get_response_synthesizer
 )
+from llama_index.core.base.response.schema import RESPONSE_TYPE
 from llama_index.core.response_synthesizers import ResponseMode
 from llama_index.core.retrievers import VectorIndexAutoRetriever, VectorIndexRetriever
 from llama_index.core.query_engine import RetrieverQueryEngine
-from llama_index.core.vector_stores.types import MetadataInfo, VectorStoreInfo
+from llama_index.core.vector_stores.types import MetadataInfo, VectorStoreInfo, MetadataFilters, MetadataFilter, FilterOperator
 from llama_index.vector_stores.qdrant import QdrantVectorStore
 from llama_index.embeddings.openai import OpenAIEmbedding
 from llama_index.llms.openai import OpenAI
@@ -84,15 +85,15 @@ def get_rag_engine(use_auto_retriever: bool = True):
     index = VectorStoreIndex.from_vector_store(vector_store, embed_model=embed_model)
 
     if use_auto_retriever:
-        # Configuration des métadonnées pour l'Auto-Retriever (Laptop Specialized PBI-2000)
+        # Configuration des métadonnées pour l'Auto-Retriever (Usage Mapping PBI-1102)
         vector_store_info = VectorStoreInfo(
             content_info="Catalogue Jumia Maroc (Notebooks). Contient des specs techniques (CPU, RAM, SSD) et l'état du produit.",
             metadata_info=[
                 MetadataInfo(name="brand", type="str", description="Marque du laptop (ex: HP, DELL, Lenovo)"),
                 MetadataInfo(name="price_numeric", type="float", description="Prix en Dhs"),
-                MetadataInfo(name="ram", type="str", description="RAM sous forme de texte (ex: '8GB', '16GB'). INTERDICTION d'utiliser des comparaisons numériques (gte, lte), utiliser uniquement l'égalité."),
-                MetadataInfo(name="ssd", type="str", description="Stockage sous forme de texte (ex: '256GB', '512GB'). INTERDICTION d'utiliser des comparaisons numériques, utiliser l'égalité."),
-                # Condition retirée des filtres structurés car trop incohérente dans l'index (Remis à neuf vs Remis à Neuf)
+                MetadataInfo(name="ram", type="int", description="Quantité de RAM en Go (ex: 8, 16, 32). Pour les besoins 'études', viser >= 8Go. Pour le 'gaming' ou 'montage', viser >= 16Go."),
+                MetadataInfo(name="ssd", type="int", description="Capacité du SSD en Go (ex: 256, 512, 1024)."),
+                MetadataInfo(name="condition", type="str", description="État du produit (ex: 'Neuf', 'Remis à Neuf')"),
             ],
         )
         retriever = VectorIndexAutoRetriever(
@@ -153,7 +154,7 @@ class MultiQueryAutoRAG:
         self.auto_engine = get_rag_engine(use_auto_retriever=True)
         self.base_engine = get_rag_engine(use_auto_retriever=False)
         
-    def query(self, user_query: str) -> Response:
+    def query(self, user_query: str) -> RESPONSE_TYPE:
         logger.info(f"User Query: {user_query}")
         
         # 1. Expansion Sémantique (Hybridé)
@@ -162,12 +163,8 @@ class MultiQueryAutoRAG:
         hybrid_query = f"{user_query} {' '.join(variantes)}"
         logger.info(f"Hybrid Query: {hybrid_query}")
 
-        # 2. Enrichissement d'intention (Optionnel pour l'Auto-Retriever)
+        # 2. Enrichissement d'intention (Automatisé par VectorIndexAutoRetriever)
         enriched_query = user_query
-        if any(k in user_query.lower() for k in ["gaming", "jeux", "gamer"]):
-            enriched_query += " (Besoin: GPU performant, RAM >= 16Go)"
-        elif any(k in user_query.lower() for k in ["études", "etudiant", "ecole"]):
-            enriched_query += " (Besoin: Autonomie, RAM >= 8Go)"
         
         try:
             # Tentative via Auto-Retriever
