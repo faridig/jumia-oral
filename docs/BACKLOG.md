@@ -225,14 +225,14 @@
 - [x] **Validation Technique** : Test de l'Auto-Retriever via `VectorIndexAutoRetriever` et vérification des filtres générés dans les logs Phoenix.
 
 ### [PBI-1103] TECH : Support Vocal WhatsApp & LLM Darija-Native
-**Status** : IN PROGRESS 🏃
+**Status** : DONE ✅
 **Priorité** : High | **Estimation** : L (Découpé en S/M pour Sprint 16)
 **User Story** : "En tant qu'utilisateur, je veux parler en Darija et que le bot comprenne mes nuances culturelles pour me répondre dans un Darija parfait (et non un Français traduit)."
 **Critères d'Acceptation (Sprint 16)** :
-- [ ] **[PBI-1103.1] INFRA** : Intégration API OpenAI Whisper (v1/audio/transcriptions).
-- [ ] **[PBI-1103.2] PROMPT** : Moteur de Réponse Darija-Native (GPT-4o Full pour le Persona).
-- [ ] **[PBI-1103.3] UX** : Onboarding Audio & Invitation WhatsApp ("Dwi m3aya b-darija").
-- [ ] **[PBI-1601] TECH** : Synchronisation client Qdrant v1.10 (Hygiène technique).
+- [x] **[PBI-1103.1] INFRA** : Intégration API OpenAI Whisper (v1/audio/transcriptions).
+- [x] **[PBI-1103.2] PROMPT** : Moteur de Réponse Darija-Native (GPT-4o Full pour le Persona).
+- [x] **[PBI-1103.3] UX** : Onboarding Audio & Invitation WhatsApp ("Dwi m3aya b-darija").
+- [x] **[PBI-1601] TECH** : Synchronisation client Qdrant v1.10 (Hygiène technique).
 
 ### [PBI-000] SPRINT 0 : Infrastructure & Walking Skeleton
 **Status** : DONE ✅
