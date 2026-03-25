@@ -6,6 +6,14 @@ import phoenix as px
 from openinference.instrumentation.llama_index import LlamaIndexInstrumentor
 from dotenv import load_dotenv
 
+# Configuration
+load_dotenv()
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+# Désactivation des logs verbeux des bibliothèques tierces
+for logger_name in ["arize_phoenix", "openinference", "httpx", "openai", "qdrant_client"]:
+    logging.getLogger(logger_name).setLevel(logging.WARNING)
+logger = logging.getLogger(__name__)
+
 # Initialisation Phoenix (Observabilité PBI-1306)
 if os.getenv("PHOENIX_ENABLED", "true").lower() == "true":
     try:
@@ -40,14 +48,6 @@ from llama_index.core.schema import NodeWithScore
 import warnings
 warnings.filterwarnings("ignore")
 os.environ["PYTHONWARNINGS"] = "ignore"
-
-# Configuration
-load_dotenv()
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-# Désactivation des logs verbeux des bibliothèques tierces
-for logger_name in ["arize_phoenix", "openinference", "httpx", "openai", "qdrant_client"]:
-    logging.getLogger(logger_name).setLevel(logging.WARNING)
-logger = logging.getLogger(__name__)
 
 QDRANT_URL = os.getenv("QDRANT_URL", "http://localhost:6343")
 COLLECTION_NAME = os.getenv("QDRANT_COLLECTION_NAME", "jumia_products")
