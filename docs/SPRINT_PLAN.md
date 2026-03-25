@@ -1,34 +1,59 @@
-# 🏃 SPRINT PLAN - SPRINT 15 : "INTELLIGENCE STABLE"
+# 🏃 SPRINT PLAN - SPRINT 16 : "SAWT EL BLED" (VOIX DU PAYS)
 
-**Objectif du Sprint** : Assurer la stabilité technique du moteur de chat et permettre la recherche par intention d'usage (ex: "PC pour étudiant") sans que l'utilisateur n'ait à connaître les specs techniques.
+**Objectif du Sprint** : Intégrer l'interaction vocale en Darija via l'API OpenAI Whisper et assurer des réponses textuelles natives (sans traduction) pour une expérience utilisateur marocaine authentique.
 
 ---
 
 ## 📋 TICKETS SÉLECTIONNÉS
 
-### [PBI-1102] TECH/UX : Intelligence d'Intention & Stabilité (Usage Mapping)
+### [PBI-1103.1] INFRA : Intégration API OpenAI Whisper
 **Priorité** : High | **Estimation** : M
 
-**User Story** : "En tant que client non-expert, je veux exprimer mon besoin (ex: 'pour mes études') et que le bot identifie seul la RAM/CPU nécessaire, tout en profitant d'un système stable sans erreurs de type."
-
-**Dépendances** : PBI-1001 (Mémoire Contextuelle)
+**User Story** : "En tant qu'utilisateur, je veux envoyer un message vocal en Darija sur WhatsApp et que le bot comprenne exactement ma demande technique."
 
 **Critères d'Acceptation (Gherkin)** :
-- [ ] **Scenario 1 : Correction de la Dette Technique (Context7 Best Practice)**
-  - **GIVEN** Le fichier `src/rag_engine.py` présente une erreur de type sur `RESPONSE_TYPE`.
-  - **WHEN** Le Lead-Dev utilise l'import correct `from llama_index.core.base.response.schema import RESPONSE_TYPE`.
-  - **THEN** Le moteur de chat s'exécute sans avertissement de type.
-- [ ] **Scenario 2 : Recherche par Intention Automatisée**
-  - **GIVEN** Un utilisateur demande "Je cherche un laptop pour faire du montage vidéo".
-  - **WHEN** Le `VectorIndexAutoRetriever` est sollicité avec un schéma `AttributeInfo` enrichi.
-  - **THEN** Les logs Phoenix montrent une extraction correcte des filtres techniques (ex: `RAM >= 16`).
-- [ ] **Scenario 3 : Fiabilité des Filtres Métadonnées**
-  - **GIVEN** Un besoin métier (ex: Gaming).
-  - **WHEN** Le LLM déduit les specs nécessaires.
-  - **THEN** Le filtre `MetadataFilter` est appliqué avec l'opérateur `FilterOperator.GTE` ou `EQ` selon les cas, conformément à la documentation LlamaIndex.
+- [ ] **Scenario 1 : Transcription de base**
+  - **GIVEN** Un fichier audio .ogg reçu via Evolution API.
+  - **WHEN** Le système appelle l'endpoint `v1/audio/transcriptions` d'OpenAI.
+  - **THEN** Le texte retourné correspond fidèlement au Darija parlé.
+- [ ] **Scenario 2 : Optimisation Dialectale**
+  - **GIVEN** Une requête audio complexe avec des termes techniques.
+  - **WHEN** L'API Whisper est appelée avec un `initial_prompt` spécifique au Darija/PC Jumia.
+  - **THEN** Les termes comme "ra9a" ou "tayra" sont correctement transcrits.
+
+### [PBI-1103.2] PROMPT : Moteur de Réponse Darija-Native (GPT-4o)
+**Priorité** : High | **Estimation** : M
+
+**User Story** : "En tant qu'utilisateur, je veux recevoir une réponse en Darija naturel, respectant mes codes culturels, sans sentir que c'est une traduction du français."
+
+**Critères d'Acceptation (Gherkin)** :
+- [ ] **Scenario 1 : Pensée Native**
+  - **GIVEN** Une question transcrite en Darija.
+  - **WHEN** Le LLM génère sa réponse.
+  - **THEN** La structure grammaticale est celle du Darija (et non du Fusha ou du Français traduit).
+- [ ] **Scenario 2 : Glossaire "Darija-Tech"**
+  - **GIVEN** Une recommandation de PC.
+  - **WHEN** Le bot décrit les performances.
+  - **THEN** Il utilise les termes validés (ex: "madi" pour rapide, "mkhyr" pour excellent).
+
+### [PBI-1103.3] UX : Onboarding Audio & WhatsApp Flow
+**Priorité** : Medium | **Estimation** : S
+
+**User Story** : "En tant qu'utilisateur, je veux savoir que je peux parler au bot dès mon premier message."
+
+**Critères d'Acceptation (Gherkin)** :
+- [ ] **Scenario 1 : Invitation vocale**
+  - **GIVEN** Le message de bienvenue "Mrehba".
+  - **WHEN** L'utilisateur le reçoit.
+  - **THEN** Une phrase explicite l'invite à envoyer des messages vocaux.
+
+### [PBI-1601] TECH : Hygiène Infra - Sync Qdrant
+**Priorité** : Medium | **Estimation** : XS
+
+**Action** : Aligner la version du client `qdrant-client` dans `requirements.txt` avec la version serveur (1.10) pour lever l'alerte de la dette technique.
 
 ---
 
 ## 🏛️ RAPPEL TECHNIQUE & BLOQUANTS
-1. **STABILITÉ D'ABORD** : Le ticket ne peut être validé que si l'alerte de type dans `src/rag_engine.py` est levée.
-2. **COÛT LLM** : L'étape de raisonnement pour l'intention consomme des tokens. Veiller à utiliser un prompt compact.
+1. **TIMEOUT WHATSAPP** : La transcription Whisper ajoute de la latence. Utiliser impérativement les `BackgroundTasks` de FastAPI pour ne pas bloquer Evolution API.
+2. **COÛTS** : Monitorer la consommation Whisper via Phoenix.
