@@ -20,11 +20,11 @@ def test_transcribe_audio_mock():
         
         assert result == "Salam, bghit pc madi."
         mock_client.audio.transcriptions.create.assert_called_once()
-        # Verify initial_prompt contains Darija terms
+        # Verify prompt contains Darija terms
         args, kwargs = mock_client.audio.transcriptions.create.call_args
-        assert "initial_prompt" in kwargs
-        assert "Darija" in kwargs["initial_prompt"]
-        assert "madi" in kwargs["initial_prompt"]
+        assert "prompt" in kwargs
+        assert "Darija" in kwargs["prompt"]
+        assert "madi" in kwargs["prompt"]
 
 @pytest.mark.asyncio
 async def test_api_audio_webhook_handling():
