@@ -1,5 +1,20 @@
 # 📜 CHANGELOG
 
+## [1.7.0] - 2026-03-25
+### Added
+- **Whisper et Darija Native (PBI-1103)** :
+  - Intégration de **OpenAI Whisper** pour la transcription des messages vocaux WhatsApp en Darija marocain.
+  - Optimisation du prompt Whisper avec un contexte technique (PC Jumia, madi, tayra) pour une précision accrue.
+  - Passage au modèle **GPT-4o** pour une "Pensée Native" en Darija, utilisant un glossaire local validé.
+  - Mise en place d'un onboarding vocal invitant explicitement les utilisateurs à parler au bot.
+- **Maintenance Infra (PBI-1601)** : Alignement du client Qdrant avec la version serveur (1.10.0).
+
+### Sprint 16 : Sawt El Bled (Interaction Vocale & Darija Native)
+- **Whisper et Contexte Dialectal** : L'utilisation du paramètre `prompt` de Whisper est indispensable pour guider la transcription vers un dialecte spécifique comme le Darija. Inclure des termes techniques du catalogue dans ce prompt réduit drastiquement les erreurs de transcription phonétique.
+- **Robustesse du Monitoring (Phoenix)** : Ne jamais laisser l'infrastructure de monitoring (tracing/OTLP) bloquer le démarrage de l'application métier. L'encapsulation de l'initialisation de Phoenix dans un bloc `try/except` avec une dégradation gracieuse (mode sans tracing) est une nécessité pour la haute disponibilité.
+- **Mocks et Paramètres API** : Lors des tests unitaires sur des APIs tierces (OpenAI), il est crucial de vérifier non seulement les données envoyées, mais aussi le nom exact des paramètres attendus par la librairie cliente (ex: `prompt`). Une erreur de nommage dans un mock peut masquer un bug réel ou invalider un test valide.
+- **Pensée Native (GPT-4o)** : Le passage à GPT-4o couplé à une instruction de "Pensée Native en Darija" (plutôt que de simple traduction) transforme radicalement l'expérience utilisateur. L'utilisation d'expressions idiomatiques (`mkhyr`, `tayra`, `madi`) renforce l'identité de marque locale "Jumia Oral".
+
 ## [1.6.0] - 2026-03-25
 ### Added
 - **Intelligence d'Intention & Stabilité (PBI-1102)** :

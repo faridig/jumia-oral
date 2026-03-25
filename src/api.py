@@ -3,7 +3,9 @@ import logging
 import requests
 from fastapi import FastAPI, Request, BackgroundTasks, HTTPException
 from pydantic import BaseModel
+import tempfile
 from src.session_manager import JumiaChatManager
+from src.voice import transcribe_audio
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -70,6 +72,39 @@ def process_and_respond(user_id: str, text: str):
         logger.info(f"Envoi du message (str) à {user_id}")
         send_whatsapp_message(user_id, str(chat_response))
 
+def download_media(url: str):
+    headers = {"apikey": EVOLUTION_API_KEY}
+    response = requests.get(url, headers=headers)
+    response.raise_for_status()
+    return response.content
+
+def process_audio_and_respond(user_id: str, audio_msg: dict):
+    url = audio_msg.get("url")
+    if not url:
+        logger.error(f"Pas d'URL dans audioMessage pour {user_id}")
+        return
+    
+    try:
+        audio_data = download_media(url)
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".ogg") as tmp:
+            tmp.write(audio_data)
+            tmp_path = tmp.name
+        
+        logger.info(f"Fichier audio téléchargé: {tmp_path}")
+        text = transcribe_audio(tmp_path)
+        if os.path.exists(tmp_path):
+            os.unlink(tmp_path)
+        
+        if text:
+            logger.info(f"Audio transcrit pour {user_id}: {text}")
+            process_and_respond(user_id, text)
+        else:
+            logger.error(f"Échec de la transcription pour {user_id}")
+            send_whatsapp_message(user_id, "Sm7 lya, ma-9dertch n-sm3 l-message vocal dyalk mzyan. Te9der t-3awed t-siftou?")
+            
+    except Exception as e:
+        logger.error(f"Erreur lors du traitement audio: {e}")
+
 @app.post("/webhook")
 async def webhook(request: Request, background_tasks: BackgroundTasks):
     # Vérification de l'apikey dans les headers pour sécuriser la réception (PBI-803)
@@ -92,18 +127,21 @@ async def webhook(request: Request, background_tasks: BackgroundTasks):
         remote_jid = key.get("remoteJid")
         message = msg_data.get("message", {})
         
-        # Extraction du texte (PBI-803)
-        # Evolution API peut envoyer le texte dans différents champs selon le type de message
+        # Extraction du contenu (Texte ou Audio)
         text = (
             message.get("conversation") or 
             message.get("extendedTextMessage", {}).get("text") or
             message.get("imageMessage", {}).get("caption") or
             message.get("videoMessage", {}).get("caption")
         )
+        audio_msg = message.get("audioMessage")
         
         if text:
             # Traitement asynchrone (BackgroundTasks) pour répondre immédiatement 200 OK
             background_tasks.add_task(process_and_respond, remote_jid, text)
+        elif audio_msg:
+            # Traitement Audio (Whisper)
+            background_tasks.add_task(process_audio_and_respond, remote_jid, audio_msg)
             
     return {"status": "success"}
 
