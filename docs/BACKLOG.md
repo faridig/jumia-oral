@@ -215,24 +215,24 @@
 - [ ] Test de validation du ton avec le Chef d'Orchestre.
 
 ### [PBI-1102] TECH/UX : Intelligence d'Intention & Stabilité (Usage Mapping)
-**Status** : PENDING ⏳
+**Status** : DONE ✅
 **Priorité** : High | **Estimation** : M
 **User Story** : "En tant que client non-expert, je veux exprimer mon besoin (ex: 'pour mes études') et que le bot identifie seul la RAM/CPU nécessaire, tout en profitant d'un système stable sans erreurs de type."
 **Critères d'Acceptation** :
-- [ ] **Fix Stabilité** : Correction de l'erreur de type `RESPONSE_TYPE` dans `src/rag_engine.py` en utilisant le type Union correct de LlamaIndex (`Response | StreamingResponse | AsyncStreamingResponse`).
-- [ ] **Schéma de Métadonnées** : Définition rigoureuse des `AttributeInfo` pour l'Auto-Retriever (RAM: int, CPU: string, Price: float).
-- [ ] **Mappage Intention (Prompting)** : Intégration d'un System Prompt dédié à l'Auto-Retriever expliquant les correspondances métier (ex: Gaming = GPU dédié + 16GB RAM).
-- [ ] **Validation Technique** : Test de l'Auto-Retriever via `VectorIndexAutoRetriever` et vérification des filtres générés dans les logs Phoenix.
+- [x] **Fix Stabilité** : Correction de l'erreur de type `RESPONSE_TYPE` dans `src/rag_engine.py` en utilisant le type Union correct de LlamaIndex (`Response | StreamingResponse | AsyncStreamingResponse`).
+- [x] **Schéma de Métadonnées** : Définition rigoureuse des `AttributeInfo` pour l'Auto-Retriever (RAM: int, CPU: string, Price: float).
+- [x] **Mappage Intention (Prompting)** : Intégration d'un System Prompt dédié à l'Auto-Retriever expliquant les correspondances métier (ex: Gaming = GPU dédié + 16GB RAM).
+- [x] **Validation Technique** : Test de l'Auto-Retriever via `VectorIndexAutoRetriever` et vérification des filtres générés dans les logs Phoenix.
 
 ### [PBI-1103] TECH : Support Vocal WhatsApp & LLM Darija-Native
-**Status** : PENDING ⏳
-**Priorité** : Medium | **Estimation** : L
+**Status** : IN PROGRESS 🏃
+**Priorité** : High | **Estimation** : L (Découpé en S/M pour Sprint 16)
 **User Story** : "En tant qu'utilisateur, je veux parler en Darija et que le bot comprenne mes nuances culturelles pour me répondre dans un Darija parfait (et non un Français traduit)."
-**Critères d'Acceptation** :
-- [ ] Intégration de Whisper (ou API spécialisée) pour la transcription fidèle du Darija parlé.
-- [ ] Sélection/Fine-tuning du prompt pour un LLM (GPT-4o ou modèle spécialisé) capable de traiter la grammaire Darija sans passer par une traduction intermédiaire en Français.
-- [ ] Réponse générée en Darija fluide (Latin ou Arabe selon préférence user) respectant les codes de politesse marocains.
-- [ ] Validation de la compréhension des expressions idiomatiques ("mkhyr", "3la 9d l-jib", etc.).
+**Critères d'Acceptation (Sprint 16)** :
+- [ ] **[PBI-1103.1] INFRA** : Intégration API OpenAI Whisper (v1/audio/transcriptions).
+- [ ] **[PBI-1103.2] PROMPT** : Moteur de Réponse Darija-Native (GPT-4o Full pour le Persona).
+- [ ] **[PBI-1103.3] UX** : Onboarding Audio & Invitation WhatsApp ("Dwi m3aya b-darija").
+- [ ] **[PBI-1601] TECH** : Synchronisation client Qdrant v1.10 (Hygiène technique).
 
 ### [PBI-000] SPRINT 0 : Infrastructure & Walking Skeleton
 **Status** : DONE ✅

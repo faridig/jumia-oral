@@ -1,5 +1,12 @@
 # 📜 CHANGELOG
 
+## [1.6.0] - 2026-03-25
+### Added
+- **Intelligence d'Intention & Stabilité (PBI-1102)** :
+  - Mise en œuvre de l'**Auto-Retriever** structuré pour transformer des besoins métiers (Gaming, Études, Montage) en filtres techniques matériels (RAM, CPU).
+  - Correction majeure de stabilité sur le typage `RESPONSE_TYPE` de LlamaIndex, garantissant l'absence d'erreurs de type lors du streaming des réponses.
+  - Configuration rigoureuse du schéma de métadonnées (`AttributeInfo`) pour une précision accrue des filtres de recherche.
+
 ## [1.5.0] - 2026-03-16
 ### Added
 - **Mémoire Contextuelle (PBI-1001)** : Transition vers `ContextChatEngine` et `SimpleChatStore`. Le bot conserve désormais l'historique des échanges par numéro WhatsApp, permettant des questions de suivi naturelles sur les produits cités.
@@ -23,6 +30,10 @@
 - **Retrait de la Localisation (PBI-1006)** : Suppression définitive de la gestion des villes et de la logistique dans le moteur de session et le prompt système pour un focus produit maximal.
 
 ## 💡 LEÇONS APPRISES
+### Sprint 15 : Intelligence Stable
+- **Précision du Typage dans LlamaIndex** : L'utilisation de types `Union` explicites pour les réponses (`Response | StreamingResponse`) est impérative pour maintenir la robustesse du moteur RAG lors de l'utilisation de `QueryEngine` ou `ChatEngine`.
+- **L'Auto-Retriever comme Pont Sémantique-Technique** : L'extraction de métadonnées ne suffit pas ; il faut un "Intelligence Mapping" robuste dans le prompt pour que le LLM sache qu'un "étudiant" a besoin de portabilité et d'autonomie, alors qu'un "gamer" a besoin d'un GPU et de RAM.
+
 ### Sprint 12 : Hygiène & Alignement
 - **Importance de la Cohérence Documentaire** : Un README obsolète peut freiner l'adoption du projet ou induire les futurs développeurs en erreur. Aligner la documentation dès qu'un pivot technique est stabilisé est crucial.
 - **Simplification du Flux (Less is More)** : En retirant la localisation, on réduit les points de friction lors de l'onboarding utilisateur sur WhatsApp, permettant d'entrer directement dans le coeur de la valeur : le conseil expert.
