@@ -8,10 +8,13 @@ from dotenv import load_dotenv
 
 # Initialisation Phoenix (Observabilité PBI-1306)
 if os.getenv("PHOENIX_ENABLED", "true").lower() == "true":
-    px.launch_app()
-    from phoenix.otel import register
-    register(project_name="Jumia-Oral-RAG")
-    LlamaIndexInstrumentor().instrument()
+    try:
+        px.launch_app()
+        from phoenix.otel import register
+        register(project_name="Jumia-Oral-RAG")
+        LlamaIndexInstrumentor().instrument()
+    except Exception as e:
+        logger.warning(f"Phoenix n'a pas pu démarrer (Tracing désactivé): {e}")
 
 from qdrant_client import QdrantClient
 from llama_index.core import (

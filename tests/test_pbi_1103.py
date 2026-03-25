@@ -5,9 +5,11 @@ from src.voice import transcribe_audio
 
 def test_transcribe_audio_mock():
     """
-    Test basic transcription logic with mocked OpenAI.
+    Test basic transcription logic with mocked OpenAI and mocked open().
     """
-    with patch("src.voice.OpenAI") as mock_openai:
+    from unittest.mock import mock_open
+    with patch("src.voice.OpenAI") as mock_openai, \
+         patch("builtins.open", mock_open(read_data=b"dummy_audio_data")):
         mock_client = MagicMock()
         mock_openai.return_value = mock_client
         # Mocking transcript return value
