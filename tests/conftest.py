@@ -4,6 +4,10 @@ import pytest
 import warnings
 import logging
 
+# Injection d'une clé fictive pour les tests si absente (PBI-1701 & PBI-1103)
+if not os.getenv("OPENAI_API_KEY"):
+    os.environ["OPENAI_API_KEY"] = "fake_openai_key_for_testing"
+
 def pytest_addoption(parser):
     # Option pour l'audit complet (Guidance Sprint 13)
     parser.addoption(
@@ -29,7 +33,13 @@ def mock_openai_if_ci():
     if os.getenv("GITHUB_ACTIONS") == "true":
         with unittest.mock.patch("llama_index.llms.openai.OpenAI"), \
              unittest.mock.patch("llama_index.embeddings.openai.OpenAIEmbedding"), \
-             unittest.mock.patch("qdrant_client.QdrantClient"):
+             unittest.mock.patch("qdrant_client.QdrantClient"), \
+             unittest.mock.patch("src.voice.OPENAI_API_KEY", "fake_openai_key"):
             yield
     else:
-        yield
+        # En local, on patche aussi pour éviter les échecs si la clé est absente (Guidance Qualité)
+        if not os.getenv("OPENAI_API_KEY"):
+            with unittest.mock.patch("src.voice.OPENAI_API_KEY", "fake_openai_key"):
+                yield
+        else:
+            yield
