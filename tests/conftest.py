@@ -29,7 +29,13 @@ def mock_openai_if_ci():
     if os.getenv("GITHUB_ACTIONS") == "true":
         with unittest.mock.patch("llama_index.llms.openai.OpenAI"), \
              unittest.mock.patch("llama_index.embeddings.openai.OpenAIEmbedding"), \
-             unittest.mock.patch("qdrant_client.QdrantClient"):
+             unittest.mock.patch("qdrant_client.QdrantClient"), \
+             unittest.mock.patch("src.voice.OPENAI_API_KEY", "fake_openai_key"):
             yield
     else:
-        yield
+        # En local, on patche aussi pour éviter les échecs si la clé est absente (Guidance Qualité)
+        if not os.getenv("OPENAI_API_KEY"):
+            with unittest.mock.patch("src.voice.OPENAI_API_KEY", "fake_openai_key"):
+                yield
+        else:
+            yield

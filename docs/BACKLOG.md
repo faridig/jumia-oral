@@ -224,6 +224,16 @@
 - [x] **Mappage Intention (Prompting)** : Intégration d'un System Prompt dédié à l'Auto-Retriever expliquant les correspondances métier (ex: Gaming = GPU dédié + 16GB RAM).
 - [x] **Validation Technique** : Test de l'Auto-Retriever via `VectorIndexAutoRetriever` et vérification des filtres générés dans les logs Phoenix.
 
+### [PBI-1701] TECH/UX : Sawt Jumia (Synthèse Vocale & Multimédia Orchestré)
+**Status** : PENDING ⏳
+**Priorité** : High | **Estimation** : L (Découpé en S/M pour Sprint 17)
+**User Story** : "En tant qu'utilisateur, je veux recevoir une réponse complète (Image + Texte/Liens + Vocal) pour une aide à l'achat immersive et professionnelle."
+**Critères d'Acceptation (Sprint 17)** :
+- [ ] **[PBI-1701.1] INFRA** : Intégration OpenAI TTS (Modèle `gpt-4o-mini-tts` en format `.opus`).
+- [ ] **[PBI-1701.2] UX** : Séquençage Multimédia (Image -> Texte -> Vocal) via Evolution API.
+- [ ] **[PBI-1701.3] PROMPT** : Double flux de sortie (Prosodie pour TTS vs Structure pour WhatsApp).
+- [ ] **[PBI-1702] EVAL** : Audit de l'expérience multimodale (Vérification liens/images/audio).
+
 ### [PBI-1103] TECH : Support Vocal WhatsApp & LLM Darija-Native
 **Status** : DONE ✅
 **Priorité** : High | **Estimation** : L (Découpé en S/M pour Sprint 16)
