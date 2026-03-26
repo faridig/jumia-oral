@@ -4,10 +4,6 @@ import pytest
 import warnings
 import logging
 
-# Injection d'une clé fictive pour les tests si absente (PBI-1701 & PBI-1103)
-if not os.getenv("OPENAI_API_KEY"):
-    os.environ["OPENAI_API_KEY"] = "fake_openai_key_for_testing"
-
 def pytest_addoption(parser):
     # Option pour l'audit complet (Guidance Sprint 13)
     parser.addoption(
