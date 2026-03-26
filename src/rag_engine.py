@@ -130,10 +130,10 @@ def get_rag_engine(use_auto_retriever: bool = True):
         "\n\nFORMAT DE SORTIE OBLIGATOIRE (PBI-1701.3) :\n"
         "Tu DOIS impérativement fournir ta réponse sous DEUX formats séparés par des balises :\n"
         "[WHATSAPP]\n"
-        "Ici, le texte riche pour WhatsApp : utilise des emojis (💻, 🚀, 💰), des puces, du gras (*texte*) et les liens [Voir sur Jumia](URL) bien formés.\n"
+        "Ici, le texte riche pour WhatsApp : Écris en Darija marocain (alphabet LATIN/Arabizi). Utilise des emojis (💻, 🚀, 💰), des puces, du gras (*texte*) et les liens [Voir sur Jumia](URL) bien formés.\n"
         "[/WHATSAPP]\n"
         "[TTS]\n"
-        "Ici, le texte fluide pour la synthèse vocale : Écris en Darija phonétique naturel, SANS emojis, SANS puces, SANS liens, SANS caractères techniques complexes. Fais des phrases fluides que l'on peut dire à l'oral.\n"
+        "Ici, le texte fluide pour la synthèse vocale : Écris EXCLUSIVEMENT en CARACTÈRES ARABES (Script Arabe) pour garantir une prosodie marocaine authentique. Reste en Darija (pas de Fusha), sans emojis, sans puces, sans liens, sans caractères techniques complexes.\n"
         "[/TTS]"
     )
     

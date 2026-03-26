@@ -14,7 +14,7 @@ def test_parse_multimodal_response_with_tags():
         "[Voir sur Jumia](https://jumia.ma/hp-elitebook)\n"
         "[/WHATSAPP]\n"
         "[TTS]\n"
-        "Had l-PC HP EliteBook mkhyr l-khidma, taman dyalou rbe3 alaf o khms mtya d-derhem.\n"
+        "هاد البي سي إتش بي إليتبوك مخير للخدمة، الثمن ديالو أربعة آلاف وخمس مية درهم.\n"
         "[/TTS]"
     )
     
@@ -22,7 +22,8 @@ def test_parse_multimodal_response_with_tags():
     
     assert "💻 HP EliteBook" in parsed["text_whatsapp"]
     assert "https://jumia.ma/hp-elitebook" in parsed["text_whatsapp"]
-    assert "Had l-PC HP EliteBook" in parsed["text_tts"]
+    # Vérifie le script arabe pour le TTS (Correction post-rejet UX)
+    assert "هاد البي سي" in parsed["text_tts"]
     assert "[/WHATSAPP]" not in parsed["text_whatsapp"]
     assert "[TTS]" not in parsed["text_tts"]
     assert "💻" not in parsed["text_tts"]
