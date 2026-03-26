@@ -1,5 +1,22 @@
 # 📜 CHANGELOG
 
+## [1.8.0] - 2026-03-26
+### Added
+- **Expérience Multimodale & Voice (PBI-1701)** :
+  - Intégration de **OpenAI TTS (tts-1)** pour la synthèse vocale haute performance en format **.opus**.
+  - Séquençage intelligent des messages sur WhatsApp : **Image -> Texte -> Audio** pour une UX premium.
+  - Double flux de sortie RAG : Texte riche avec emojis/liens pour [WHATSAPP] et texte fluide phonétique pour [TTS].
+  - Optimisation de la transmission audio via **Base64** pour éliminer la latence du stockage disque.
+
+### Sprint 17 : Sawt El Moustahlik (Multimodalité & Orchestration)
+- **Script Arabe pour la Prosodie (TTS)** : L'utilisation de l'alphabet latin (Arabizi) pour la synthèse vocale produit souvent un accent "robotique" ou étranger. Forcer le LLM à générer le flux `[TTS]` en **script arabe** (tout en restant en Darija) permet au moteur OpenAI TTS de mieux interpréter la phonétique et de délivrer un accent marocain beaucoup plus authentique et chaleureux.
+- **Supériorité de l'Audio Natif (GPT-4o)** : L'audit dynamique a révélé que le moteur `tts-1` classique conserve des biais égyptiens (prononciation en "G"). Le passage au modèle `gpt-4o-audio-preview` avec une voix `onyx` et des instructions de style "Casa Street" permet d'obtenir un accent marocain d'élite, sec et percutant, en éliminant les intonations tunisiennes ou fusha.
+- **Séquençage et Engagement UX** : L'ordre d'envoi des messages (Image d'abord, puis texte, puis voix) est crucial. L'image capte l'attention, le texte donne les détails actionnables (liens), et la voix humanise la relation. Inverser cet ordre brise le flux de lecture naturel sur mobile.
+- **Optimisation de la Latence (Base64 vs File)** : Passer par un encodage Base64 pour l'envoi de médias via l'API Evolution réduit drastiquement les IO disque et les risques de fichiers temporaires orphelins, tout en accélérant la réponse perçue par l'utilisateur.
+- **Double Persona LLM (Prosodie vs Structure)** : Un seul texte ne peut pas servir à la fois pour la lecture (besoin de gras, emojis, liens) et pour l'écoute (besoin de fluidité, pas de caractères spéciaux). La séparation via balises `[WHATSAPP]` / `[TTS]` dans le prompt système est la méthode la plus robuste pour garantir une qualité optimale sur les deux canaux simultanément.
+- **Validation Réelle des APIs Tierces** : Les mocks peuvent masquer des erreurs de configuration fatales (comme des noms de voix non supportés). L'audit dynamique avec un appel réel à l'API (OpenAI TTS) a permis d'identifier une erreur 400 que les tests unitaires mockés n'auraient jamais détectée. Toujours valider les paramètres "énumérés" (voix, modèles) par un test d'intégration réel.
+- **Choix du Moteur TTS** : Bien que `gpt-4o-mini-tts` soit le moteur interne, spécifier `model="tts-1"` dans l'API OpenAI garantit l'accès au moteur optimisé pour la vitesse, essentiel pour une interaction quasi-instantanée (<2s) sur WhatsApp.
+
 ## [1.7.0] - 2026-03-25
 ### Added
 - **Whisper et Darija Native (PBI-1103)** :

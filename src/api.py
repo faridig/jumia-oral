@@ -1,11 +1,12 @@
 import os
 import logging
 import requests
+import base64
 from fastapi import FastAPI, Request, BackgroundTasks, HTTPException
 from pydantic import BaseModel
 import tempfile
 from src.session_manager import JumiaChatManager
-from src.voice import transcribe_audio
+from src.voice import transcribe_audio, generate_speech
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -29,21 +30,22 @@ INSTANCE_NAME = os.getenv("INSTANCE_NAME", "Jumia-Oral-Agent")
 from typing import Optional
 
 def send_whatsapp_message(number: str, text: str, media_url: Optional[str] = None):
+    """Envoie un message texte ou média (image) via Evolution API."""
     if media_url:
         url = f"{EVOLUTION_API_URL}/message/sendMedia/{INSTANCE_NAME}"
         payload = {
-            "number": number.split("@")[0], # Evolution API attend souvent juste le numéro ou jid sans @s.whatsapp.net selon config
+            "number": number.split("@")[0],
             "media": media_url,
             "caption": text,
             "mediaType": "image",
-            "delay": 1200
+            "delay": 500
         }
     else:
         url = f"{EVOLUTION_API_URL}/message/sendText/{INSTANCE_NAME}"
         payload = {
             "number": number.split("@")[0],
             "text": text,
-            "delay": 1200,
+            "delay": 500,
             "linkPreview": True
         }
     
@@ -58,6 +60,31 @@ def send_whatsapp_message(number: str, text: str, media_url: Optional[str] = Non
     except Exception as e:
         logger.error(f"Erreur lors de l'envoi du message: {e}")
 
+def send_whatsapp_audio(number: str, audio_content: bytes):
+    """Envoie un message vocal (.opus) via Evolution API."""
+    url = f"{EVOLUTION_API_URL}/message/sendWhatsAppAudio/{INSTANCE_NAME}"
+    
+    # Encodage en base64 pour éviter le stockage disque temporaire (PBI-1701.2)
+    audio_base64 = base64.b64encode(audio_content).decode('utf-8')
+    data_uri = f"data:audio/ogg;base64,{audio_base64}"
+    
+    payload = {
+        "number": number.split("@")[0],
+        "audio": data_uri,
+        "delay": 1200
+    }
+    
+    headers = {
+        "Content-Type": "application/json",
+        "apikey": EVOLUTION_API_KEY
+    }
+    try:
+        response = requests.post(url, json=payload, headers=headers)
+        response.raise_for_status()
+        logger.info(f"Audio envoyé à {number}")
+    except Exception as e:
+        logger.error(f"Erreur lors de l'envoi de l'audio: {e}")
+
 def process_and_respond(user_id: str, text: str):
     logger.info(f"Début du traitement pour {user_id}")
     chat_response = get_chat_manager().handle_message(user_id, text)
@@ -65,11 +92,27 @@ def process_and_respond(user_id: str, text: str):
     
     if isinstance(chat_response, dict):
         response_text = chat_response.get("text", "")
+        text_tts = chat_response.get("text_tts", response_text)
         media_url = chat_response.get("media_url")
-        logger.info(f"Envoi du message (dict) à {user_id}")
-        send_whatsapp_message(user_id, response_text, media_url)
+        
+        # PBI-1701.2 UX : Séquençage Multimédia & Orchestration
+        # 1. Envoi de l'image en premier (si disponible)
+        if media_url:
+            logger.info(f"1/3 Envoi de l'image à {user_id}")
+            send_whatsapp_message(user_id, "", media_url)
+        
+        # 2. Envoi du texte WhatsApp (riche avec liens)
+        logger.info(f"2/3 Envoi du texte WhatsApp à {user_id}")
+        send_whatsapp_message(user_id, response_text)
+        
+        # 3. Envoi du message vocal généré par OpenAI Native Audio (gpt-4o-audio-preview)
+        logger.info(f"3/3 Génération et envoi du vocal à {user_id}")
+        audio_content = generate_speech(text_tts)
+        if audio_content:
+            send_whatsapp_audio(user_id, audio_content)
     else:
-        logger.info(f"Envoi du message (str) à {user_id}")
+        # Fallback si ce n'est pas un dictionnaire
+        logger.info(f"Envoi du message (fallback) à {user_id}")
         send_whatsapp_message(user_id, str(chat_response))
 
 def download_media(url: str):
