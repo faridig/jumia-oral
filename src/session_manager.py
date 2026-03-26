@@ -1,6 +1,7 @@
 import os
 import json
 import logging
+import re
 from llama_index.core.storage.chat_store import SimpleChatStore
 from src.rag_engine import MultiQueryAutoRAG
 
@@ -25,9 +26,32 @@ class JumiaChatManager:
         os.makedirs(os.path.dirname(self.storage_path), exist_ok=True)
         self.chat_store.persist(self.storage_path)
 
+    def _parse_multimodal_response(self, text: str) -> dict:
+        """
+        Extrait les flux WhatsApp et TTS du texte brut du LLM (PBI-1701.3).
+        """
+        whatsapp_match = re.search(r'\[WHATSAPP\](.*?)\[/WHATSAPP\]', text, re.DOTALL)
+        tts_match = re.search(r'\[TTS\](.*?)\[/TTS\]', text, re.DOTALL)
+        
+        text_whatsapp = whatsapp_match.group(1).strip() if whatsapp_match else text
+        text_tts = tts_match.group(1).strip() if tts_match else text_whatsapp
+        
+        # Nettoyage si les balises sont absentes (fallback)
+        if not whatsapp_match and not tts_match:
+             # Si pas de balises, on nettoie au moins les emojis pour le TTS
+             text_tts = re.sub(r'[^\w\s\.,!?]', '', text_whatsapp)
+        
+        return {
+            "text_whatsapp": text_whatsapp,
+            "text_tts": text_tts
+        }
+
     def handle_message(self, user_id, message_text):
         # [PBI-1006] Plus de gestion de localisation. On passe directement au RAG.
         response = self.rag_engine.query(message_text)
+        
+        raw_text = str(response)
+        parsed_texts = self._parse_multimodal_response(raw_text)
         
         # Extraction de l'image du premier produit si disponible
         media_url = None
@@ -46,9 +70,10 @@ class JumiaChatManager:
                         media_url = images
                         break
         
-        # On retourne le texte et le média éventuel
+        # On retourne le texte riche, le texte oral et le média éventuel
         return {
-            "text": str(response),
+            "text": parsed_texts["text_whatsapp"],
+            "text_tts": parsed_texts["text_tts"],
             "media_url": media_url
         }
 

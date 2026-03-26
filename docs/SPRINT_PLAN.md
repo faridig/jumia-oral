@@ -1,59 +1,59 @@
-# 🏃 SPRINT PLAN - SPRINT 16 : "SAWT EL BLED" (VOIX DU PAYS)
+# 🏃 SPRINT PLAN - SPRINT 17 : "SAWT JUMIA + RICH MEDIA"
 
-**Objectif du Sprint** : Intégrer l'interaction vocale en Darija via l'API OpenAI Whisper et assurer des réponses textuelles natives (sans traduction) pour une expérience utilisateur marocaine authentique.
+**Objectif du Sprint** : Orchestrer une réponse complète (Image + Texte/Liens + Vocal) pour une aide à l'achat immersive et professionnelle, en utilisant les dernières nouveautés OpenAI (TTS-mini) et LlamaIndex (Multimodal).
 
 ---
 
 ## 📋 TICKETS SÉLECTIONNÉS
 
-### [PBI-1103.1] INFRA : Intégration API OpenAI Whisper
+### [PBI-1701.1] INFRA : Synthèse Vocale Ultra-Rapide (OpenAI TTS)
 **Priorité** : High | **Estimation** : M
 
-**User Story** : "En tant qu'utilisateur, je veux envoyer un message vocal en Darija sur WhatsApp et que le bot comprenne exactement ma demande technique."
+**User Story** : "En tant que Personal Shopper, je veux générer un audio de haute qualité en moins de 1s pour ne pas faire attendre l'utilisateur."
 
 **Critères d'Acceptation (Gherkin)** :
-- [ ] **Scenario 1 : Transcription de base**
-  - **GIVEN** Un fichier audio .ogg reçu via Evolution API.
-  - **WHEN** Le système appelle l'endpoint `v1/audio/transcriptions` d'OpenAI.
-  - **THEN** Le texte retourné correspond fidèlement au Darija parlé.
-- [ ] **Scenario 2 : Optimisation Dialectale**
-  - **GIVEN** Une requête audio complexe avec des termes techniques.
-  - **WHEN** L'API Whisper est appelée avec un `initial_prompt` spécifique au Darija/PC Jumia.
-  - **THEN** Les termes comme "ra9a" ou "tayra" sont correctement transcrits.
+- [ ] **Scenario 1 : Utilisation du modèle gpt-4o-mini-tts**
+  - **GIVEN** Un texte de réponse en Darija.
+  - **WHEN** Le système appelle l'API OpenAI TTS avec le modèle `gpt-4o-mini-tts`.
+  - **THEN** Un fichier binaire `.opus` est généré avec succès.
+- [ ] **Scenario 2 : Optimisation de la voix**
+  - **GIVEN** Un besoin de tonalité marocaine chaleureuse.
+  - **WHEN** La voix `marin` ou `cedar` est sélectionnée.
+  - **THEN** La prononciation du Darija est fluide et naturelle.
 
-### [PBI-1103.2] PROMPT : Moteur de Réponse Darija-Native (GPT-4o)
-**Priorité** : High | **Estimation** : M
+### [PBI-1701.2] UX : Séquençage Multimédia & Orchestration
+**Priorité** : High | **Estimation** : L
 
-**User Story** : "En tant qu'utilisateur, je veux recevoir une réponse en Darija naturel, respectant mes codes culturels, sans sentir que c'est une traduction du français."
+**User Story** : "En tant qu'utilisateur, je veux voir l'image du PC, lire ses caractéristiques et entendre l'avis du bot dans un flux logique et structuré."
 
 **Critères d'Acceptation (Gherkin)** :
-- [ ] **Scenario 1 : Pensée Native**
-  - **GIVEN** Une question transcrite en Darija.
-  - **WHEN** Le LLM génère sa réponse.
-  - **THEN** La structure grammaticale est celle du Darija (et non du Fusha ou du Français traduit).
-- [ ] **Scenario 2 : Glossaire "Darija-Tech"**
-  - **GIVEN** Une recommandation de PC.
-  - **WHEN** Le bot décrit les performances.
-  - **THEN** Il utilise les termes validés (ex: "madi" pour rapide, "mkhyr" pour excellent).
+- [ ] **Scenario 1 : Séquençage automatique**
+  - **GIVEN** Une recommandation de produit validée.
+  - **WHEN** Le moteur de réponse est déclenché.
+  - **THEN** WhatsApp reçoit successivement : 1. L'image du produit, 2. Le texte avec lien Jumia, 3. Le message vocal.
+- [ ] **Scenario 2 : Liens Jumia Cliquables**
+  - **GIVEN** Un texte de réponse.
+  - **WHEN** Il contient une URL Jumia Notebooks.
+  - **THEN** Elle est formatée pour être immédiatement cliquable sur mobile.
 
-### [PBI-1103.3] UX : Onboarding Audio & WhatsApp Flow
+### [PBI-1701.3] PROMPT : Double flux de sortie (Prosodie vs Structure)
 **Priorité** : Medium | **Estimation** : S
 
-**User Story** : "En tant qu'utilisateur, je veux savoir que je peux parler au bot dès mon premier message."
+**User Story** : "En tant que système, je veux générer un texte propre pour WhatsApp (avec puces/emojis) et un texte fluide pour le TTS (sans caractères techniques)."
 
 **Critères d'Acceptation (Gherkin)** :
-- [ ] **Scenario 1 : Invitation vocale**
-  - **GIVEN** Le message de bienvenue "Mrehba".
-  - **WHEN** L'utilisateur le reçoit.
-  - **THEN** Une phrase explicite l'invite à envoyer des messages vocaux.
+- [ ] **Scenario 1 : Séparation des sorties**
+  - **GIVEN** Un résultat de recherche RAG.
+  - **WHEN** Le LLM prépare la réponse.
+  - **THEN** Il produit deux variables : `text_whatsapp` (riche) et `text_tts` (phonétique/oral).
 
-### [PBI-1601] TECH : Hygiène Infra - Sync Qdrant
+### [PBI-1702] EVAL : Audit de l'expérience multimodale
 **Priorité** : Medium | **Estimation** : XS
 
-**Action** : Aligner la version du client `qdrant-client` dans `requirements.txt` avec la version serveur (1.10) pour lever l'alerte de la dette technique.
+**Action** : Test manuel de bout en bout (Voix -> RAG -> Image + Texte + Vocal) pour valider l'absence de régression et la cohérence des liens/images.
 
 ---
 
 ## 🏛️ RAPPEL TECHNIQUE & BLOQUANTS
-1. **TIMEOUT WHATSAPP** : La transcription Whisper ajoute de la latence. Utiliser impérativement les `BackgroundTasks` de FastAPI pour ne pas bloquer Evolution API.
-2. **COÛTS** : Monitorer la consommation Whisper via Phoenix.
+1. **FORMAT OPUS** : S'assurer qu'Evolution API accepte le stream binaire directement depuis OpenAI sans conversion disque.
+2. **MULTIMODAL** : Utiliser `image_url` depuis les métadonnées Qdrant pour l'envoi WhatsApp.
