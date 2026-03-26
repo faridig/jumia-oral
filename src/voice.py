@@ -9,11 +9,11 @@ logger = logging.getLogger(__name__)
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
-def generate_speech(text: str, voice: str = "marin") -> Optional[bytes]:
+def generate_speech(text: str, voice: str = "nova") -> Optional[bytes]:
     """
     Génère un fichier audio .opus via OpenAI TTS (PBI-1701.1).
-    Utilise le modèle gpt-4o-mini-tts pour une synthèse ultra-rapide (<1s).
-    Voix recommandées : marin, cedar.
+    Utilise le modèle tts-1 pour une synthèse ultra-rapide (<1s).
+    Voix recommandées (Darija) : nova (warm), shimmer (clear).
     """
     if not OPENAI_API_KEY:
         logger.error("OPENAI_API_KEY non configurée pour la synthèse vocale.")
@@ -21,12 +21,12 @@ def generate_speech(text: str, voice: str = "marin") -> Optional[bytes]:
 
     try:
         client = OpenAI(api_key=OPENAI_API_KEY)
-        # OpenAI TTS supports voices: alloy, echo, fable, onyx, nova, shimmer, marin, cedar
-        # Note: marin and cedar are optimized for modern multilingual needs.
+        # Voix supportées officiellement : alloy, echo, fable, onyx, nova, shimmer, ash, sage, coral.
+        # Note : nova et shimmer sont excellentes pour le Darija (PBI-1701.1 correction post-audit).
         
         # PBI-1701.1 Scenario 1 & 2
         response = client.audio.speech.create(
-            model="tts-1", # tts-1 est le moteur haute performance, gpt-4o-mini-tts est la référence du moteur sous-jacent
+            model="tts-1",
             voice=voice,
             input=text,
             response_format="opus" # Requis par PBI-1701.1 Critère d'Acceptation Scenario 1
