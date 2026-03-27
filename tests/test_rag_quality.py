@@ -13,7 +13,7 @@ def test_notebook_compagnon_dual_choice():
     Vérifie que le Compagnon Notebook propose systématiquement 2 options (PBI-2000).
     """
     if os.getenv("GITHUB_ACTIONS") == "true":
-        mock_response_str = "Mrehba! Voici deux options pour vous : \nOption 1: Dell Latitude \nOption 2: HP Probook \nConseil: Mzyan bzaaf."
+        mock_response_str = "Mrehba khouya! Voici deux options naddi pour vous : \nOption 1: Dell Latitude \nOption 2: HP Probook \nConseil: Mzyan bzaaf."
         
         with unittest.mock.patch("src.rag_engine.get_rag_engine") as mock_get_engine, \
              unittest.mock.patch("src.rag_engine.OpenAI"), \
@@ -39,10 +39,11 @@ def test_notebook_compagnon_dual_choice():
     print(f"\nQUERY: {query}")
     print(f"RESPONSE: {response}")
     
-    # Vérification de la présence de 2 options
+    # Vérification de la présence de 2 options et du vocabulaire validé (PR #24)
     assert "Option 1" in response or "1." in response
     assert "Option 2" in response or "2." in response
     assert "Mzyan" in response or "Besseha" in response or "Mrehba" in response # Darija touches
+    assert "naddi" in response.lower() or "khouya" in response.lower() or "sahbi" in response.lower() # Nouveau vocabulaire Derb Ghalef
 
 def test_url_presence_pbi_2000():
     """
