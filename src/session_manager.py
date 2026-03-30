@@ -70,7 +70,7 @@ class JumiaChatManager:
                         media_url = images
                         break
         
-        # On retourne le texte riche, le texte oral (phonétique Casa) et le média éventuel
+        # On retourne le texte riche, le texte oral et le média éventuel
         return {
             "text": parsed_texts["text_whatsapp"],
             "text_tts": parsed_texts["text_tts"],
