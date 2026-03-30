@@ -62,6 +62,11 @@
 - **Retrait de la Localisation (PBI-1006)** : Suppression définitive de la gestion des villes et de la logistique dans le moteur de session et le prompt système pour un focus produit maximal.
 
 ## 💡 LEÇONS APPRISES
+### Sprint 17 : Sawt El Moustahlik (Multimodalité & Orchestration)
+- **Récupération du Persona (Recovery)** : Lors d'une migration technique majeure (ex: passage à l'Audio Natif GPT-4o), le style de réponse peut dériver vers une concision excessive ou une perte de politesse. La réinjection explicite de salutations marocaines (`Mrehba`, `Salam`) et l'usage de vocabulaire de proximité (`khouya`, `sahbi`) sont indispensables pour maintenir l'ADN "chaleureux" de Jumia Oral.
+- **Structure Fact-First** : Pour éviter que le style (Darija de rue) ne prenne le pas sur la précision, imposer une structure "Fact-First" dans le prompt (modèle et specs dès la première phrase) garantit que l'utilisateur reçoit d'abord la valeur technique avant l'enrobage social.
+- **Double Persona LLM (Prosodie vs Structure)** : Un seul texte ne peut pas servir à la fois pour la lecture (besoin de gras, emojis, liens) et pour l'écoute (besoin de fluidité, pas de caractères spéciaux). La séparation via balises `[WHATSAPP]` / `[TTS]` dans le prompt système est la méthode la plus robuste pour garantir une qualité optimale sur les deux canaux simultanément.
+
 ### Sprint 15 : Intelligence Stable
 - **Précision du Typage dans LlamaIndex** : L'utilisation de types `Union` explicites pour les réponses (`Response | StreamingResponse`) est impérative pour maintenir la robustesse du moteur RAG lors de l'utilisation de `QueryEngine` ou `ChatEngine`.
 - **L'Auto-Retriever comme Pont Sémantique-Technique** : L'extraction de métadonnées ne suffit pas ; il faut un "Intelligence Mapping" robuste dans le prompt pour que le LLM sache qu'un "étudiant" a besoin de portabilité et d'autonomie, alors qu'un "gamer" a besoin d'un GPU et de RAM.
