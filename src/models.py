@@ -31,3 +31,11 @@ class CategoryAgnosticProduct(BaseModel):
     sentiment_analysis: List[SentimentAxis] = Field(default_factory=list, description="Analyse de sentiment par axe")
     seller_info: Optional[SellerInfo] = Field(None, description="Informations sur le vendeur")
     raw_review_summary: str = Field("", description="Résumé brut des avis clients")
+
+class MultimodalResponse(BaseModel):
+    """
+    Réponse structurée pour le double flux WhatsApp et TTS (PBI-1701.3).
+    """
+    text_whatsapp: str = Field(..., description="Texte riche avec emojis, puces et liens pour WhatsApp")
+    text_tts: str = Field(..., description="Texte fluide et naturel en Darija pour la synthèse vocale, sans emojis ni caractères techniques")
+    media_url: Optional[str] = Field(None, description="URL de l'image du produit recommandé (si disponible)")

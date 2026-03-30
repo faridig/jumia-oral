@@ -105,7 +105,7 @@ def process_and_respond(user_id: str, text: str):
         logger.info(f"2/3 Envoi du texte WhatsApp à {user_id}")
         send_whatsapp_message(user_id, response_text)
         
-        # 3. Envoi du message vocal généré par OpenAI Native Audio (gpt-4o-audio-preview)
+        # 3. Envoi du message vocal généré par OpenAI TTS (gpt-4o-mini-tts)
         logger.info(f"3/3 Génération et envoi du vocal à {user_id}")
         audio_content = generate_speech(text_tts)
         if audio_content:

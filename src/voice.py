@@ -1,6 +1,5 @@
 import os
 import logging
-import base64
 from typing import Optional
 from openai import OpenAI
 from dotenv import load_dotenv
@@ -10,11 +9,11 @@ logger = logging.getLogger(__name__)
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
-def generate_speech(text: str, voice: str = "onyx") -> Optional[bytes]:
+def generate_speech(text: str, voice: str = "nova") -> Optional[bytes]:
     """
-    Génère un fichier audio .opus via OpenAI Native Audio (gpt-4o-audio-preview).
-    PBI-1701.1 UPGRADE : Migration vers l'audio natif pour un accent 100% Casa.
-    Voix Championne : onyx (Profondeur & Grain Expert/Street).
+    Génère un fichier audio .opus via OpenAI TTS (PBI-1701.1).
+    Utilise le modèle tts-1 pour une synthèse ultra-rapide (<1s).
+    Voix recommandées (Darija) : nova (warm), shimmer (clear).
     """
     if not OPENAI_API_KEY:
         logger.error("OPENAI_API_KEY non configurée pour la synthèse vocale.")
@@ -22,36 +21,20 @@ def generate_speech(text: str, voice: str = "onyx") -> Optional[bytes]:
 
     try:
         client = OpenAI(api_key=OPENAI_API_KEY)
+        # Voix supportées officiellement : alloy, echo, fable, onyx, nova, shimmer, ash, sage, coral.
+        # Note : nova et shimmer sont excellentes pour le Darija (PBI-1701.1 correction post-audit).
         
-        # Style Prompt "Expert de Casablanca" (Migration PR #24)
-        style_prompt = (
-            "Tu es un vendeur expert en informatique à Casablanca. "
-            "PARLE EXCLUSIVEMENT EN DARIJA MAROCAIN (DARIJA T-MAGHRIBIYA). "
-            "INTERDICTION totale d'utiliser le français ou l'arabe classique. "
-            "Utilise un vocabulaire de proximité (khouya, sahbi, l-m3aqoul, tayra, madi, l-hemza). "
-            "Ton débit doit être rapide, sec et direct. "
-            "Prononce les 'J' de manière douce (Maroc) et non comme des 'G' (Égypte)."
+        # PBI-1701.1 Scenario 1 & 2
+        response = client.audio.speech.create(
+            model="tts-1",
+            voice=voice,
+            input=text,
+            response_format="opus" # Requis par PBI-1701.1 Critère d'Acceptation Scenario 1
         )
-        
-        # PBI-1701.1 Golden Config : Native Audio GPT-4o
-        response = client.chat.completions.create(
-            model="gpt-4o-audio-preview",
-            modalities=["text", "audio"],
-            audio={"voice": voice, "format": "opus"},
-            messages=[
-                {"role": "system", "content": style_prompt},
-                {"role": "user", "content": text}
-            ]
-        )
-        
-        # Extraction de l'audio binaire (base64 décodé)
-        audio_data_b64 = response.choices[0].message.audio.data
-        audio_content = base64.b64decode(audio_data_b64)
-        
-        logger.info(f"Génération Native Audio (GPT-4o) réussie pour : {text[:50]}...")
-        return audio_content
+        logger.info(f"Synthèse vocale réussie pour le texte : {text[:50]}...")
+        return response.content
     except Exception as e:
-        logger.error(f"Erreur lors de la génération Native Audio (GPT-4o): {e}")
+        logger.error(f"Erreur lors de la synthèse OpenAI TTS: {e}")
         return None
 
 def transcribe_audio(audio_file_path: str) -> Optional[str]:
