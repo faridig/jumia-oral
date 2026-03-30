@@ -9,6 +9,34 @@ logger = logging.getLogger(__name__)
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
+def generate_speech(text: str, voice: str = "nova") -> Optional[bytes]:
+    """
+    Génère un fichier audio .opus via OpenAI TTS (PBI-1701.1).
+    Utilise le modèle tts-1 pour une synthèse ultra-rapide (<1s).
+    Voix recommandées (Darija) : nova (warm), shimmer (clear).
+    """
+    if not OPENAI_API_KEY:
+        logger.error("OPENAI_API_KEY non configurée pour la synthèse vocale.")
+        return None
+
+    try:
+        client = OpenAI(api_key=OPENAI_API_KEY)
+        # Voix supportées officiellement : alloy, echo, fable, onyx, nova, shimmer, ash, sage, coral.
+        # Note : nova et shimmer sont excellentes pour le Darija (PBI-1701.1 correction post-audit).
+        
+        # PBI-1701.1 Scenario 1 & 2
+        response = client.audio.speech.create(
+            model="tts-1",
+            voice=voice,
+            input=text,
+            response_format="opus" # Requis par PBI-1701.1 Critère d'Acceptation Scenario 1
+        )
+        logger.info(f"Synthèse vocale réussie pour le texte : {text[:50]}...")
+        return response.content
+    except Exception as e:
+        logger.error(f"Erreur lors de la synthèse OpenAI TTS: {e}")
+        return None
+
 def transcribe_audio(audio_file_path: str) -> Optional[str]:
     """
     Transcrit un fichier audio (ogg/mp3/wav) en texte Darija via OpenAI Whisper.
