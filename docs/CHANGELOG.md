@@ -1,6 +1,6 @@
 # 📜 CHANGELOG
 
-## [1.8.0] - 2026-03-26
+## [1.8.0] - 2026-03-31
 ### Added
 - **Expérience Multimodale & Voice (PBI-1701)** :
   - Intégration de **OpenAI TTS (tts-1)** pour la synthèse vocale haute performance en format **.opus**.

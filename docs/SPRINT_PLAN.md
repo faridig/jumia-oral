@@ -1,59 +1,50 @@
-# 🏃 SPRINT PLAN - SPRINT 17 : "SAWT JUMIA + RICH MEDIA"
+# 🏃 SPRINT PLAN - SPRINT 18 : "HYGIÈNE & STABILITÉ"
 
-**Objectif du Sprint** : Orchestrer une réponse complète (Image + Texte/Liens + Vocal) pour une aide à l'achat immersive et professionnelle, en utilisant les dernières nouveautés OpenAI (TTS-mini) et LlamaIndex (Multimodal).
+**Objectif du Sprint** : Optimiser la pertinence des réponses en introduisant une mémoire éphémère (Session TTL) et stabiliser le socle technique en résolvant la dette accumulée.
 
 ---
 
 ## 📋 TICKETS SÉLECTIONNÉS
 
-### [PBI-1701.1] INFRA : Synthèse Vocale Ultra-Rapide (OpenAI TTS)
+### [PBI-1801] TECH : Session TTL (Mémoire Éphémère & Hygiène)
 **Priorité** : High | **Estimation** : M
 
-**User Story** : "En tant que Personal Shopper, je veux générer un audio de haute qualité en moins de 1s pour ne pas faire attendre l'utilisateur."
+**User Story** : "En tant qu'utilisateur, je veux que le bot oublie nos anciennes discussions après une période d'inactivité (30 min), afin de repartir sur un besoin frais sans confusion."
 
 **Critères d'Acceptation (Gherkin)** :
-- [ ] **Scenario 1 : Utilisation du modèle gpt-4o-mini-tts**
-  - **GIVEN** Un texte de réponse en Darija.
-  - **WHEN** Le système appelle l'API OpenAI TTS avec le modèle `gpt-4o-mini-tts`.
-  - **THEN** Un fichier binaire `.opus` est généré avec succès.
-- [ ] **Scenario 2 : Optimisation de la voix**
-  - **GIVEN** Un besoin de tonalité marocaine chaleureuse.
-  - **WHEN** La voix `marin` ou `cedar` est sélectionnée.
-  - **THEN** La prononciation du Darija est fluide et naturelle.
+- [ ] **Scenario 1 : Expiration de session**
+  - **GIVEN** Une discussion active datant de plus de 30 minutes.
+  - **WHEN** L'utilisateur envoie un nouveau message.
+  - **THEN** Le `SimpleChatStore` vide l'historique précédent pour ce numéro.
+- [ ] **Scenario 2 : Maintien du Persona**
+  - **GIVEN** Un reset de session.
+  - **WHEN** Le bot répond.
+  - **THEN** Il conserve son ton Darija et ses instructions système malgré l'oubli du contenu.
 
-### [PBI-1701.2] UX : Séquençage Multimédia & Orchestration
-**Priorité** : High | **Estimation** : L
+### [PBI-1802] TECH : Résolution Dette Technique (Type Error)
+**Priorité** : High | **Estimation** : S
 
-**User Story** : "En tant qu'utilisateur, je veux voir l'image du PC, lire ses caractéristiques et entendre l'avis du bot dans un flux logique et structuré."
+**User Story** : "En tant que Lead-Dev, je veux corriger l'erreur de type sur `RESPONSE_TYPE` pour garantir la stabilité du moteur de chat."
 
-**Critères d'Acceptation (Gherkin)** :
-- [ ] **Scenario 1 : Séquençage automatique**
-  - **GIVEN** Une recommandation de produit validée.
-  - **WHEN** Le moteur de réponse est déclenché.
-  - **THEN** WhatsApp reçoit successivement : 1. L'image du produit, 2. Le texte avec lien Jumia, 3. Le message vocal.
-- [ ] **Scenario 2 : Liens Jumia Cliquables**
-  - **GIVEN** Un texte de réponse.
-  - **WHEN** Il contient une URL Jumia Notebooks.
-  - **THEN** Elle est formatée pour être immédiatement cliquable sur mobile.
+**Critères d'Acceptation** :
+- [ ] **Scenario 1 : Correction Type LlamaIndex**
+  - **GIVEN** Le fichier `src/rag_engine.py`.
+  - **WHEN** L'agent utilise `ContextChatEngine`.
+  - **THEN** La signature de fonction supporte `Response | StreamingResponse | AsyncStreamingResponse` sans erreur de type.
 
-### [PBI-1701.3] PROMPT : Double flux de sortie (Prosodie vs Structure)
+### [PBI-1803] EVAL : Audit Qualité "Sawt Jumia" (Sprint 17 Logs)
 **Priorité** : Medium | **Estimation** : S
 
-**User Story** : "En tant que système, je veux générer un texte propre pour WhatsApp (avec puces/emojis) et un texte fluide pour le TTS (sans caractères techniques)."
+**User Story** : "En tant que PO, je veux analyser les premiers logs réels du Sprint 17 pour vérifier si la prosodie Darija est bien acceptée par les utilisateurs."
 
-**Critères d'Acceptation (Gherkin)** :
-- [ ] **Scenario 1 : Séparation des sorties**
-  - **GIVEN** Un résultat de recherche RAG.
-  - **WHEN** Le LLM prépare la réponse.
-  - **THEN** Il produit deux variables : `text_whatsapp` (riche) et `text_tts` (phonétique/oral).
-
-### [PBI-1702] EVAL : Audit de l'expérience multimodale
-**Priorité** : Medium | **Estimation** : XS
-
-**Action** : Test manuel de bout en bout (Voix -> RAG -> Image + Texte + Vocal) pour valider l'absence de régression et la cohérence des liens/images.
+**Critères d'Acceptation** :
+- [ ] **Scenario 1 : Analyse de pertinence**
+  - **GIVEN** 20 logs de conversations réelles (Vocal/Multimodal).
+  - **WHEN** Passés dans le framework DeepEval.
+  - **THEN** Le score d'Answer Relevancy doit être > 0.7.
 
 ---
 
 ## 🏛️ RAPPEL TECHNIQUE & BLOQUANTS
-1. **FORMAT OPUS** : S'assurer qu'Evolution API accepte le stream binaire directement depuis OpenAI sans conversion disque.
-2. **MULTIMODAL** : Utiliser `image_url` depuis les métadonnées Qdrant pour l'envoi WhatsApp.
+1. **DÉSÉQUILIBRE QDRANT** : Vérifier si la correction du type error résout les instabilités avant d'attaquer la mise à jour serveur Qdrant.
+2. **TOKEN OPTIMIZATION** : La session TTL va naturellement réduire la taille du contexte envoyé au LLM, surveiller la baisse des coûts sur Phoenix.

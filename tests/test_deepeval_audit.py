@@ -2,6 +2,7 @@ import os
 import json
 import pytest
 import random
+import re
 from deepeval.metrics import (
     FaithfulnessMetric, 
     AnswerRelevancyMetric, 
@@ -51,7 +52,11 @@ def test_rag_fidelity(gold_data_sample):
         
         # Exécution de la requête RAG (Utilisation du moteur complet avec expansion)
         response = rag.query(question)
-        actual_output = str(response)
+        actual_output_raw = str(response)
+        
+        # [PBI-1803] Extraction pour l'audit : on n'évalue que la partie WhatsApp
+        whatsapp_match = re.search(r'\[WHATSAPP\](.*?)\[/WHATSAPP\]', actual_output_raw, re.DOTALL)
+        actual_output = whatsapp_match.group(1).strip() if whatsapp_match else actual_output_raw
         
         # Récupération des nodes sources pour l'évaluateur
         source_nodes = []
