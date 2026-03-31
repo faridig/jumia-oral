@@ -30,13 +30,18 @@ from llama_index.core import (
     StorageContext,
     QueryBundle,
     PromptTemplate,
-    Response,
     get_response_synthesizer
 )
-from llama_index.core.base.response.schema import RESPONSE_TYPE
+from llama_index.core.base.response.schema import (
+    Response, 
+    StreamingResponse, 
+    AsyncStreamingResponse,
+    RESPONSE_TYPE
+)
 from llama_index.core.response_synthesizers import ResponseMode
 from llama_index.core.retrievers import VectorIndexAutoRetriever, VectorIndexRetriever
 from llama_index.core.query_engine import RetrieverQueryEngine
+from llama_index.core.llms import ChatMessage, MessageRole
 from llama_index.core.vector_stores.types import MetadataInfo, VectorStoreInfo, MetadataFilters, MetadataFilter, FilterOperator
 from llama_index.vector_stores.qdrant import QdrantVectorStore
 from llama_index.embeddings.openai import OpenAIEmbedding
@@ -122,8 +127,8 @@ def get_rag_engine(use_auto_retriever: bool = True):
         "4. ACCENT & PHONÉTIQUE : Prononce les 'J' de manière douce (Maroc) et non comme des 'G' (Égypte). "
         "5. ONBOARDING : Rappelle qu'on peut te parler en VOCAL. "
         "CONSIGNES DE CONTENU (STRICTES) : "
-        "1. STRUCTURE FACT-FIRST : Cite le MODÈLE EXACT et les SPÉCIFICATIONS TECHNIQUES (CPU, RAM, SSD) dès la PREMIÈRE PHRASE. Ne sacrifie JAMAIS la précision technique pour le style. "
-        "2. PROPOSITION DOUBLE : Propose SYSTÉMATIQUEMENT 2 options. "
+        "1. STRUCTURE FACT-FIRST : Cite le MODÈLE EXACT et les SPÉCIFICATIONS TECHNIQUES (CPU, RAM, SSD) dès la PREMIÈRE PHRASE. Ne sacrifie JAMAIS la précision technique pour le style. N'omets aucun détail critique (ex: génération CPU, type RAM DDR3/DDR4, taille écran) présent dans les nodes sources.\n"
+        "2. PROPOSITION DOUBLE : Propose SYSTÉMATIQUEMENT 2 options.\n"
         "3. NOM COMPLET : Cite toujours le nom complet Jumia. "
         "4. LIENS : Termine par le lien Jumia [Voir sur Jumia](URL)."
         "\n\nFORMAT DE SORTIE OBLIGATOIRE :\n"
@@ -171,8 +176,9 @@ class MultiQueryAutoRAG:
         self.auto_engine = get_rag_engine(use_auto_retriever=True)
         self.base_engine = get_rag_engine(use_auto_retriever=False)
         
-    def query(self, user_query: str) -> RESPONSE_TYPE:
+    def query(self, user_query: str, chat_history: Optional[List[ChatMessage]] = None) -> Response | StreamingResponse | AsyncStreamingResponse:
         logger.info(f"User Query: {user_query}")
+        chat_history = chat_history or []
         
         # 1. Expansion Sémantique (Hybridé)
         variantes = expand_query_darija(user_query)
@@ -205,9 +211,13 @@ class MultiQueryAutoRAG:
                 source_nodes=[]
             )
 
+        # [PBI-1801] Synthèse avec mémoire contextuelle (6 derniers messages)
+        history_text = "\n".join([f"{m.role.value if hasattr(m.role, 'value') else m.role}: {m.content}" for m in chat_history[-6:]])
+        context_query = f"CONTEXTE (HISTORIQUE):\n{history_text}\n\nNOUVELLE QUESTION:\n{user_query}" if history_text else user_query
+
         # Synthèse finale avec le prompt "Compagnon" (Garantit les 2 options)
         response = self.auto_engine._response_synthesizer.synthesize(
-            query=user_query,
+            query=context_query,
             nodes=response.source_nodes[:5] # On donne du choix pour que le Persona sélectionne les 2 meilleures options
         )
             
