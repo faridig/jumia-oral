@@ -155,14 +155,34 @@
 - [ ] Utilisation de `deepeval.metrics.AnswerCorrectnessMetric` (Seuil: 0.7) pour le score Gold.
 - [ ] **Technical Guideline** : Créer un script `tests/test_rag_metrics.py` qui itère sur le `gold_dataset.json` et appelle `deepeval.evaluate()`.
 
-### [PBI-1304] EVAL : Audit "Alignement User" (Source : Logs Users)
+### [PBI-1801] TECH : Session TTL (Mémoire Éphémère & Hygiène)
 **Status** : PENDING ⏳
 **Priorité** : High | **Estimation** : M
-**User Story** : "En tant qu'utilisateur, je veux que l'assistant comprenne mon besoin (Darija/Fr) et propose des PC qui y répondent vraiment."
+**User Story** : "En tant qu'utilisateur, je veux que le bot oublie nos anciennes discussions après une période d'inactivité (30 min), afin de repartir sur un besoin frais sans confusion."
+**Critères d'Acceptation (Gherkin)** :
+- [ ] **Scenario 1 : Expiration de session**
+  - **GIVEN** Une discussion active datant de plus de 30 minutes.
+  - **WHEN** L'utilisateur envoie un nouveau message.
+  - **THEN** Le `SimpleChatStore` vide l'historique précédent pour ce numéro.
+- [ ] **Scenario 2 : Maintien du Persona**
+  - **GIVEN** Un reset de session.
+  - **WHEN** Le bot répond.
+  - **THEN** Il conserve son ton Darija et ses instructions système malgré l'oubli du contenu.
+
+### [PBI-1802] TECH : Résolution Dette Technique (Type Error)
+**Status** : PENDING ⏳
+**Priorité** : High | **Estimation** : S
+**User Story** : "En tant que Lead-Dev, je veux corriger l'erreur de type sur `RESPONSE_TYPE` pour garantir la stabilité du moteur de chat."
+
+### [PBI-1803] EVAL : Audit Qualité "Sawt Jumia" (Sprint 17 Logs)
+**Status** : PENDING ⏳
+**Priorité** : Medium | **Estimation** : S
+**User Story** : "En tant que PO, je veux analyser les premiers logs réels du Sprint 17 pour vérifier si la prosodie Darija est bien acceptée par les utilisateurs."
 **Critères d'Acceptation** :
-- [ ] Mesure de l'**Answer Relevancy** (Live via LLM-as-a-Judge).
-- [ ] Mesure de la **Contextual Precision** (Audit du Top K sur requêtes réelles).
-- [ ] **Implementation Tip** : Utiliser les `deepeval.integrations.llama_index.DeepEvalCallbackHandler` pour capturer les traces live si nécessaire.
+- [ ] **Scenario 1 : Analyse de pertinence**
+  - **GIVEN** 20 logs de conversations réelles (Vocal/Multimodal).
+  - **WHEN** Passés dans le framework DeepEval.
+  - **THEN** Le score d'Answer Relevancy doit être > 0.7.
 
 ### [PBI-1306] TECH : Observabilité & Tracing (Arize Phoenix)
 **Status** : DONE ✅
@@ -225,14 +245,14 @@
 - [x] **Validation Technique** : Test de l'Auto-Retriever via `VectorIndexAutoRetriever` et vérification des filtres générés dans les logs Phoenix.
 
 ### [PBI-1701] TECH/UX : Sawt Jumia (Synthèse Vocale & Multimédia Orchestré)
-**Status** : PENDING ⏳
+**Status** : DONE ✅
 **Priorité** : High | **Estimation** : L (Découpé en S/M pour Sprint 17)
 **User Story** : "En tant qu'utilisateur, je veux recevoir une réponse complète (Image + Texte/Liens + Vocal) pour une aide à l'achat immersive et professionnelle."
 **Critères d'Acceptation (Sprint 17)** :
-- [ ] **[PBI-1701.1] INFRA** : Intégration OpenAI TTS (Modèle `gpt-4o-mini-tts` en format `.opus`).
-- [ ] **[PBI-1701.2] UX** : Séquençage Multimédia (Image -> Texte -> Vocal) via Evolution API.
-- [ ] **[PBI-1701.3] PROMPT** : Double flux de sortie (Prosodie pour TTS vs Structure pour WhatsApp).
-- [ ] **[PBI-1702] EVAL** : Audit de l'expérience multimodale (Vérification liens/images/audio).
+- [x] **[PBI-1701.1] INFRA** : Intégration OpenAI TTS (Modèle `gpt-4o-mini-tts` en format `.opus`).
+- [x] **[PBI-1701.2] UX** : Séquençage Multimédia (Image -> Texte -> Vocal) via Evolution API.
+- [x] **[PBI-1701.3] PROMPT** : Double flux de sortie (Prosodie pour TTS vs Structure pour WhatsApp).
+- [x] **[PBI-1702] EVAL** : Audit de l'expérience multimodale (Vérification liens/images/audio).
 
 ### [PBI-1103] TECH : Support Vocal WhatsApp & LLM Darija-Native
 **Status** : DONE ✅
