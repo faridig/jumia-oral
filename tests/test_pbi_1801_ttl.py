@@ -1,6 +1,7 @@
 import os
 import time
 import pytest
+from unittest.mock import MagicMock, patch
 from src.session_manager import JumiaChatManager
 from llama_index.core.llms import ChatMessage, MessageRole
 
@@ -13,8 +14,13 @@ def chat_manager():
     if os.path.exists(metadata_path):
         os.remove(metadata_path)
     
-    manager = JumiaChatManager(storage_path=storage_path)
-    yield manager
+    with patch("src.session_manager.MultiQueryAutoRAG") as mock_rag_class:
+        mock_rag = MagicMock()
+        mock_rag.query.return_value = "[WHATSAPP]Mrehba! Hahwa laptop.[/WHATSAPP][TTS]Mrehba[/TTS]"
+        mock_rag_class.return_value = mock_rag
+        
+        manager = JumiaChatManager(storage_path=storage_path)
+        yield manager
     
     if os.path.exists(storage_path):
         os.remove(storage_path)

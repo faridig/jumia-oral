@@ -1,5 +1,5 @@
 import pytest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, patch, ANY
 from src.session_manager import JumiaChatManager
 
 @patch("src.session_manager.MultiQueryAutoRAG")
@@ -19,4 +19,4 @@ def test_handle_message_no_location_onboarding(mock_chat_store, mock_rag_engine)
     
     # The response should be from the RAG (as a dict because of how handle_message works)
     assert response["text"] == "Hahwa laptop mzyan"
-    mock_rag.query.assert_called_once_with("Bghit laptop")
+    mock_rag.query.assert_called_once_with("Bghit laptop", chat_history=ANY)
