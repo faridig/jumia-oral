@@ -1,24 +1,26 @@
 from src.session_manager import JumiaChatManager
 
 def main():
-    print("--- Jumia Oral Assistant (Sprint 12: Hygiène & Alignement) ---")
+    print("--- 🛒 Jumia Oral : Session Interactive (Mode Client) ---")
+    print("Tapez 'exit' pour quitter.\n")
     chat = JumiaChatManager()
-    
     user_id = "user_demo"
     
-    def print_response(user, msg):
-        res = chat.handle_message(user, msg)
+    while True:
+        user_input = input("\n[Vous] (Darija/Fr) : ")
+        if user_input.lower() in ["exit", "quit", "quitter"]:
+            print("Besseha! A bientot.")
+            break
+            
+        res = chat.handle_message(user_id, user_input)
+        
+        # Affichage propre
         if isinstance(res, dict):
-            print(f"\n[{user}]: {msg}")
-            print(f"\n[Assistant]: {res.get('text')}")
-            if res.get('media_url'):
-                print(f" (Media: {res.get('media_url')})")
+            print(f"\n[Jumia Bot] 🤖 : {res.get('text')}")
+            if res.get('text_tts'):
+                print(f"\n📢 (Audio Phoenix) : {res.get('text_tts')}")
         else:
-            print(f"\n[{user}]: {msg}")
-            print(f"\n[Assistant]: {res}")
-
-    print_response(user_id, "Salam, bghit chi laptop m3lem l-gaming")
-    print_response(user_id, "Chi haja t-koun rkhisa l-estghlal l-3adi (bureautique)")
+            print(f"\n[Jumia Bot] 🤖 : {res}")
 
 if __name__ == "__main__":
     main()

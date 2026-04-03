@@ -1,5 +1,41 @@
 # 📜 CHANGELOG
 
+## [1.9.0] - 2026-04-03
+### Added
+- **Vérification Temps-Réel (PBI-1901)** : 
+  - Implémentation du `URLAvailabilityPostprocessor` effectuant un check HEAD sur l'URL Jumia avant recommandation.
+  - Protection contre les liens morts (404) pour garantir une expérience utilisateur sans friction.
+- **Single Sniper Strategy (PBI-1904)** :
+  - Passage d'une double proposition à une recommandation unique ("L-hemza") pour maximiser la conversion.
+  - Optimisation du prompt système avec un ton persuasif Darija-Casa ("Had l-bi si madi", "Mat-tfeltouch").
+- **Adversarial Darija Testing (PBI-1903)** :
+  - Enrichissement du `gold_dataset.json` avec 10 cas de tests provocateurs pour valider la robustesse du Persona.
+- **Relance Automatique (PBI-1902)** :
+  - Création du `REENGAGEMENT_PROMPT` pour maintenir le lien avec l'utilisateur après une période d'inactivité.
+
+### Sprint 19 : Conversion Élite & Vérification Temps-Réel
+- **Impact du Filtrage Préventif (PBI-1901)** : Le check HEAD en temps réel est une assurance qualité indispensable. Cependant, la latence réseau (timeout de 2s) doit être surveillée. **Leçon** : Toujours utiliser `httpx.Client` avec un User-Agent standard pour éviter d'être bloqué par les pare-feux applicatifs lors des vérifications automatisées.
+- **Psychologie de la "Hemza" (PBI-1904)** : Réduire le choix à une seule option "Sniper" augmente paradoxalement la confiance perçue. En assumant le rôle de "Personal Shopper" qui a déjà fait le tri, on élimine la paralysie décisionnelle. **Leçon** : Le Darija de rue ("madi", "naddi") renforce l'autorité du vendeur s'il est couplé à des specs techniques irréprochables dès la première phrase.
+- **Résilience aux 403 (Scraping Protection)** : Lors de l'audit, certains sites peuvent bloquer les requêtes HEAD (403 Forbidden). La stratégie de "garder le noeud par précaution" en cas d'erreur de requête est le bon compromis pour ne pas léser le catalogue tout en éliminant les vrais 404.
+
+## [1.8.1] - 2026-03-31
+### Added
+- **Session TTL & Hygiène (PBI-1801)** :
+  - Implémentation d'une mémoire éphémère de 30 minutes via `SimpleChatStore` et métadonnées d'activité.
+  - Reset automatique de l'historique après inactivité pour garantir la pertinence des nouveaux besoins.
+  - Persistance robuste des sessions et des métadonnées via fichiers JSON distincts.
+- **Stabilité du Moteur (PBI-1802)** :
+  - Correction définitive du typage `RESPONSE_TYPE` dans `rag_engine.py` pour une compatibilité totale avec les moteurs de streaming LlamaIndex.
+- **Audit Qualité WhatsApp (PBI-1803)** :
+  - Isolation du flux `[WHATSAPP]` dans les tests DeepEval pour éliminer le bruit des balises `[TTS]`.
+  - Mise en évidence des contradictions de données sources (hallucinations héritées du catalogue) lors de l'audit CPU.
+
+### Sprint 18 : Hygiène & Stabilité
+- **Gestion du Cycle de Vie des Sessions** : L'introduction d'un TTL (Time To Live) de 30 minutes transforme radicalement la précision du bot. Sans reset, l'accumulation de contextes (ex: chercher un PC gamer puis un PC bureautique le lendemain) polluait la synthèse RAG. **Leçon** : La mémoire infinie est un bug, pas une feature, pour un Personal Shopper.
+- **Fragilité des Données Sources (Catalog Bias)** : L'audit de la PR 26 a révélé qu'une "hallucination" apparente (i3-7200M au lieu de i3-7210M) provenait en réalité d'une incohérence dans les fiches produits Jumia elles-mêmes (titre vs description). **Leçon** : Le RAG ne peut pas être plus juste que sa source. En cas de doute, le LLM privilégie souvent la donnée la plus fréquente dans son contexte, même si elle est techniquement erronée par rapport au titre.
+- **Typage et Contrats d'Interface** : Ne jamais ignorer les warnings de type sur les objets de réponse LlamaIndex. Une signature de fonction imprécise (`RESPONSE_TYPE` vs `Response | StreamingResponse`) finit toujours par bloquer l'évolution vers des fonctionnalités asynchrones ou de streaming.
+- **Isolation des Flux pour l'Évaluation** : Évaluer une réponse multimodale (Texte + TTS + Image) avec une seule métrique globale est une erreur. L'isolation du flux WhatsApp via regex dans les tests DeepEval permet de mesurer la "Correctness" sur ce que l'utilisateur lit réellement, sans être pénalisé par le formatage phonétique du flux vocal.
+
 ## [1.8.0] - 2026-03-31
 ### Added
 - **Expérience Multimodale & Voice (PBI-1701)** :
