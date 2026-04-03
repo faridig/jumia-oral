@@ -8,21 +8,21 @@ from llama_index.core.schema import NodeWithScore, TextNode
 # Configuration du logging pour le test
 logging.basicConfig(level=logging.INFO)
 
-def test_notebook_compagnon_dual_choice():
+def test_notebook_compagnon_single_sniper():
     """
-    Vérifie que le Compagnon Notebook propose systématiquement 2 options (PBI-2000).
+    Vérifie que le Compagnon Notebook propose systématiquement 1 seule option (PBI-1904).
     """
     if os.getenv("GITHUB_ACTIONS") == "true":
-        mock_response_str = "Mrehba khouya! Voici deux options naddi pour vous : \nOption 1: Dell Latitude \nOption 2: HP Probook \nConseil: Mzyan bzaaf."
+        mock_response_str = "Mrehba khouya! Voici l-hemza dyal l-bi si madi pour vous : \nOption 1: Dell Latitude \nBesseha d'avance."
         
         with unittest.mock.patch("src.rag_engine.get_rag_engine") as mock_get_engine, \
              unittest.mock.patch("src.rag_engine.OpenAI"), \
              unittest.mock.patch("src.rag_engine.OpenAIEmbedding"), \
              unittest.mock.patch("src.rag_engine.expand_query_darija", return_value=["laptop gaming"]):
             mock_engine = unittest.mock.Mock()
-            # Mock de la réponse avec 2 nodes sources
+            # Mock de la réponse avec 1 node source (Sniper)
             mock_res = unittest.mock.Mock()
-            mock_res.source_nodes = [unittest.mock.Mock(), unittest.mock.Mock()]
+            mock_res.source_nodes = [unittest.mock.Mock()]
             mock_engine.query.return_value = mock_res
             mock_engine._response_synthesizer.synthesize.return_value = mock_response_str
             mock_get_engine.return_value = mock_engine
@@ -39,11 +39,11 @@ def test_notebook_compagnon_dual_choice():
     print(f"\nQUERY: {query}")
     print(f"RESPONSE: {response}")
     
-    # Vérification de la présence de 2 options et du vocabulaire validé (PR #24)
+    # Vérification de la présence d'une seule option (Sniper) et du vocabulaire (PBI-1904)
     assert "Option 1" in response or "1." in response
-    assert "Option 2" in response or "2." in response
-    assert "Mzyan" in response or "Besseha" in response or "Mrehba" in response # Darija touches
-    assert "naddi" in response.lower() or "khouya" in response.lower() or "sahbi" in response.lower() # Nouveau vocabulaire Derb Ghalef
+    assert "Option 2" not in response # Sniper Mode: Une seule option !
+    assert "Mrehba" in response or "Besseha" in response 
+    assert "naddi" in response.lower() or "khouya" in response.lower() or "sahbi" in response.lower()
 
 def test_url_presence_pbi_2000():
     """

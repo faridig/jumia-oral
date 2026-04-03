@@ -1,5 +1,6 @@
 import os
 import logging
+import httpx
 from typing import List, Optional, Any, Set
 
 import phoenix as px
@@ -84,6 +85,43 @@ class DeduplicatePostprocessor(BaseNodePostprocessor):
                 
         return deduplicated_nodes
 
+class URLAvailabilityPostprocessor(BaseNodePostprocessor):
+    """
+    Vérifie en temps réel si l'URL Jumia est toujours valide (PBI-1901).
+    Supprime les noeuds dont l'URL renvoie un 404.
+    """
+    def _postprocess_nodes(
+        self, nodes: List[NodeWithScore], query_bundle: Optional[QueryBundle] = None
+    ) -> List[NodeWithScore]:
+        valid_nodes: List[NodeWithScore] = []
+        
+        # User-Agent standard pour éviter les blocages immédiats
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+        }
+        
+        with httpx.Client(headers=headers, timeout=2.0) as client:
+            for node_with_score in nodes:
+                url = node_with_score.node.metadata.get("url")
+                if not url:
+                    logger.warning(f"Noeud sans URL trouvé : {node_with_score.node.id_}")
+                    continue
+                
+                try:
+                    # On utilise HEAD pour être rapide et économe en bande passante
+                    response = client.head(url, follow_redirects=True)
+                    logger.info(f"PBI-1901: Checking {url} -> Status: {response.status_code}")
+                    
+                    if response.status_code == 404:
+                        logger.warning(f"PBI-1901: Produit 404 détecté et ignoré : {url}")
+                    else:
+                        valid_nodes.append(node_with_score)
+                except httpx.RequestError as exc:
+                    logger.warning(f"Erreur lors du check URL ({url}): {exc}. On garde le noeud par précaution.")
+                    valid_nodes.append(node_with_score)
+        
+        return valid_nodes
+
 def get_rag_engine(use_auto_retriever: bool = True):
     """
     Initialise le moteur de recherche avec les post-processors de dédoublonnage.
@@ -117,27 +155,28 @@ def get_rag_engine(use_auto_retriever: bool = True):
     # Persona "Compagnon" (Rigueur Absolue & Darija-Native - PBI-1103)
     # PBI-1701.3 : Double flux de sortie (Prosodie vs Structure) - UPGRADE Native Audio Casa (PR #24)
     # RECOVERY : Réinjection Politesse (Mrehba) & Structure FACT-FIRST (Specs prioritaires)
+    # PBI-1904 : SINGLE SNIPER STRATEGY (Vente Directe & Persuasion)
     system_prompt = (
         "Tu es le 'Compagnon Notebook Jumia', un vendeur expert en informatique à Casablanca (Derb Ghalef style). "
         "TON DEVOIR SUPRÊME : Être factuellement IRRÉPROCHABLE et parler un DARIJA DE CASABLANCA AUTHENTIQUE, CHALEUREUX et PROFESSIONNEL. "
         "CONSIGNES DE STYLE (OBLIGATOIRE) : "
         "1. POLITESSE MAROCAINE : Accueille TOUJOURS avec 'Mrehba bik!' ou 'Salam khouya/sahbi'. Félicite le choix avec 'Besseha d'avance'. "
         "2. RÉPONSE DARIJA-CASA : Réponds en Darija marocain de rue, direct mais respectueux. "
-        "3. VOCABULAIRE DE PROXIMITÉ : Utilise : 'khouya/sahbi', 'l-m3aqoul', 'tayra', 'madi', 'l-hemza', 'ha wa7d l-bi si', 'dakchi naddi'. "
+        "3. VOCABULAIRE DE PROXIMITÉ & VENTE : Utilise : 'khouya/sahbi', 'l-m3aqoul', 'tayra', 'madi', 'l-hemza', 'ha wa7d l-bi si', 'dakchi naddi', 'Had l-bi si madi', 'Mat-tfeltouch'. "
         "4. ACCENT & PHONÉTIQUE : Prononce les 'J' de manière douce (Maroc) et non comme des 'G' (Égypte). "
         "5. ONBOARDING : Rappelle qu'on peut te parler en VOCAL. "
-        "CONSIGNES DE CONTENU (STRICTES) : "
-        "1. STRUCTURE FACT-FIRST : Cite le MODÈLE EXACT et les SPÉCIFICATIONS TECHNIQUES (CPU, RAM, SSD) dès la PREMIÈRE PHRASE. Ne sacrifie JAMAIS la précision technique pour le style. N'omets aucun détail critique (ex: génération CPU, type RAM DDR3/DDR4, taille écran) présent dans les nodes sources.\n"
-        "2. PROPOSITION DOUBLE : Propose SYSTÉMATIQUEMENT 2 options.\n"
+        "CONSIGNES DE CONTENU (STRICTES - PBI-1904) : "
+        "1. SINGLE SNIPER RECOMMENDATION : Ne propose qu'UNE SEULE option, LA MEILLEURE (la plus pertinente pour le besoin). "
+        "2. STRUCTURE FACT-FIRST : Cite le MODÈLE EXACT et les SPÉCIFICATIONS TECHNIQUES (CPU, RAM, SSD) dès la PREMIÈRE PHRASE. Ne sacrifie JAMAIS la précision technique pour le style. N'omets aucun détail critique (ex: génération CPU, type RAM DDR3/DDR4, taille écran) présent dans les nodes sources.\n"
         "3. NOM COMPLET : Cite toujours le nom complet Jumia. "
         "4. LIENS : Termine par le lien Jumia [Voir sur Jumia](URL)."
         "\n\nFORMAT DE SORTIE OBLIGATOIRE :\n"
         "Tu DOIS impérativement fournir ta réponse sous DEUX formats séparés par des balises :\n"
         "[WHATSAPP]\n"
-        "Texte riche pour WhatsApp en Arabizi (Latin). Utilise des emojis (💻, 🚀, 💰), des puces, du gras (*texte*), la politesse (Mrehba) et les liens [Voir sur Jumia](URL).\n"
+        "Texte riche pour WhatsApp en Arabizi (Latin). Utilise des emojis (💻, 🚀, 💰), des puces, du gras (*texte*), la politesse (Mrehba) et l'unique lien [Voir sur Jumia](URL).\n"
         "[/WHATSAPP]\n"
         "[TTS]\n"
-        "Texte phonétique en Arabizi (Latin) optimisé pour l'oreille marocaine. Pas d'emojis, pas de puces, pas de liens. Commence par une salutation chaleureuse (Mrehba). Écris comme on parle à Derb Ghalef (ex: 'j-yga' au lieu de 'giga', 'bi si' au lieu de 'PC').\n"
+        "Texte phonétique en Arabizi (Latin) optimisé pour l'oreille marocaine. Pas d'emojis, pas de puces, pas de liens. Commence par une salutation chaleureuse (Mrehba). Utilise un ton PERSUASIF ('Had l-bi si madi', 'mat-tfeltouch'). Écris comme on parle à Derb Ghalef (ex: 'j-yga' au lieu de 'giga', 'bi si' au lieu de 'PC').\n"
         "[/TTS]"
     )
     
@@ -147,7 +186,7 @@ def get_rag_engine(use_auto_retriever: bool = True):
     return RetrieverQueryEngine(
         retriever=retriever,
         response_synthesizer=response_synthesizer,
-        node_postprocessors=[DeduplicatePostprocessor()]
+        node_postprocessors=[DeduplicatePostprocessor(), URLAvailabilityPostprocessor()]
     )
 
 def expand_query_darija(query: str) -> List[str]:
@@ -215,11 +254,13 @@ class MultiQueryAutoRAG:
         history_text = "\n".join([f"{m.role.value if hasattr(m.role, 'value') else m.role}: {m.content}" for m in chat_history[-6:]])
         context_query = f"CONTEXTE (HISTORIQUE):\n{history_text}\n\nNOUVELLE QUESTION:\n{user_query}" if history_text else user_query
 
-        # Synthèse finale avec le prompt "Compagnon" (Garantit les 2 options)
+        # Synthèse finale avec le prompt "Compagnon" (Garantit le Single Sniper - PBI-1904)
+        # On ne passe que les 3 meilleurs noeuds pour que le Persona choisisse LE MEILLEUR (Sniper)
         response = self.auto_engine._response_synthesizer.synthesize(
             query=context_query,
-            nodes=response.source_nodes[:5] # On donne du choix pour que le Persona sélectionne les 2 meilleures options
+            nodes=response.source_nodes[:3] 
         )
+
             
         return response
 

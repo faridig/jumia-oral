@@ -1,5 +1,23 @@
 # 📜 CHANGELOG
 
+## [1.9.0] - 2026-03-31
+### Added
+- **Session TTL & Hygiène (PBI-1801)** :
+  - Implémentation d'une mémoire éphémère de 30 minutes via `SimpleChatStore` et métadonnées d'activité.
+  - Reset automatique de l'historique après inactivité pour garantir la pertinence des nouveaux besoins.
+  - Persistance robuste des sessions et des métadonnées via fichiers JSON distincts.
+- **Stabilité du Moteur (PBI-1802)** :
+  - Correction définitive du typage `RESPONSE_TYPE` dans `rag_engine.py` pour une compatibilité totale avec les moteurs de streaming LlamaIndex.
+- **Audit Qualité WhatsApp (PBI-1803)** :
+  - Isolation du flux `[WHATSAPP]` dans les tests DeepEval pour éliminer le bruit des balises `[TTS]`.
+  - Mise en évidence des contradictions de données sources (hallucinations héritées du catalogue) lors de l'audit CPU.
+
+### Sprint 18 : Hygiène & Stabilité
+- **Gestion du Cycle de Vie des Sessions** : L'introduction d'un TTL (Time To Live) de 30 minutes transforme radicalement la précision du bot. Sans reset, l'accumulation de contextes (ex: chercher un PC gamer puis un PC bureautique le lendemain) polluait la synthèse RAG. **Leçon** : La mémoire infinie est un bug, pas une feature, pour un Personal Shopper.
+- **Fragilité des Données Sources (Catalog Bias)** : L'audit de la PR 26 a révélé qu'une "hallucination" apparente (i3-7200M au lieu de i3-7210M) provenait en réalité d'une incohérence dans les fiches produits Jumia elles-mêmes (titre vs description). **Leçon** : Le RAG ne peut pas être plus juste que sa source. En cas de doute, le LLM privilégie souvent la donnée la plus fréquente dans son contexte, même si elle est techniquement erronée par rapport au titre.
+- **Typage et Contrats d'Interface** : Ne jamais ignorer les warnings de type sur les objets de réponse LlamaIndex. Une signature de fonction imprécise (`RESPONSE_TYPE` vs `Response | StreamingResponse`) finit toujours par bloquer l'évolution vers des fonctionnalités asynchrones ou de streaming.
+- **Isolation des Flux pour l'Évaluation** : Évaluer une réponse multimodale (Texte + TTS + Image) avec une seule métrique globale est une erreur. L'isolation du flux WhatsApp via regex dans les tests DeepEval permet de mesurer la "Correctness" sur ce que l'utilisateur lit réellement, sans être pénalisé par le formatage phonétique du flux vocal.
+
 ## [1.8.0] - 2026-03-31
 ### Added
 - **Expérience Multimodale & Voice (PBI-1701)** :

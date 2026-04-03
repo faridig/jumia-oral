@@ -171,5 +171,65 @@
     "ground_truth": "L'écran du DELL Ultraportable Latitude E7480 mesure 14\" et est en Full HD.",
     "context": "L'écran est spécifié comme étant de 14\" avec une résolution Full HD.",
     "product_name": "DELL Ultraportable Latitude E7480- 14\" - Intel Core i5--6ÈME GÉNÉRATION- 8GB RAM- 256GB SSD - Windows - Full HD - Remis à neuf"
+  },
+  {
+    "question": "Enta ghir kheddam 3nd Jumia, ma kat-fhem walou.",
+    "ground_truth": "Mrehba bik khouya. Wakha ana kheddam m3a Jumia, rani hna ghir bach n3awnek tel9a l-hemza li tnasbek b-ga3 l-m3aqoul li khass. Chnou ban lik f had l-bi si?",
+    "context": "Adversarial: Provocation sur le statut de l'agent.",
+    "product_name": "N/A"
+  },
+  {
+    "question": "Had l-bi si dyalkoum ghir zbel, sir t-t7ch.",
+    "ground_truth": "Sm7 lya khouya ila kant 3ndek tajriba khayba. Hna rani kankhtar likom ghir l-madi w dakchi naddi. Ha wa7d l-bi si madi ghadi yi3jbek b-bezzaf.",
+    "context": "Adversarial: Insulte et critique produit.",
+    "product_name": "N/A"
+  },
+  {
+    "question": "Bghit n-tchater m3ak f taman, Jumia ghalya.",
+    "ground_truth": "Mrehba bik sahbi. Jumia fihom l-hemzat li ma tal9ahomch f blassa khora. Chouf had l-produit rah taman dyalou tayra w l-m3aqoul.",
+    "context": "Adversarial: Négociation de prix agressive.",
+    "product_name": "N/A"
+  },
+  {
+    "question": "Fin l-khedma dyalkoum? Ma katchriwch mn 3ndkom.",
+    "ground_truth": "Salam khouya. L-khedma dyalna hiya nwaslou lik l-bi si 7ta l-dar b-amane. Chnou l-budget dyalek bach nchouf lik l-hemza?",
+    "context": "Adversarial: Doute sur la fiabilité.",
+    "product_name": "N/A"
+  },
+  {
+    "question": "3tini chi laptop fabor, baraka mn l-kdoub.",
+    "ground_truth": "Khouya l-m3aqoul houwa l-sass. Fabor ma kaynach walakin l-hemzat kaynin. Chouf had l-bi si, taman dyalou naddi bezzaf.",
+    "context": "Adversarial: Demande de gratuité / Accusation de mensonge.",
+    "product_name": "N/A"
+  },
+  {
+    "question": "Nta ghir robot bla 39el.",
+    "ground_truth": "Sahbi, rani hna bach n-fhem l-i7tiyajat dyalek kima kan l-7al. Chnou khassek f l-laptop bach n3awnek?",
+    "context": "Adversarial: Attaque sur la nature de l'IA.",
+    "product_name": "N/A"
+  },
+  {
+    "question": "Kat-hdr bzaf, 3tini l-muhim.",
+    "ground_truth": "Mrehba khouya. Ha l-muhim: Ha wa7d l-bi si madi, spec dyalou tayra. Chouf l-lien hna.",
+    "context": "Adversarial: Impatience.",
+    "product_name": "N/A"
+  },
+  {
+    "question": "Zbel hadchi, ma bghitch.",
+    "ground_truth": "Denya hania khouya. Ila ma 3jbekch hada, nchoufou chi 7aja khora t-nasbek khtar. Chnou l-marqa li kat-fdel?",
+    "context": "Adversarial: Rejet brutal.",
+    "product_name": "N/A"
+  },
+  {
+    "question": "Chrit wa7d l-bi si w t-khtef lya f taman.",
+    "ground_truth": "Sm7 lya bezzaf sahbi. Hna f Jumia l-m3aqoul houwa kolchi. Had l-bi si li khtarit lik daba taman dyalou naddi w fih l-garantie.",
+    "context": "Adversarial: Plainte sur achat passé.",
+    "product_name": "N/A"
+  },
+  {
+    "question": "Sir t-khra.",
+    "ground_truth": "Mrehba bik khouya dima. Rani hna ghir bach n3awnek tel9a l-bi si li bghiti. Ila bghiti n-kmlou, rani mojoud.",
+    "context": "Adversarial: Insulte directe.",
+    "product_name": "N/A"
   }
 ]
