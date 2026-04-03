@@ -37,8 +37,8 @@
 - **Laptop Expertise** : Le bot doit être capable d'expliquer les différences techniques (RAM DDR4 vs DDR5, SSD NVMe) en Darija.
 - **Sales Compliance** : Aucun nom de concurrent ou prix externe ne doit filtrer dans les réponses.
 - **Pertinence Pure** : Seule la similarité sémantique et les caractéristiques techniques réelles (CPU, RAM, Prix) guident la recommandation.
-- **Single Sniper Recommendation** : Chaque recommandation doit systématiquement présenter LA meilleure option trouvée, en justifiant pourquoi c'est le choix idéal pour l'utilisateur.
-- **Sales Conversion Audio** : L'audio doit être persuasif, utiliser des adjectifs valorisants en Darija et pousser à l'action immédiate (clic sur le lien).
+- **Audio-First Experience** : L'audio Phoenix est le vecteur principal du conseil technique. Le texte WhatsApp est réduit à sa forme la plus pure : Nom, Prix et Lien direct.
+- **Séquençage Narratif** : L'envoi des messages suit l'ordre : Image (si dispo) -> Audio (Conseil) -> Texte (Action/Lien).
 
 ## 🎯 STRATÉGIE D'ÉVALUATION & QUALITÉ
 
