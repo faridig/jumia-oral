@@ -95,21 +95,21 @@ def process_and_respond(user_id: str, text: str):
         text_tts = chat_response.get("text_tts", response_text)
         media_url = chat_response.get("media_url")
         
-        # PBI-1701.2 UX : Séquençage Multimédia & Orchestration
-        # 1. Envoi de l'image en premier (si disponible)
-        if media_url:
-            logger.info(f"1/3 Envoi de l'image à {user_id}")
-            send_whatsapp_message(user_id, "", media_url)
-        
-        # 2. Envoi du texte WhatsApp (riche avec liens)
-        logger.info(f"2/3 Envoi du texte WhatsApp à {user_id}")
-        send_whatsapp_message(user_id, response_text)
-        
-        # 3. Envoi du message vocal généré par OpenAI TTS (gpt-4o-mini-tts)
-        logger.info(f"3/3 Génération et envoi du vocal à {user_id}")
+        # PBI-2001 UX : Séquençage "Audio-First" (Sprint 20)
+        # 1. Envoi du message vocal en premier pour conseiller
+        logger.info(f"1/3 Génération et envoi du vocal à {user_id}")
         audio_content = generate_speech(text_tts)
         if audio_content:
             send_whatsapp_audio(user_id, audio_content)
+        
+        # 2. Envoi de l'image (si disponible)
+        if media_url:
+            logger.info(f"2/3 Envoi de l'image à {user_id}")
+            send_whatsapp_message(user_id, "", media_url)
+        
+        # 3. Envoi du texte WhatsApp minimaliste (Link-Only)
+        logger.info(f"3/3 Envoi du texte WhatsApp à {user_id}")
+        send_whatsapp_message(user_id, response_text)
     else:
         # Fallback si ce n'est pas un dictionnaire
         logger.info(f"Envoi du message (fallback) à {user_id}")

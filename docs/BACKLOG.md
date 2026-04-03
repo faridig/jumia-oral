@@ -37,8 +37,8 @@
 - **Laptop Expertise** : Le bot doit être capable d'expliquer les différences techniques (RAM DDR4 vs DDR5, SSD NVMe) en Darija.
 - **Sales Compliance** : Aucun nom de concurrent ou prix externe ne doit filtrer dans les réponses.
 - **Pertinence Pure** : Seule la similarité sémantique et les caractéristiques techniques réelles (CPU, RAM, Prix) guident la recommandation.
-- **Single Sniper Recommendation** : Chaque recommandation doit systématiquement présenter LA meilleure option trouvée, en justifiant pourquoi c'est le choix idéal pour l'utilisateur.
-- **Sales Conversion Audio** : L'audio doit être persuasif, utiliser des adjectifs valorisants en Darija et pousser à l'action immédiate (clic sur le lien).
+- **Audio-First Experience** : L'audio Phoenix est le vecteur principal du conseil technique. Le texte WhatsApp est réduit à sa forme la plus pure : Nom, Prix et Lien direct.
+- **Séquençage Narratif** : L'envoi des messages suit l'ordre : Image (si dispo) -> Audio (Conseil) -> Texte (Action/Lien).
 
 ## 🎯 STRATÉGIE D'ÉVALUATION & QUALITÉ
 
@@ -69,6 +69,41 @@
 ---
 
 ## 📋 BACKLOG GÉNÉRAL
+
+### [PBI-1901] TECH : Vérification Temps-Réel (Stock/Lien)
+**Status** : DONE ✅
+**Priorité** : High | **Estimation** : M
+**User Story** : "En tant qu'utilisateur, je veux être sûr que le lien Jumia recommandé est toujours valide et le produit en stock."
+**Critères d'Acceptation (Gherkin)** :
+- [x] **Scenario 1 : Lien mort détecté**
+  - **GIVEN** Le RAG sélectionne un produit dont l'URL renvoie un 404.
+  - **WHEN** Le système effectue le check pre-flight.
+  - **THEN** Le produit est ignoré et le suivant dans le top-k est sélectionné.
+
+### [PBI-1902] PROMPT : Stratégie de Relance "Besoin d'aide ?"
+**Status** : DONE ✅
+**Priorité** : Medium | **Estimation** : S
+**User Story** : "En tant que Personal Shopper, je veux relancer poliment l'utilisateur si la discussion est restée en suspens."
+**Critères d'Acceptation** :
+- [x] Création d'un prompt de relance chaleureux en Darija.
+- [x] Logique de déclenchement (Optionnel pour ce sprint, focus sur le prompt).
+
+### [PBI-1903] EVAL : Test de Robustesse "Adversarial Darija"
+**Status** : DONE ✅
+**Priorité** : High | **Estimation** : M
+**User Story** : "En tant que PO, je veux m'assurer que le bot ne sort jamais de son rôle même s'il est provoqué."
+**Critères d'Acceptation** :
+- [x] Ajout de 10 cas de tests "provocations/insultes" dans `gold_dataset.json`.
+- [x] Validation du maintien du Persona "Sales Professional" malgré le bruit.
+
+### [PBI-1904] PROMPT : High-Conversion Sniper & Sales Audio
+**Status** : DONE ✅
+**Priorité** : CRITIQUE | **Estimation** : S
+**User Story** : "En tant que vendeur Jumia, je veux que le bot ne propose qu'un seul produit avec un argumentaire vocal irrésistible."
+**Critères d'Acceptation** :
+- [x] **Moteur RAG** : Limitation à 1 seule recommandation par réponse.
+- [x] **Flux [WHATSAPP]** : Focus sur l'unique lien.
+- [x] **Flux [TTS]** : Ton persuasif ("Had l-bi si madi", "Mat-tfeltouch").
 
 ### [PBI-1801] TECH : Session TTL (Mémoire Éphémère & Hygiène)
 **Status** : DONE ✅
