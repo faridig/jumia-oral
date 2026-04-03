@@ -16,7 +16,7 @@
 1. **[2026-02-26] Choix de Crawl4AI & LLM Extraction** : Pour garantir l'extraction des avis profonds et des specs techniques sans maintenance de sélecteurs.
 ...
 17. **[2026-03-05] Suppression de la Localisation & Focus Produit** : Décision de supprimer toute gestion de la localisation utilisateur (villes, livraison locale). L'agent est désormais strictement dédié à la recommandation produit technique.
-18. **[2026-03-05] Support Vocal & Darija Natif** : Décision d'intégrer le support des messages vocaux (STT). Le système doit être capable de comprendre le Darija parlé (via Whisper ou équivalent performant) et de répondre avec une structure grammaticale Darija authentique, dépassant le simple mélange de mots.
+18. **[2026-03-05] Support Vocal & Darija Natif** : Décision d'integrer le support des messages vocaux (STT). Le système doit être capable de comprendre le Darija parlé (via Whisper ou équivalent performant) et de répondre avec une structure grammaticale Darija authentique, dépassant le simple mélange de mots.
 19. **[2026-03-05] Recherche par Intention d'Usage** : Transition d'une recherche par mots-clés vers une compréhension des besoins métiers (Gaming, Montage, Études) pour filtrer automatiquement les specs techniques requises.
 20. **[2026-03-05] Stratégie "Full-Context Chunking"** : Abandon du découpage par phrases ou sections. Chaque fiche Notebook Jumia (< 2000 tokens) sera ingérée comme un **Node unique**. Cela garantit que le LLM a accès à toutes les specs techniques et à l'URL Jumia sans répétition inutile ou perte de lien entre les métadonnées et le descriptif.
 21. **[2026-03-05] Épuration de la Sentiment Analysis (Pure Rationale)** : Pour être cohérent avec le retrait du VFM et du Trust Score, les **notes numériques** (scores 0-10) et l'axe **"Value"** sont supprimés de l'analyse de sentiment. On ne conserve que le **Rationale** (texte descriptif) pour les axes techniques (Performance, Build Quality, Display) afin de nourrir le RAG en arguments qualitatifs neutres.
@@ -37,7 +37,8 @@
 - **Laptop Expertise** : Le bot doit être capable d'expliquer les différences techniques (RAM DDR4 vs DDR5, SSD NVMe) en Darija.
 - **Sales Compliance** : Aucun nom de concurrent ou prix externe ne doit filtrer dans les réponses.
 - **Pertinence Pure** : Seule la similarité sémantique et les caractéristiques techniques réelles (CPU, RAM, Prix) guident la recommandation.
-- **Dual Proposal** : Chaque recommandation doit systématiquement présenter les deux meilleures options trouvées, en soulignant leurs différences.
+- **Single Sniper Recommendation** : Chaque recommandation doit systématiquement présenter LA meilleure option trouvée, en justifiant pourquoi c'est le choix idéal pour l'utilisateur.
+- **Sales Conversion Audio** : L'audio doit être persuasif, utiliser des adjectifs valorisants en Darija et pousser à l'action immédiate (clic sur le lien).
 
 ## 🎯 STRATÉGIE D'ÉVALUATION & QUALITÉ
 
@@ -69,37 +70,66 @@
 
 ## 📋 BACKLOG GÉNÉRAL
 
+### [PBI-1801] TECH : Session TTL (Mémoire Éphémère & Hygiène)
+**Status** : DONE ✅
+**Priorité** : High | **Estimation** : M
+**User Story** : "En tant qu'utilisateur, je veux que le bot oublie nos anciennes discussions après une période d'inactivité (30 min), afin de repartir sur un besoin frais sans confusion."
+**Critères d'Acceptation (Gherkin)** :
+- [x] **Scenario 1 : Expiration de session**
+  - **GIVEN** Une discussion active datant de plus de 30 minutes.
+  - **WHEN** L'utilisateur envoie un nouveau message.
+  - **THEN** Le `SimpleChatStore` vide l'historique précédent pour ce numéro.
+- [x] **Scenario 2 : Maintien du Persona**
+  - **GIVEN** Un reset de session.
+  - **WHEN** Le bot répond.
+  - **THEN** Il conserve son ton Darija et ses instructions système malgré l'oubli du contenu.
+
+### [PBI-1802] TECH : Résolution Dette Technique (Type Error)
+**Status** : DONE ✅
+**Priorité** : High | **Estimation** : S
+**User Story** : "En tant que Lead-Dev, je veux corriger l'erreur de type sur `RESPONSE_TYPE` pour garantir la stabilité du moteur de chat."
+
+### [PBI-1803] EVAL : Audit Qualité "Sawt Jumia" (Sprint 17 Logs)
+**Status** : DONE ✅
+**Priorité** : Medium | **Estimation** : S
+**User Story** : "En tant que PO, je veux analyser les premiers logs réels du Sprint 17 pour vérifier si la prosodie Darija est bien acceptée par les utilisateurs."
+**Critères d'Acceptation** :
+- [x] **Scenario 1 : Analyse de pertinence**
+  - **GIVEN** 20 logs de conversations réelles (Vocal/Multimodal).
+  - **WHEN** Passés dans le framework DeepEval.
+  - **THEN** Le score d'Answer Relevancy doit être > 0.7.
+
 ### [PBI-901] TECH : Purge & Reset (Clean Slate)
 **Status** : DONE ✅
 **Priorité** : High | **Estimation** : XS
 **User Story** : "En tant que Lead-Dev, je veux vider les données obsolètes pour garantir que mon moteur RAG ne recommande que des PC Portables."
 **Critères d'Acceptation** :
-- [ ] Suppression physique des fichiers `.md` et `.csv` dans `data/`.
-- [ ] Suppression et re-création de la collection `jumia_products` dans Qdrant.
+- [x] Suppression physique des fichiers `.md` et `.csv` dans `data/`.
+- [x] Suppression et re-création de la collection `jumia_products` dans Qdrant.
 
 ### [SPIKE-902] TEST : Extraction "Micro-Batch" (10 Produits)
 **Status** : DONE ✅
 **Priorité** : High | **Estimation** : XS
-**User Story** : "En tant que Chef d'Orchestre, je veux tester l'extraction LLM sur 10 produits pour valider la structure des métadonnées PC sans gaspiller de tokens."
+**User Story** : "En tant que Chef d'Orchestre, je veux tester l'extraction LLM on 10 produits pour valider la structure des métadonnées PC sans gaspiller de tokens."
 **Critères d'Acceptation** :
-- [ ] Limiter le scraping aux 10 premiers produits de Jumia Notebooks.
-- [ ] Générer un rapport JSON des métadonnées extraites (CPU, RAM, SSD, GPU, Écran).
-- [ ] Validation manuelle du résultat par le Chef d'Orchestre avant passage à l'échelle.
+- [x] Limiter le scraping aux 10 premiers produits de Jumia Notebooks.
+- [x] Générer un rapport JSON des métadonnées extraites (CPU, RAM, SSD, GPU, Écran).
+- [x] Validation manuelle du résultat par le Chef d'Orchestre avant passage à l'échelle.
 
 ### [PBI-902b] SCRAPING : Extraction Totale "Notebooks" (5 Pages)
 **Status** : DONE ✅
 **Priorité** : High | **Estimation** : M
 **User Story** : "En tant que Personal Shopper, je veux extraire les fiches techniques des 5 premières pages de Jumia Notebooks après validation du Spike."
 **Critères d'Acceptation** :
-- [ ] Crawling de `https://www.jumia.ma/notebooks/`.
-- [ ] Extraction LLM basée sur la structure validée au Spike.
-- [ ] Stockage structuré dans `data/`.
+- [x] Crawling de `https://www.jumia.ma/notebooks/`.
+- [x] Extraction LLM basée sur la structure validée au Spike.
+- [x] Stockage structuré dans `data/`.
 
 ### [PBI-903] INGESTION : Indexation Vectorielle PC Portables
 **Status** : DONE ✅
 **Priorité** : High | **Estimation** : M
-- Ingestion des nouvelles données dans le moteur RAG.
-- Vérification de la recherche hybride sur des requêtes techniques (ex: "PC i7 16GB").
+- [x] Ingestion des nouvelles données dans le moteur RAG.
+- [x] Vérification de la recherche hybride sur des requêtes techniques (ex: "PC i7 16GB").
 
 ### [PBI-1001] TECH/UX : Mémoire Contextuelle de Recherche (Shopping Dialogue)
 **Status** : DONE ✅
@@ -110,15 +140,15 @@
 **Dépendances** : PBI-210 (Moteur RAG)
 
 **Critères d'Acceptation (Gherkin)** :
-- [ ] **Scenario 1 : Question de suivi sur un produit**
+- [x] **Scenario 1 : Question de suivi sur un produit**
   - **GIVEN** L'utilisateur a déjà reçu une description du "MacBook Air M2".
   - **WHEN** L'utilisateur demande : "Et son autonomie ?".
   - **THEN** Le bot identifie que "son" se rapporte au MacBook Air M2 et répond via le RAG sur ce contexte précis.
-- [ ] **Scenario 2 : Transition vers ContextChatEngine**
+- [x] **Scenario 2 : Transition vers ContextChatEngine**
   - **GIVEN** Le `src/rag_engine.py` utilise un `QueryEngine`.
   - **WHEN** On initialise le moteur RAG.
   - **THEN** Il doit exposer une interface `chat` (LlamaIndex ContextChatEngine) au lieu de `query`.
-- [ ] **Scenario 3 : Persistence de l'historique**
+- [x] **Scenario 3 : Persistence de l'historique**
   - **GIVEN** Un utilisateur WhatsApp identifié par son numéro.
   - **WHEN** Plusieurs échanges ont lieu.
   - **THEN** Le `SimpleChatStore` doit sauvegarder et recharger l'historique pour maintenir la cohérence sur plusieurs jours.
@@ -128,82 +158,53 @@
 **Priorité** : High | **Estimation** : S
 **User Story** : "En tant que Lead-Dev, je veux supprimer les appels à l'Expert Advisor (MCP) dans le moteur RAG pour me baser uniquement sur les descriptions Jumia."
 **Critères d'Acceptation** :
-- [ ] Suppression de l'import et de l'usage de `expert_advisor` dans `src/rag_engine.py`.
-- [ ] Suppression physique du fichier `src/expert_advisor.py`.
-- [ ] Suppression de la logique de `expert_node` dans la synthèse de réponse.
-- [ ] Validation que les réponses LLM ne citent plus de sources externes.
+- [x] Suppression de l'import et de l'usage de `expert_advisor` dans `src/rag_engine.py`.
+- [x] Suppression physique du fichier `src/expert_advisor.py`.
+- [x] Suppression de la logique de `expert_node` dans la synthèse de réponse.
+- [x] Validation que les réponses LLM ne citent plus de sources externes.
 
 ### [PBI-1301] SETUP : Instrumentation DeepEval, Confident AI & LlamaIndex
 **Status** : DONE ✅
 **Priorité** : High | **Estimation** : S
 **User Story** : "En tant que Lead-Dev, je veux intégrer le framework DeepEval et la plateforme Confident AI pour automatiser la mesure de la qualité RAG et le suivi des régressions."
 **Critères d'Acceptation** :
-- [ ] Installation de `deepeval` dans `requirements.txt`.
-- [ ] Exécution de `deepeval login` pour l'envoi des résultats vers **Confident AI**.
-- [ ] Configuration du `EvaluationDataset` pour charger le `gold_dataset.json`.
-- [ ] **Implementation Tip** : Utiliser `deepeval.test_case.LLMTestCase` pour encapsuler les résultats (Input, Actual Output, Retrieval Context, Expected Output).
+- [x] Installation de `deepeval` dans `requirements.txt`.
+- [x] Exécution de `deepeval login` pour l'envoi des résultats vers **Confident AI**.
+- [x] Configuration du `EvaluationDataset` pour charger le `gold_dataset.json`.
+- [x] **Implementation Tip** : Utiliser `deepeval.test_case.LLMTestCase` pour encapsuler les résultats (Input, Actual Output, Retrieval Context, Expected Output).
 
 ### [PBI-1303] EVAL : Audit "Intégrité Technique" (Source : Gold Dataset)
 **Status** : DONE ✅
 **Priorité** : High | **Estimation** : M
 **User Story** : "En tant qu'expert métier, je veux m'assurer que le bot ne donne aucune fausse information technique sur les PC Portables Jumia."
 **Critères d'Acceptation** :
-- [ ] Utilisation de `deepeval.metrics.FaithfulnessMetric` (Seuil: 0.8) pour l'hallucination.
-- [ ] Utilisation de `deepeval.metrics.ContextualRecallMetric` (Seuil: 0.7) pour l'oubli.
-- [ ] Utilisation de `deepeval.metrics.ContextualPrecisionMetric` (Seuil: 0.7) pour le Top 2.
-- [ ] Utilisation de `deepeval.metrics.AnswerRelevancyMetric` (Seuil: 0.7) pour la pertinence.
-- [ ] Utilisation de `deepeval.metrics.AnswerCorrectnessMetric` (Seuil: 0.7) pour le score Gold.
-- [ ] **Technical Guideline** : Créer un script `tests/test_rag_metrics.py` qui itère sur le `gold_dataset.json` et appelle `deepeval.evaluate()`.
-
-### [PBI-1801] TECH : Session TTL (Mémoire Éphémère & Hygiène)
-**Status** : PENDING ⏳
-**Priorité** : High | **Estimation** : M
-**User Story** : "En tant qu'utilisateur, je veux que le bot oublie nos anciennes discussions après une période d'inactivité (30 min), afin de repartir sur un besoin frais sans confusion."
-**Critères d'Acceptation (Gherkin)** :
-- [ ] **Scenario 1 : Expiration de session**
-  - **GIVEN** Une discussion active datant de plus de 30 minutes.
-  - **WHEN** L'utilisateur envoie un nouveau message.
-  - **THEN** Le `SimpleChatStore` vide l'historique précédent pour ce numéro.
-- [ ] **Scenario 2 : Maintien du Persona**
-  - **GIVEN** Un reset de session.
-  - **WHEN** Le bot répond.
-  - **THEN** Il conserve son ton Darija et ses instructions système malgré l'oubli du contenu.
-
-### [PBI-1802] TECH : Résolution Dette Technique (Type Error)
-**Status** : PENDING ⏳
-**Priorité** : High | **Estimation** : S
-**User Story** : "En tant que Lead-Dev, je veux corriger l'erreur de type sur `RESPONSE_TYPE` pour garantir la stabilité du moteur de chat."
-
-### [PBI-1803] EVAL : Audit Qualité "Sawt Jumia" (Sprint 17 Logs)
-**Status** : PENDING ⏳
-**Priorité** : Medium | **Estimation** : S
-**User Story** : "En tant que PO, je veux analyser les premiers logs réels du Sprint 17 pour vérifier si la prosodie Darija est bien acceptée par les utilisateurs."
-**Critères d'Acceptation** :
-- [ ] **Scenario 1 : Analyse de pertinence**
-  - **GIVEN** 20 logs de conversations réelles (Vocal/Multimodal).
-  - **WHEN** Passés dans le framework DeepEval.
-  - **THEN** Le score d'Answer Relevancy doit être > 0.7.
+- [x] Utilisation de `deepeval.metrics.FaithfulnessMetric` (Seuil: 0.8) pour l'hallucination.
+- [x] Utilisation de `deepeval.metrics.ContextualRecallMetric` (Seuil: 0.7) pour l'oubli.
+- [x] Utilisation de `deepeval.metrics.ContextualPrecisionMetric` (Seuil: 0.7) pour le Top 2.
+- [x] Utilisation de `deepeval.metrics.AnswerRelevancyMetric` (Seuil: 0.7) pour la pertinence.
+- [x] Utilisation de `deepeval.metrics.AnswerCorrectnessMetric` (Seuil: 0.7) pour le score Gold.
+- [x] **Technical Guideline** : Créer un script `tests/test_rag_metrics.py` qui itère sur le `gold_dataset.json` et appelle `deepeval.evaluate()`.
 
 ### [PBI-1306] TECH : Observabilité & Tracing (Arize Phoenix)
 **Status** : DONE ✅
 **Priorité** : Medium | **Estimation** : S
 **User Story** : "En tant que Lead-Dev, je veux visualiser le cheminement complet de mes requêtes RAG (Tracing) pour identifier les goulots d'étranglement (latence) et les sources d'hallucination."
 **Critères d'Acceptation** :
-- [ ] Installation de `arize-phoenix` et `openinference-instrumentation-llama-index`.
-- [ ] **Instrumentation Code** : 
+- [x] Installation de `arize-phoenix` et `openinference-instrumentation-llama-index`.
+- [x] **Instrumentation Code** : 
   ```python
   from openinference.instrumentation.llama_index import LlamaIndexInstrumentor
   from phoenix.otel import register
   tracer_provider = register(project_name="jumia-rag-companion")
   LlamaIndexInstrumentor().instrument(tracer_provider=tracer_provider)
   ```
-- [ ] Accès au dashboard local Phoenix (généralement port 6006) pour l'analyse des traces.
-- [ ] Capture automatique de la latence et de la consommation de tokens par requête.
+- [x] Accès au dashboard local Phoenix (généralement port 6006) pour l'analyse des traces.
+- [x] Capture automatique de la latence et de la consommation de tokens par requête.
 
-### [PBI-2000] LE COMPAGNON NOTEBOOK (Pure Sémantique, Dual-Choice, Intent-based & Liens Directs)
+### [PBI-2000] LE COMPAGNON NOTEBOOK (Pure Sémantique, Single Sniper, Intent-based & Liens Directs)
 **Status** : DONE ✅
 **Priorité** : CRITIQUE | **Estimation** : L
-**User Story** : "En tant que Personal Shopper Jumia, je veux comprendre l'intention d'usage de l'utilisateur pour lui proposer systématiquement les **deux meilleurs Notebooks** avec leurs **liens directs Jumia**, sans aucun biais de score, en me basant uniquement sur la pertinence technique."
+**User Story** : "En tant que Personal Shopper Jumia, je veux comprendre l'intention d'usage de l'utilisateur pour lui proposer systématiquement le **meilleur Notebook unique** avec son **lien direct Jumia**, en me basant sur la pertinence technique et la force de conviction."
 **Critères d'Acceptation** :
 - [x] **Action 1 : Nettoyage & Neutralité (RESET TOTAL)**
   - Retrait définitif du VFM, Trust Score et de la gestion de Localisation (villes).
@@ -211,8 +212,8 @@
   - **RESET QDRANT** : Suppression et recréation de la collection `jumia_products`.
 - [x] **Action 2 : Intelligence d'Usage**
   - Mappage des intentions (Gaming, Études, Montage) vers des filtres techniques CPU/RAM/GPU.
-- [x] **Action 3 : Structure "Top 2" & Liens**
-  - Présentation obligatoire de 2 options avec : Nom, Prix, Specs clés et **URL cliquable Jumia**.
+- [x] **Action 3 : Structure "Single Sniper" & Lien**
+  - Présentation obligatoire d'une seule option avec : Nom, Prix, Specs clés et **URL cliquable Jumia**.
 - [x] **Action 4 : Ingestion "Controlled Batch"**
   - Scraping et ingestion de **30 articles Notebooks** maximum (Données 100% propres, sans scores).
 
@@ -289,7 +290,7 @@
 **Status** : DONE ✅
 **Priorité** : High | **Estimation** : L
 **User Story** : "En tant que système, je veux être connecté à Evolution API afin de recevoir et d'envoyer des messages réels sur WhatsApp."
-**Critères d'Acceptation** :
+**Critères d'Acceptation :**
 - [x] Instance Evolution API fonctionnelle (Docker).
 - [x] Webhook configuré pour router les messages entrants vers `src/session_manager.py`.
 - [x] Envoi de messages texte simple validé via API.
@@ -375,6 +376,3 @@
 **Priorité** : - | **Estimation** : M
 **User Story** : "En tant que Personal Shopper, je veux enrichir le score VFM avec des tests d'experts externes."
 **Note** : Fonctionnalité supprimée pour privilégier les données Jumia natives.
-
-
-

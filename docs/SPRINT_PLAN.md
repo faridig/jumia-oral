@@ -1,50 +1,51 @@
-# 🏃 SPRINT PLAN - SPRINT 18 : "HYGIÈNE & STABILITÉ"
+# 🏃 SPRINT PLAN - SPRINT 19 (ENGAGEMENT & VENTE)
 
-**Objectif du Sprint** : Optimiser la pertinence des réponses en introduisant une mémoire éphémère (Session TTL) et stabiliser le socle technique en résolvant la dette accumulée.
+**Le Sprint 18 est officiellement terminé.**
+
+---
+
+## 🎯 OBJECTIFS DU SPRINT 19
+- **Conversion Élite** : Passer du "Dual Choice" à la **"Single Sniper Recommendation"** pour une prise de décision instantanée.
+- **Vocal Persuasif** : Transformer l'audio Phoenix en un véritable outil de vente (Darija persuasif).
+- **Fiabilité Réelle** : Vérifier la validité des liens Jumia en temps réel avant recommandation.
+- **Robustesse Conversationnelle** : Tester et blinder le bot contre les provocations (Adversarial Tests).
 
 ---
 
 ## 📋 TICKETS SÉLECTIONNÉS
 
-### [PBI-1801] TECH : Session TTL (Mémoire Éphémère & Hygiène)
+### [PBI-1901] TECH : Vérification Temps-Réel (Stock/Lien)
 **Priorité** : High | **Estimation** : M
-
-**User Story** : "En tant qu'utilisateur, je veux que le bot oublie nos anciennes discussions après une période d'inactivité (30 min), afin de repartir sur un besoin frais sans confusion."
-
+**User Story** : "En tant qu'utilisateur, je veux être sûr que le lien Jumia recommandé est toujours valide et le produit en stock."
 **Critères d'Acceptation (Gherkin)** :
-- [ ] **Scenario 1 : Expiration de session**
-  - **GIVEN** Une discussion active datant de plus de 30 minutes.
-  - **WHEN** L'utilisateur envoie un nouveau message.
-  - **THEN** Le `SimpleChatStore` vide l'historique précédent pour ce numéro.
-- [ ] **Scenario 2 : Maintien du Persona**
-  - **GIVEN** Un reset de session.
-  - **WHEN** Le bot répond.
-  - **THEN** Il conserve son ton Darija et ses instructions système malgré l'oubli du contenu.
+- [ ] **Scenario 1 : Lien mort détecté**
+  - **GIVEN** Le RAG sélectionne un produit dont l'URL renvoie un 404.
+  - **WHEN** Le système effectue le check pre-flight.
+  - **THEN** Le produit est ignoré et le suivant dans le top-k est sélectionné.
 
-### [PBI-1802] TECH : Résolution Dette Technique (Type Error)
-**Priorité** : High | **Estimation** : S
-
-**User Story** : "En tant que Lead-Dev, je veux corriger l'erreur de type sur `RESPONSE_TYPE` pour garantir la stabilité du moteur de chat."
-
-**Critères d'Acceptation** :
-- [ ] **Scenario 1 : Correction Type LlamaIndex**
-  - **GIVEN** Le fichier `src/rag_engine.py`.
-  - **WHEN** L'agent utilise `ContextChatEngine`.
-  - **THEN** La signature de fonction supporte `Response | StreamingResponse | AsyncStreamingResponse` sans erreur de type.
-
-### [PBI-1803] EVAL : Audit Qualité "Sawt Jumia" (Sprint 17 Logs)
+### [PBI-1902] PROMPT : Stratégie de Relance "Besoin d'aide ?"
 **Priorité** : Medium | **Estimation** : S
-
-**User Story** : "En tant que PO, je veux analyser les premiers logs réels du Sprint 17 pour vérifier si la prosodie Darija est bien acceptée par les utilisateurs."
-
+**User Story** : "En tant que Personal Shopper, je veux relancer poliment l'utilisateur si la discussion est restée en suspens."
 **Critères d'Acceptation** :
-- [ ] **Scenario 1 : Analyse de pertinence**
-  - **GIVEN** 20 logs de conversations réelles (Vocal/Multimodal).
-  - **WHEN** Passés dans le framework DeepEval.
-  - **THEN** Le score d'Answer Relevancy doit être > 0.7.
+- [ ] Création d'un prompt de relance chaleureux en Darija.
+- [ ] Logique de déclenchement (Optionnel pour ce sprint, focus sur le prompt).
+
+### [PBI-1903] EVAL : Test de Robustesse "Adversarial Darija"
+**Priorité** : High | **Estimation** : M
+**User Story** : "En tant que PO, je veux m'assurer que le bot ne sort jamais de son rôle même s'il est provoqué."
+**Critères d'Acceptation** :
+- [ ] Ajout de 10 cas de tests "provocations/insultes" dans `gold_dataset.json`.
+- [ ] Validation du maintien du Persona "Sales Professional" malgré le bruit.
+
+### [PBI-1904] PROMPT : High-Conversion Sniper & Sales Audio
+**Priorité** : CRITIQUE | **Estimation** : S
+**User Story** : "En tant que vendeur Jumia, je veux que le bot ne propose qu'un seul produit avec un argumentaire vocal irrésistible."
+**Critères d'Acceptation** :
+- [ ] **Moteur RAG** : Limitation à 1 seule recommandation par réponse.
+- [ ] **Flux [WHATSAPP]** : Focus sur l'unique lien.
+- [ ] **Flux [TTS]** : Ton persuasif ("Had l-bi si madi", "Mat-tfeltouch").
 
 ---
 
-## 🏛️ RAPPEL TECHNIQUE & BLOQUANTS
-1. **DÉSÉQUILIBRE QDRANT** : Vérifier si la correction du type error résout les instabilités avant d'attaquer la mise à jour serveur Qdrant.
-2. **TOKEN OPTIMIZATION** : La session TTL va naturellement réduire la taille du contexte envoyé au LLM, surveiller la baisse des coûts sur Phoenix.
+## 🤝 HANDOFF
+**PLANNING VALIDÉ. À TOI LEAD-DEV.**
