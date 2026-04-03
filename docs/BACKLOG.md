@@ -70,6 +70,30 @@
 
 ## 📋 BACKLOG GÉNÉRAL
 
+### [PBI-2001] TECH : Réorganisation du Séquençage WhatsApp
+**Status** : DONE ✅
+**Priorité** : High | **Estimation** : S
+**User Story** : "En tant qu'utilisateur, je veux d'abord entendre mon conseiller me parler en Darija avant de voir le lien technique."
+**Critères d'Acceptation** :
+- [x] Inverser l'ordre d'envoi dans `src/session_manager.py` : Audio Phoenix -> Texte/Lien.
+- [x] Vérifier que la latence de génération TTS ne bloque pas l'expérience.
+
+### [PBI-2002] PROMPT : Refonte "Sniper Minimaliste" (Link-Only)
+**Status** : DONE ✅
+**Priorité** : CRITIQUE | **Estimation** : S
+**User Story** : "En tant que vendeur Jumia, je veux que mon message texte ne contienne que l'essentiel (Nom, Prix, Lien) pour faciliter l'achat."
+**Critères d'Acceptation** :
+- [x] Suppression des listes à puces techniques dans le bloc `[WHATSAPP]`.
+- [x] Formatage cible : `*NOM DU PRODUIT* - *PRIX* MAD \n\n Khoudou mn hna : [URL]`.
+
+### [PBI-2003] UX : Audio Phoenix "Vendeur Expert"
+**Status** : DONE ✅
+**Priorité** : High | **Estimation** : M
+**User Story** : "En tant qu'acheteur, je veux que l'audio soit si riche et convaincant qu'il remplace avantageusement la fiche technique textuelle."
+**Critères d'Acceptation** :
+- [x] Intégration fluide des specs (CPU, RAM, SSD) dans la narration Darija.
+- [x] Utilisation de métaphores de performance ("Madi", "Tayra", "Naddi").
+
 ### [PBI-1901] TECH : Vérification Temps-Réel (Stock/Lien)
 **Status** : DONE ✅
 **Priorité** : High | **Estimation** : M
