@@ -70,6 +70,25 @@
 
 ## 📋 BACKLOG GÉNÉRAL
 
+### [PBI-2101] DX : Script de Pilotage Unifié (Control Panel)
+**Status** : PENDING ⏳
+**Priorité** : High | **Estimation** : S
+**User Story** : "En tant que Chef d'Orchestre, je veux lancer et arrêter tous les services du projet (FastAPI, Qdrant, Evolution API, Ngrok) avec une seule commande simple, afin de gagner du temps et de la facilité."
+**Critères d'Acceptation (Gherkin)** :
+- [ ] **Scenario 1 : Démarrage rapide**
+  - **GIVEN** Tous les services sont éteints.
+  - **WHEN** Je lance `./jumia.sh start`.
+  - **THEN** Les conteneurs Qdrant et Evolution API démarrent, suivis du serveur FastAPI et du tunnel Ngrok.
+  - **THEN** Le script récupère automatiquement la nouvelle URL Ngrok et met à jour `WEBHOOK_URL` dans le `.env` ET dans l'instance Evolution API.
+- [ ] **Scenario 2 : Arrêt propre**
+  - **GIVEN** Les services sont actifs.
+  - **WHEN** Je lance `./jumia.sh stop`.
+  - **THEN** Tous les processus et conteneurs liés au projet sont stoppés proprement.
+- [ ] **Scenario 3 : Monitoring**
+  - **GIVEN** N'importe quel état.
+  - **WHEN** Je lance `./jumia.sh status`.
+  - **THEN** Le script affiche l'état (UP/DOWN) de chaque brique technologique.
+
 ### [PBI-2001] TECH : Réorganisation du Séquençage WhatsApp
 **Status** : DONE ✅
 **Priorité** : High | **Estimation** : S
