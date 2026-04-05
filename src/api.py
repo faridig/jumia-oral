@@ -66,11 +66,11 @@ def send_whatsapp_audio(number: str, audio_content: bytes):
     
     # Encodage en base64 pour éviter le stockage disque temporaire (PBI-1701.2)
     audio_base64 = base64.b64encode(audio_content).decode('utf-8')
-    data_uri = f"data:audio/ogg;base64,{audio_base64}"
     
     payload = {
         "number": number.split("@")[0],
-        "audio": data_uri,
+        "media": audio_base64,
+        "ptt": True,
         "delay": 1200
     }
     

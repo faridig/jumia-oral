@@ -47,3 +47,28 @@ def test_webhook_text_message():
             # Vérification du numéro sans le suffixe (PBI-803)
             assert kwargs["json"]["number"] == "123456789"
             assert kwargs["json"]["text"] == "Hahwa laptop mzyan"
+
+def test_send_whatsapp_audio_v2_payload():
+    from src.api import send_whatsapp_audio
+    import base64
+    
+    with patch("requests.post") as mock_post:
+        mock_post.return_value.status_code = 201
+        
+        number = "212600000000@s.whatsapp.net"
+        audio_content = b"fake_audio_binary"
+        audio_base64 = base64.b64encode(audio_content).decode('utf-8')
+        
+        send_whatsapp_audio(number, audio_content)
+        
+        assert mock_post.called
+        args, kwargs = mock_post.call_args
+        payload = kwargs["json"]
+        
+        assert "message/sendWhatsAppAudio/Jumia-Oral-Agent" in args[0]
+        assert payload["number"] == "212600000000"
+        assert payload["media"] == audio_base64
+        assert "audio" not in payload
+        assert payload["ptt"] is True
+        assert "data:audio/ogg;base64," not in payload["media"]
+
