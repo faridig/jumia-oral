@@ -222,7 +222,10 @@ class MultiQueryAutoRAG:
         self.auto_engine = get_rag_engine(use_auto_retriever=True)
         self.base_engine = get_rag_engine(use_auto_retriever=False)
         
-    def query(self, user_query: str, chat_history: Optional[List[ChatMessage]] = None) -> Response | StreamingResponse | AsyncStreamingResponse:
+    def query(self, user_query: str, chat_history: Optional[List[ChatMessage]] = None) -> Response:
+        """
+        Gère le RAG et la synthèse. Retourne un objet Response standard.
+        """
         logger.info(f"User Query: {user_query}")
         chat_history = chat_history or []
         
@@ -267,9 +270,26 @@ class MultiQueryAutoRAG:
             query=context_query,
             nodes=response.source_nodes[:3] 
         )
-
-            
         return response
+
+    def get_retrieved_nodes(self, user_query: str) -> List[NodeWithScore]:
+        """
+        Récupère les nodes pertinents sans synthèse (Utile pour gpt-4o-audio native).
+        """
+        variantes = expand_query_darija(user_query)
+        hybrid_query = f"{user_query} {' '.join(variantes)}"
+        
+        try:
+            nodes = self.auto_engine.retrieve(user_query)
+            if not nodes:
+                 raise ValueError("Vide")
+        except Exception:
+            nodes = self.base_engine.retrieve(hybrid_query)
+        
+        if not nodes:
+            nodes = self.base_engine.retrieve("notebook portable laptop")
+            
+        return nodes[:3] # Single Sniper Strategy : top 3 nodes to choose from
 
 if __name__ == "__main__":
     rag = MultiQueryAutoRAG()

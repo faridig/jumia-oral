@@ -88,18 +88,17 @@ def send_whatsapp_audio(number: str, audio_content: bytes):
 def process_and_respond(user_id: str, text: str):
     logger.info(f"Début du traitement pour {user_id}")
     chat_response = get_chat_manager().handle_message(user_id, text)
-    logger.info(f"Réponse RAG générée pour {user_id}")
+    logger.info(f"Réponse multimodale générée pour {user_id}")
     
     if isinstance(chat_response, dict):
         response_text = chat_response.get("text", "")
-        text_tts = chat_response.get("text_tts", response_text)
+        audio_content = chat_response.get("audio_content")
         media_url = chat_response.get("media_url")
         
-        # PBI-2001 UX : Séquençage "Audio-First" (Sprint 20)
-        # 1. Envoi du message vocal en premier pour conseiller
-        logger.info(f"1/3 Génération et envoi du vocal à {user_id}")
-        audio_content = generate_speech(text_tts)
+        # [PR #30] Séquençage Multimodal Natif
+        # 1. Envoi du message vocal généré par GPT-4o Audio Preview (Prosodie CASA)
         if audio_content:
+            logger.info(f"1/3 Envoi du vocal natif (Marin) à {user_id}")
             send_whatsapp_audio(user_id, audio_content)
         
         # 2. Envoi de l'image (si disponible)
@@ -107,7 +106,7 @@ def process_and_respond(user_id: str, text: str):
             logger.info(f"2/3 Envoi de l'image à {user_id}")
             send_whatsapp_message(user_id, "", media_url)
         
-        # 3. Envoi du texte WhatsApp minimaliste (Link-Only)
+        # 3. Envoi du texte WhatsApp (Minimaliste)
         logger.info(f"3/3 Envoi du texte WhatsApp à {user_id}")
         send_whatsapp_message(user_id, response_text)
     else:

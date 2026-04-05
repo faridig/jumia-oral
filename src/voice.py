@@ -9,6 +9,64 @@ logger = logging.getLogger(__name__)
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
+def generate_multimodal_response(user_query: str, context_nodes: list, chat_history: list = None) -> dict:
+    """
+    Génère une réponse multimodale (Texte + Audio natif) via GPT-4o Audio Preview.
+    Garantit une prosodie Casablancaise authentique et un timbre 'Marin' (PR #30).
+    """
+    if not OPENAI_API_KEY:
+        logger.error("OPENAI_API_KEY non configurée pour GPT-4o Audio.")
+        return None
+
+    client = OpenAI(api_key=OPENAI_API_KEY)
+    
+    # 1. Préparation du contexte technique (Sniper Strategy)
+    context_text = "\n".join([
+        f"Produit: {n.node.metadata.get('name')}\nPrix: {n.node.metadata.get('price_numeric')} MAD\nSpecs: {n.node.metadata.get('description')}\nURL: {n.node.metadata.get('url')}"
+        for n in context_nodes
+    ])
+    
+    # 2. Historique conversationnel
+    history_text = ""
+    if chat_history:
+        history_text = "\n".join([f"{m.role}: {m.content}" for m in chat_history[-5:]])
+
+    # 3. Système Prompt CASA avec injection de prosodie native (PR #30)
+    system_prompt = (
+        "Tu es le 'Compagnon Notebook Jumia', un vendeur expert à Casablanca (Derb Ghalef style).\n"
+        "INSTRUCTION DE PROSODIE : Speak as a warm, persuasive Moroccan personal shopper from Casablanca. "
+        "Use natural Darija intonations, emphasize 'hemza' (good deals), and maintain a complicit, helpful tone. "
+        "Avoid any robotic or monotone delivery.\n\n"
+        "CONSIGNES :\n"
+        "1. Choisis LE MEILLEUR produit parmi les nodes fournis.\n"
+        "2. Ton texte de sortie (modality text) doit être le message WhatsApp minimaliste : *NOM* - *PRIX* MAD \n\n Khoudou mn hna : [URL]\n"
+        "3. Ton audio de sortie (modality audio) doit être ton conseil chaleureux en Darija Casa, incluant les specs techniques de manière fluide.\n"
+    )
+
+    try:
+        completion = client.chat.completions.create(
+            model="gpt-4o-audio-preview",
+            modalities=["text", "audio"],
+            audio={"voice": "marin", "format": "opus"},
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "system", "content": f"CONTEXTE TECHNIQUE (NODES):\n{context_text}"},
+                {"role": "system", "content": f"HISTORIQUE:\n{history_text}"},
+                {"role": "user", "content": user_query}
+            ]
+        )
+        
+        audio_data = base64.b64decode(completion.choices[0].message.audio.data)
+        text_whatsapp = completion.choices[0].message.content
+        
+        return {
+            "text": text_whatsapp,
+            "audio_content": audio_data
+        }
+    except Exception as e:
+        logger.error(f"Erreur GPT-4o Audio: {e}")
+        return None
+
 def generate_speech(text: str, voice: str = "marin") -> Optional[bytes]:
     """
     Génère un fichier audio .opus via OpenAI TTS (PBI-1701.1).
