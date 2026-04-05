@@ -69,7 +69,7 @@ def send_whatsapp_audio(number: str, audio_content: bytes):
     
     payload = {
         "number": number.split("@")[0],
-        "media": audio_base64,
+        "audio": audio_base64,
         "ptt": True,
         "delay": 1200
     }

@@ -67,8 +67,9 @@ def test_send_whatsapp_audio_v2_payload():
         
         assert "message/sendWhatsAppAudio/Jumia-Oral-Agent" in args[0]
         assert payload["number"] == "212600000000"
-        assert payload["media"] == audio_base64
-        assert "audio" not in payload
+        assert payload["audio"] == audio_base64
+        assert "media" not in payload
         assert payload["ptt"] is True
-        assert "data:audio/ogg;base64," not in payload["media"]
+        assert "data:audio/ogg;base64," not in payload["audio"]
+
 
