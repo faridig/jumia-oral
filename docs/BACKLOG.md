@@ -70,6 +70,49 @@
 
 ## 📋 BACKLOG GÉNÉRAL
 
+### [PBI-2101] DX : Script de Pilotage Unifié (Control Panel)
+**Status** : PENDING ⏳
+**Priorité** : High | **Estimation** : S
+**User Story** : "En tant que Chef d'Orchestre, je veux lancer et arrêter tous les services du projet (FastAPI, Qdrant, Evolution API, Ngrok) avec une seule commande simple, afin de gagner du temps et de la facilité."
+**Critères d'Acceptation (Gherkin)** :
+- [ ] **Scenario 1 : Démarrage rapide**
+  - **GIVEN** Tous les services sont éteints.
+  - **WHEN** Je lance `./jumia.sh start`.
+  - **THEN** Les conteneurs Qdrant et Evolution API démarrent, suivis du serveur FastAPI et du tunnel Ngrok.
+  - **THEN** Le script récupère automatiquement la nouvelle URL Ngrok et met à jour `WEBHOOK_URL` dans le `.env` ET dans l'instance Evolution API.
+- [ ] **Scenario 2 : Arrêt propre**
+  - **GIVEN** Les services sont actifs.
+  - **WHEN** Je lance `./jumia.sh stop`.
+  - **THEN** Tous les processus et conteneurs liés au projet sont stoppés proprement.
+- [ ] **Scenario 3 : Monitoring**
+  - **GIVEN** N'importe quel état.
+  - **WHEN** Je lance `./jumia.sh status`.
+  - **THEN** Le script affiche l'état (UP/DOWN) de chaque brique technologique.
+
+### [PBI-2001] TECH : Réorganisation du Séquençage WhatsApp
+**Status** : DONE ✅
+**Priorité** : High | **Estimation** : S
+**User Story** : "En tant qu'utilisateur, je veux d'abord entendre mon conseiller me parler en Darija avant de voir le lien technique."
+**Critères d'Acceptation** :
+- [x] Inverser l'ordre d'envoi dans `src/session_manager.py` : Audio Phoenix -> Texte/Lien.
+- [x] Vérifier que la latence de génération TTS ne bloque pas l'expérience.
+
+### [PBI-2002] PROMPT : Refonte "Sniper Minimaliste" (Link-Only)
+**Status** : DONE ✅
+**Priorité** : CRITIQUE | **Estimation** : S
+**User Story** : "En tant que vendeur Jumia, je veux que mon message texte ne contienne que l'essentiel (Nom, Prix, Lien) pour faciliter l'achat."
+**Critères d'Acceptation** :
+- [x] Suppression des listes à puces techniques dans le bloc `[WHATSAPP]`.
+- [x] Formatage cible : `*NOM DU PRODUIT* - *PRIX* MAD \n\n Khoudou mn hna : [URL]`.
+
+### [PBI-2003] UX : Audio Phoenix "Vendeur Expert"
+**Status** : DONE ✅
+**Priorité** : High | **Estimation** : M
+**User Story** : "En tant qu'acheteur, je veux que l'audio soit si riche et convaincant qu'il remplace avantageusement la fiche technique textuelle."
+**Critères d'Acceptation** :
+- [x] Intégration fluide des specs (CPU, RAM, SSD) dans la narration Darija.
+- [x] Utilisation de métaphores de performance ("Madi", "Tayra", "Naddi").
+
 ### [PBI-1901] TECH : Vérification Temps-Réel (Stock/Lien)
 **Status** : DONE ✅
 **Priorité** : High | **Estimation** : M

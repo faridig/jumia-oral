@@ -1,40 +1,29 @@
-# 🏃 SPRINT PLAN - SPRINT 20 (AUDIO-FIRST & MINIMALISME)
+# 🏃 SPRINT PLAN - SPRINT 21 (DEVOPS & DX)
 
-**Le Sprint 19 est terminé.**
-
----
-
-## 🎯 OBJECTIFS DU SPRINT 20
-- **L'Expérience Unifiée** : Fusionner la force de l'Audio Phoenix avec un lien WhatsApp minimaliste.
-- **Séquençage Narratif** : Envoyer l'**Audio en premier** pour conseiller, puis le **Lien en second** pour agir.
-- **Suppression du Bruit Visuel** : Éliminer les listes à puces techniques du texte WhatsApp (Reportées dans l'audio).
+**Objectif du Sprint** : Simplifier le cycle de vie du projet avec un script de pilotage unifié (Control Panel) pour lancer, arrêter et surveiller tous les services (WhatsApp, FastAPI, Qdrant).
 
 ---
 
 ## 📋 TICKETS SÉLECTIONNÉS
 
-### [PBI-2001] TECH : Réorganisation du Séquençage WhatsApp
+### [PBI-2101] DX : Script de Pilotage Unifié (Control Panel)
 **Priorité** : High | **Estimation** : S
-**User Story** : "En tant qu'utilisateur, je veux d'abord entendre mon conseiller me parler en Darija avant de voir le lien technique."
-**Critères d'Acceptation** :
-- [ ] Inverser l'ordre d'envoi dans `src/session_manager.py` : Audio Phoenix -> Texte/Lien.
-- [ ] Vérifier que la latence de génération TTS ne bloque pas l'expérience.
 
-### [PBI-2002] PROMPT : Refonte "Sniper Minimaliste" (Link-Only)
-**Priorité** : CRITIQUE | **Estimation** : S
-**User Story** : "En tant que vendeur Jumia, je veux que mon message texte ne contienne que l'essentiel (Nom, Prix, Lien) pour faciliter l'achat."
-**Critères d'Acceptation** :
-- [ ] Suppression des listes à puces techniques dans le bloc `[WHATSAPP]`.
-- [ ] Formatage cible : `*NOM DU PRODUIT* - *PRIX* MAD \n\n Khoudou mn hna : [URL]`.
+**User Story** : "En tant que Chef d'Orchestre, je veux lancer et arrêter tous les services du projet (FastAPI, Qdrant, Evolution API, Ngrok) avec une seule commande simple, afin de gagner du temps et de la facilité."
 
-### [PBI-2003] UX : Audio Phoenix "Vendeur Expert"
-**Priorité** : High | **Estimation** : M
-**User Story** : "En tant qu'acheteur, je veux que l'audio soit si riche et convaincant qu'il remplace avantageusement la fiche technique textuelle."
-**Critères d'Acceptation** :
-- [ ] Intégration fluide des specs (CPU, RAM, SSD) dans la narration Darija.
-- [ ] Utilisation de métaphores de performance ("Madi", "Tayra", "Naddi").
+**Dépendances** : Aucune (Post-Sprint 20)
 
----
-
-## 🤝 HANDOFF
-**PLANNING VALIDÉ. À TOI LEAD-DEV.**
+**Critères d'Acceptation (Gherkin)** :
+- [ ] **Scenario 1 : Démarrage rapide**
+  - **GIVEN** Tous les services sont éteints.
+  - **WHEN** Je lance `./jumia.sh start`.
+  - **THEN** Les conteneurs Qdrant et Evolution API démarrent, suivis du serveur FastAPI et du tunnel Ngrok.
+  - **THEN** Le script récupère automatiquement la nouvelle URL Ngrok et met à jour `WEBHOOK_URL` dans le `.env` ET dans l'instance Evolution API (plus de configuration manuelle).
+- [ ] **Scenario 2 : Arrêt propre**
+  - **GIVEN** Les services sont actifs.
+  - **WHEN** Je lance `./jumia.sh stop`.
+  - **THEN** Tous les processus et conteneurs liés au projet sont stoppés proprement.
+- [ ] **Scenario 3 : Monitoring**
+  - **GIVEN** N'importe quel état.
+  - **WHEN** Je lance `./jumia.sh status`.
+  - **THEN** Le script affiche l'état (UP/DOWN) de chaque brique technologique.
