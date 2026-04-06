@@ -47,9 +47,11 @@ def generate_multimodal_response(
         "Use natural Darija intonations, emphasize 'hemza'.\n\n"
         "CONSIGNES :\n"
         "1. Choisis LE MEILLEUR produit parmi les nodes fournis.\n"
-        "2. Texte: message WhatsApp minimaliste : *NOM* - *PRIX* MAD \n\n "
+        "2. Texte: message WhatsApp minimaliste : *NOM DU PRODUIT* - *PRIX* MAD \n\n "
         "Khoudou mn hna : [URL]\n"
-        "3. Audio: conseil chaleureux en Darija Casa.\n"
+        "INTERDICTION d'utiliser des puces ou du formattage complexe.\n"
+        "3. Audio: conseil chaleureux en Darija Casa. Utilise des mots comme 'Madi', 'Tayra', 'Naddi'. "
+        "Mentionne les specs techniques (CPU, RAM, SSD) de manière naturelle.\n"
     )
 
     try:
@@ -65,8 +67,14 @@ def generate_multimodal_response(
             ]
         )
 
-        audio_data = base64.b64decode(completion.choices[0].message.audio.data)
-        text_whatsapp = completion.choices[0].message.content
+        message = completion.choices[0].message
+        audio_data = base64.b64decode(message.audio.data)
+        
+        # Récupération de secours si le texte est vide (gpt-4o-audio-preview peut être paresseux)
+        text_whatsapp = message.content
+        if not text_whatsapp or text_whatsapp.strip() == "":
+            text_whatsapp = message.audio.transcript
+            logger.info("Utilisation du transcript car le contenu texte est vide.")
 
         return {
             "text": text_whatsapp,
@@ -112,7 +120,8 @@ def transcribe_audio(audio_file_path: str) -> Optional[str]:
             transcript = client.audio.transcriptions.create(
                 model="whisper-1",
                 file=f,
-                response_format="text"
+                response_format="text",
+                prompt="C'est un message audio en Darija marocain (Casablanca) parlant de laptops Jumia, mkhyr, naddi, madi, PC, hemza."
             )
             return transcript
     except Exception as e:

@@ -55,7 +55,7 @@ def send_whatsapp_message(number: str, text: str, media_url: str = None):
     try:
         response = requests.post(url, json=payload, headers=headers)
         response.raise_for_status()
-        logger.info(f"Message envoyé à {number}")
+        logger.info(f"INFO - Message envoyé à {number}")
     except Exception as e:
         logger.error(f"Erreur lors de l'envoi du message: {e}")
 
@@ -80,7 +80,7 @@ def send_whatsapp_audio(number: str, audio_content: bytes):
     try:
         response = requests.post(url, json=payload, headers=headers)
         response.raise_for_status()
-        logger.info(f"Audio envoyé à {number}")
+        logger.info(f"INFO - Audio envoyé à {number}")
     except Exception as e:
         logger.error(f"Erreur lors de l'envoi de l'audio: {e}")
 
@@ -90,17 +90,26 @@ def process_and_respond(user_id: str, text: str):
     chat_response = get_chat_manager().handle_message(user_id, text)
 
     if isinstance(chat_response, dict):
-        response_text = chat_response.get("text", "")
+        response_text = chat_response.get("text")
         audio_content = chat_response.get("audio_content")
         media_url = chat_response.get("media_url")
 
+        # 1. Priorité à l'audio (native)
         if audio_content:
             send_whatsapp_audio(user_id, audio_content)
+        
+        # 2. Lien image si présent
         if media_url:
             send_whatsapp_message(user_id, "", media_url)
-        send_whatsapp_message(user_id, response_text)
+        
+        # 3. Message texte (robustesse : check null)
+        if response_text and response_text.strip():
+            send_whatsapp_message(user_id, response_text)
     else:
-        send_whatsapp_message(user_id, str(chat_response))
+        # Fallback pour string simple
+        text_resp = str(chat_response)
+        if text_resp.strip():
+            send_whatsapp_message(user_id, text_resp)
 
 
 def download_media(url: str):

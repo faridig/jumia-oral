@@ -3,20 +3,16 @@ from src.api import process_and_respond
 
 @mock.patch("src.api.send_whatsapp_message")
 @mock.patch("src.api.send_whatsapp_audio")
-@mock.patch("src.api.generate_speech")
 @mock.patch("src.api.get_chat_manager")
-def test_pbi_2001_sequencing(mock_get_chat_manager, mock_generate_speech, mock_send_audio, mock_send_text):
-    # Mock chat manager response
+def test_pbi_2001_sequencing(mock_get_chat_manager, mock_send_audio, mock_send_text):
+    # Mock chat manager response to match multimodal native structure
     mock_chat_manager = mock.MagicMock()
     mock_get_chat_manager.return_value = mock_chat_manager
     mock_chat_manager.handle_message.return_value = {
         "text": "Texte WhatsApp",
-        "text_tts": "Texte TTS",
+        "audio_content": b"audio_content",
         "media_url": "http://image.url"
     }
-    
-    # Mock generate_speech
-    mock_generate_speech.return_value = b"audio_content"
     
     calls = []
     def record_call(name):
@@ -37,5 +33,11 @@ def test_pbi_2001_sequencing(mock_get_chat_manager, mock_generate_speech, mock_s
     assert 'text' in calls, "Text should be sent"
     
     # For Sprint 20, audio should be sent before the first text message
-    assert calls.index('audio') < calls.index('text'), "Audio must be sent BEFORE text/link"
+    # In process_and_respond: 
+    # 1. send_whatsapp_audio (for audio_content) -> 'audio'
+    # 2. send_whatsapp_message (for media_url) -> 'text'
+    # 3. send_whatsapp_message (for text) -> 'text'
+    
+    assert calls[0] == 'audio', "Audio must be sent FIRST"
+    assert 'text' in calls[1:], "Text must be sent AFTER audio"
 

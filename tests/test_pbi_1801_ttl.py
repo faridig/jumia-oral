@@ -58,7 +58,7 @@ def test_pbi_1801_persona_maintenance(chat_manager):
     response = chat_manager.handle_message(user_id, "Salam")
     
     # THEN Il conserve son ton Darija (Mrehba) et ses instructions (Scenario 2)
-    assert "Mrehba" in response["text"] or "Salam" in response["text"]
+    assert "mrehba" in response["text"].lower() or "salam" in response["text"].lower()
     # On vérifie qu'on a bien les balises multimédia gérées (le texte est propre)
     assert "[WHATSAPP]" not in response["text"]
-    assert "text_tts" in response
+    assert "audio_content" in response

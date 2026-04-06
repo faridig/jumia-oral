@@ -5,6 +5,7 @@ import logging
 from llama_index.core.storage.chat_store import SimpleChatStore
 from llama_index.core.llms import ChatMessage, MessageRole
 from src.rag_engine import MultiQueryAutoRAG
+from src.voice import generate_multimodal_response
 
 logger = logging.getLogger(__name__)
 
@@ -68,7 +69,6 @@ class JumiaChatManager:
         if not nodes:
             return {"text": "Sm7 lya khouya.", "audio_content": None}
 
-        from src.voice import generate_multimodal_response
         multi_resp = generate_multimodal_response(
             message_text, nodes, chat_history
         )
