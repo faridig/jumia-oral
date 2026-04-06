@@ -14,10 +14,16 @@ def chat_manager():
     if os.path.exists(metadata_path):
         os.remove(metadata_path)
     
-    with patch("src.session_manager.MultiQueryAutoRAG") as mock_rag_class:
+    with patch("src.session_manager.MultiQueryAutoRAG") as mock_rag_class, \
+         patch("src.session_manager.generate_multimodal_response") as mock_gen_multimodal:
         mock_rag = MagicMock()
-        mock_rag.query.return_value = "[WHATSAPP]Mrehba! Hahwa laptop.[/WHATSAPP][TTS]Mrehba[/TTS]"
+        mock_rag.get_retrieved_nodes.return_value = [MagicMock()]
         mock_rag_class.return_value = mock_rag
+        
+        mock_gen_multimodal.return_value = {
+            "text": "Mrehba! Hahwa laptop.",
+            "audio_content": b"audio"
+        }
         
         manager = JumiaChatManager(storage_path=storage_path)
         yield manager
@@ -58,7 +64,7 @@ def test_pbi_1801_persona_maintenance(chat_manager):
     response = chat_manager.handle_message(user_id, "Salam")
     
     # THEN Il conserve son ton Darija (Mrehba) et ses instructions (Scenario 2)
-    assert "Mrehba" in response["text"] or "Salam" in response["text"]
+    assert "mrehba" in response["text"].lower() or "salam" in response["text"].lower()
     # On vérifie qu'on a bien les balises multimédia gérées (le texte est propre)
     assert "[WHATSAPP]" not in response["text"]
-    assert "text_tts" in response
+    assert "audio_content" in response

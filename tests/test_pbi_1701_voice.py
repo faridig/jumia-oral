@@ -6,8 +6,8 @@ from unittest.mock import patch, MagicMock
 @patch("src.voice.OpenAI")
 def test_generate_speech_success(mock_openai):
     """
-    Scenario 1 : Utilisation du modèle gpt-4o-mini-tts (PBI-1701.1)
-    Scenario 2 : Optimisation de la voix (PBI-1701.1) - Correction Post-Audit (nova)
+    Scenario 1 : Utilisation du modèle tts-1 (PBI-1701.1)
+    Scenario 2 : Timbre vocal 'marin' validé pour le marché marocain (PBI-1701.1)
     """
     # Configuration du mock
     mock_client = MagicMock()
@@ -16,8 +16,8 @@ def test_generate_speech_success(mock_openai):
     
     text_darija = "Had l-PC madi bzaaf, mkhyr l-khidma."
     
-    # Appel à la fonction à implémenter (nova est recommandée pour le Darija)
-    audio_content = generate_speech(text_darija, voice="nova")
+    # Appel à la fonction à implémenter (marin est le timbre cible)
+    audio_content = generate_speech(text_darija, voice="marin")
     
     assert audio_content is not None
     assert len(audio_content) > 0
@@ -28,7 +28,7 @@ def test_generate_speech_success(mock_openai):
     # Vérifie les paramètres d'appel
     mock_client.audio.speech.create.assert_called_with(
         model="tts-1",
-        voice="nova",
+        voice="marin",
         input=text_darija,
         response_format="opus"
     )

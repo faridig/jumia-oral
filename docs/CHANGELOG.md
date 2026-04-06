@@ -1,5 +1,32 @@
 # 📜 CHANGELOG
 
+## [1.11.0] - 2026-04-04
+### Added
+- **Control Panel Unifié (PBI-2101)** : 
+  - Création du script `jumia.sh` pour piloter le cycle de vie complet (start/stop/status).
+  - Automatisation du tunnel public via Localtunnel (Zero-Config alternative à Ngrok).
+  - Synchronisation automatique des Webhooks entre le tunnel et l'instance Evolution API.
+  - Monitoring en temps réel de l'état de santé de la stack (Docker, FastAPI, Tunnel).
+
+### Sprint 21 : Developer Experience (DX) & Automatisation
+- **Zero-Config DX** : Le passage de Ngrok à Localtunnel élimine la friction de l'authentification forcée (Authtoken), permettant un démarrage "One-Click" pour les nouveaux développeurs.
+- **Fiabilité des Webhooks** : L'automatisation de la mise à jour du `.env` et de l'API Evolution réduit les erreurs humaines liées aux changements d'URLs de tunnel, garantissant que le bot reçoit toujours les messages WhatsApp après un redémarrage.
+- **Observabilité Locale** : Le dossier `logs/` centralisé et la commande `status` offrent une visibilité immédiate sur les points de défaillance, facilitant le debug rapide de la stack.
+
+## [1.10.0] - 2026-04-03
+### Added
+- **Audio-First Strategy (PBI-2001/2003)** : 
+  - Inversion du séquençage WhatsApp : l'audio de conseil est envoyé en premier, suivi du lien.
+  - Enrichissement de la narration vocale Phoenix pour inclure les caractéristiques techniques de manière fluide et persuasive.
+- **Minimalisme Visuel (PBI-2002)** :
+  - Suppression radicale des listes à puces techniques dans les messages WhatsApp.
+  - Formatage "Sniper" : Nom du produit, prix et URL directe uniquement.
+
+### Sprint 20 : Audio-First & Minimalisme
+- **La Fin du Bruit Visuel** : La suppression du texte technique au profit de la voix transforme le bot. L'utilisateur n'est plus face à une fiche technique, mais face à une recommandation humaine. **Leçon** : Plus il y a de texte, moins on le lit. La voix capte 100% de l'attention.
+- **Séquençage Narratif** : Envoyer l'audio d'abord prépare psychologiquement l'utilisateur à l'action. Le lien qui arrive quelques secondes après devient la conclusion naturelle du conseil oral.
+- **L'Audio comme Fiche Technique** : Réussir à intégrer des termes comme "8Go de RAM" ou "SSD" dans une phrase en Darija sans briser la fluidité est le nouveau standard de qualité pour Phoenix.
+
 ## [1.9.0] - 2026-04-03
 ### Added
 - **Vérification Temps-Réel (PBI-1901)** : 
