@@ -1,17 +1,50 @@
 import os
 import logging
+import warnings
 import httpx
-from typing import List, Optional, Any, Set
+from typing import List, Optional, Set
 
 import phoenix as px
 from openinference.instrumentation.llama_index import LlamaIndexInstrumentor
 from dotenv import load_dotenv
 
+from qdrant_client import QdrantClient
+from llama_index.core import (
+    VectorStoreIndex,
+    QueryBundle,
+    PromptTemplate,
+    get_response_synthesizer
+)
+from llama_index.core.base.response.schema import (
+    Response
+)
+from llama_index.core.response_synthesizers import ResponseMode
+from llama_index.core.retrievers import (
+    VectorIndexAutoRetriever,
+    VectorIndexRetriever
+)
+from llama_index.core.query_engine import RetrieverQueryEngine
+from llama_index.core.llms import ChatMessage
+from llama_index.core.vector_stores.types import (
+    MetadataInfo,
+    VectorStoreInfo
+)
+from llama_index.vector_stores.qdrant import QdrantVectorStore
+from llama_index.embeddings.openai import OpenAIEmbedding
+from llama_index.llms.openai import OpenAI
+from llama_index.core.postprocessor.types import BaseNodePostprocessor
+from llama_index.core.schema import NodeWithScore
+
 # Configuration
 load_dotenv()
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-# Désactivation des logs verbeux des bibliothèques tierces
-for logger_name in ["arize_phoenix", "openinference", "httpx", "openai", "qdrant_client"]:
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
+# Désactivation des logs verbeux
+for logger_name in [
+    "arize_phoenix", "openinference", "httpx", "openai", "qdrant_client"
+]:
     logging.getLogger(logger_name).setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
 
@@ -23,35 +56,9 @@ if os.getenv("PHOENIX_ENABLED", "true").lower() == "true":
         register(project_name="Jumia-Oral-RAG")
         LlamaIndexInstrumentor().instrument()
     except Exception as e:
-        logger.warning(f"Phoenix n'a pas pu démarrer (Tracing désactivé): {e}")
-
-from qdrant_client import QdrantClient
-from llama_index.core import (
-    VectorStoreIndex,
-    StorageContext,
-    QueryBundle,
-    PromptTemplate,
-    get_response_synthesizer
-)
-from llama_index.core.base.response.schema import (
-    Response, 
-    StreamingResponse, 
-    AsyncStreamingResponse,
-    RESPONSE_TYPE
-)
-from llama_index.core.response_synthesizers import ResponseMode
-from llama_index.core.retrievers import VectorIndexAutoRetriever, VectorIndexRetriever
-from llama_index.core.query_engine import RetrieverQueryEngine
-from llama_index.core.llms import ChatMessage, MessageRole
-from llama_index.core.vector_stores.types import MetadataInfo, VectorStoreInfo, MetadataFilters, MetadataFilter, FilterOperator
-from llama_index.vector_stores.qdrant import QdrantVectorStore
-from llama_index.embeddings.openai import OpenAIEmbedding
-from llama_index.llms.openai import OpenAI
-from llama_index.core.postprocessor.types import BaseNodePostprocessor
-from llama_index.core.schema import NodeWithScore
+        logger.warning(f"Phoenix n'a pas pu démarrer: {e}")
 
 # Configuration du Silence Technique (Guidance Sprint 13)
-import warnings
 warnings.filterwarnings("ignore")
 os.environ["PYTHONWARNINGS"] = "ignore"
 
@@ -63,16 +70,17 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 llm = OpenAI(model="gpt-4o", api_key=OPENAI_API_KEY, temperature=0.0)
 embed_model = OpenAIEmbedding(api_key=OPENAI_API_KEY)
 
+
 class DeduplicatePostprocessor(BaseNodePostprocessor):
     """
-    Dédoublonne les produits par nom pour éviter la redondance dans les recommandations (PBI-301).
+    Dédoublonne les produits par nom (PBI-301).
     """
     def _postprocess_nodes(
         self, nodes: List[NodeWithScore], query_bundle: Optional[QueryBundle] = None
     ) -> List[NodeWithScore]:
         unique_names: Set[str] = set()
         deduplicated_nodes: List[NodeWithScore] = []
-        
+
         for node_with_score in nodes:
             name = node_with_score.node.metadata.get("name", "")
             # Normalisation pour détection robuste de doublons
@@ -82,64 +90,66 @@ class DeduplicatePostprocessor(BaseNodePostprocessor):
                 deduplicated_nodes.append(node_with_score)
             else:
                 logger.info(f"Dédoublonnage effectué : {name[:50]}...")
-                
+
         return deduplicated_nodes
+
 
 class URLAvailabilityPostprocessor(BaseNodePostprocessor):
     """
     Vérifie en temps réel si l'URL Jumia est toujours valide (PBI-1901).
-    Supprime les noeuds dont l'URL renvoie un 404.
     """
     def _postprocess_nodes(
         self, nodes: List[NodeWithScore], query_bundle: Optional[QueryBundle] = None
     ) -> List[NodeWithScore]:
         valid_nodes: List[NodeWithScore] = []
-        
-        # User-Agent standard pour éviter les blocages immédiats
+
         headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+            "User-Agent": (
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) "
+                "Chrome/91.0.4472.124 Safari/537.36"
+            )
         }
-        
+
         with httpx.Client(headers=headers, timeout=2.0) as client:
             for node_with_score in nodes:
                 url = node_with_score.node.metadata.get("url")
                 if not url:
-                    logger.warning(f"Noeud sans URL trouvé : {node_with_score.node.id_}")
+                    logger.warning(f"Noeud sans URL trouvé: {node_with_score.node.id_}")
                     continue
-                
+
                 try:
-                    # On utilise HEAD pour être rapide et économe en bande passante
                     response = client.head(url, follow_redirects=True)
-                    logger.info(f"PBI-1901: Checking {url} -> Status: {response.status_code}")
-                    
+                    logger.info(f"PBI-1901: {url} -> {response.status_code}")
+
                     if response.status_code == 404:
-                        logger.warning(f"PBI-1901: Produit 404 détecté et ignoré : {url}")
+                        logger.warning(f"PBI-1901: Produit 404: {url}")
                     else:
                         valid_nodes.append(node_with_score)
                 except httpx.RequestError as exc:
-                    logger.warning(f"Erreur lors du check URL ({url}): {exc}. On garde le noeud par précaution.")
+                    logger.warning(f"Erreur check URL ({url}): {exc}")
                     valid_nodes.append(node_with_score)
-        
+
         return valid_nodes
+
 
 def get_rag_engine(use_auto_retriever: bool = True):
     """
-    Initialise le moteur de recherche avec les post-processors de dédoublonnage.
+    Initialise le moteur de recherche.
     """
     client = QdrantClient(url=QDRANT_URL)
     vector_store = QdrantVectorStore(client=client, collection_name=COLLECTION_NAME)
     index = VectorStoreIndex.from_vector_store(vector_store, embed_model=embed_model)
 
     if use_auto_retriever:
-        # Configuration des métadonnées pour l'Auto-Retriever (Usage Mapping PBI-1102)
         vector_store_info = VectorStoreInfo(
-            content_info="Catalogue Jumia Maroc (Notebooks). Contient des specs techniques (CPU, RAM, SSD) et l'état du produit.",
+            content_info="Catalogue Jumia Maroc (Notebooks).",
             metadata_info=[
-                MetadataInfo(name="brand", type="str", description="Marque du laptop (ex: HP, DELL, Lenovo)"),
-                MetadataInfo(name="price_numeric", type="float", description="Prix en Dhs"),
-                MetadataInfo(name="ram", type="int", description="Quantité de RAM en Go (ex: 8, 16, 32). Pour les besoins 'études', viser >= 8Go. Pour le 'gaming' ou 'montage', viser >= 16Go."),
-                MetadataInfo(name="ssd", type="int", description="Capacité du SSD en Go (ex: 256, 512, 1024)."),
-                MetadataInfo(name="condition", type="str", description="État du produit (ex: 'Neuf', 'Remis à Neuf')"),
+                MetadataInfo(name="brand", type="str", description="Marque"),
+                MetadataInfo(name="price_numeric", type="float", description="Prix"),
+                MetadataInfo(name="ram", type="int", description="RAM"),
+                MetadataInfo(name="ssd", type="int", description="SSD"),
+                MetadataInfo(name="condition", type="str", description="État"),
             ],
         )
         retriever = VectorIndexAutoRetriever(
@@ -152,130 +162,120 @@ def get_rag_engine(use_auto_retriever: bool = True):
     else:
         retriever = VectorIndexRetriever(index=index, similarity_top_k=5)
 
-    # Persona "Compagnon" (Rigueur Absolue & Darija-Native - PBI-1103)
-    # PBI-1701.3 : Double flux de sortie (Prosodie vs Structure) - UPGRADE Native Audio Casa (PR #24)
-    # RECOVERY : Réinjection Politesse (Mrehba) & Structure FACT-FIRST (Specs prioritaires)
-    # PBI-1904 : SINGLE SNIPER STRATEGY (Vente Directe & Persuasion)
     system_prompt = (
-        "Tu es le 'Compagnon Notebook Jumia', un vendeur expert en informatique à Casablanca (Derb Ghalef style). "
-        "TON DEVOIR SUPRÊME : Être factuellement IRRÉPROCHABLE et parler un DARIJA DE CASABLANCA AUTHENTIQUE, CHALEUREUX et PROFESSIONNEL. "
-        "CONSIGNES DE STYLE (OBLIGATOIRE) : "
-        "1. POLITESSE MAROCAINE : Accueille TOUJOURS avec 'Mrehba bik!' ou 'Salam khouya/sahbi'. Félicite le choix avec 'Besseha d'avance'. "
-        "2. RÉPONSE DARIJA-CASA : Réponds en Darija marocain de rue, direct mais respectueux. "
-        "3. VOCABULAIRE DE PROXIMITÉ & VENTE : Utilise : 'khouya/sahbi', 'l-m3aqoul', 'tayra', 'madi', 'l-hemza', 'ha wa7d l-bi si', 'dakchi naddi', 'Had l-bi si madi', 'Mat-tfeltouch'. "
-        "4. ACCENT & PHONÉTIQUE : Prononce les 'J' de manière douce (Maroc) et non comme des 'G' (Égypte). "
-        "5. ONBOARDING : Rappelle qu'on peut te parler en VOCAL. "
-        "CONSIGNES DE CONTENU (STRICTES - PBI-1904) : "
-        "1. SINGLE SNIPER RECOMMENDATION : Ne propose qu'UNE SEULE option, LA MEILLEURE (la plus pertinente pour le besoin). "
-        "2. STRUCTURE FACT-FIRST : Cite le MODÈLE EXACT et les SPÉCIFICATIONS TECHNIQUES (CPU, RAM, SSD) dès la PREMIÈRE PHRASE. Ne sacrifie JAMAIS la précision technique pour le style. N'omets aucun détail critique (ex: génération CPU, type RAM DDR3/DDR4, taille écran) présent dans les nodes sources.\n"
-        "3. NOM COMPLET : Cite toujours le nom complet Jumia. "
-        "4. LIENS : Termine par le lien Jumia [Voir sur Jumia](URL)."
-        "\n\nFORMAT DE SORTIE OBLIGATOIRE :\n"
-        "Tu DOIS impérativement fournir ta réponse sous DEUX formats séparés par des balises :\n"
-        "[WHATSAPP]\n"
-        "Texte MINIMALISTE pour WhatsApp en Arabizi (Latin). Ne garde que l'essentiel pour faciliter l'achat.\n"
-        "FORMAT STRICT : *NOM DU PRODUIT* - *PRIX* MAD \n\n Khoudou mn hna : [URL]\n"
-        "INTERDICTION : Pas de puces, pas de listes techniques, pas de longs paragraphes.\n"
-        "[/WHATSAPP]\n"
-        "[TTS]\n"
-        "Texte phonétique en Arabizi (Latin) optimisé pour l'oreille marocaine. Pas d'emojis, pas de puces, pas de liens. Commence par une salutation chaleureuse (Mrehba). "
-        "CONSIGNES AUDIO PHOENIX :\n"
-        "- Intégration fluide des specs (CPU, RAM, SSD) dans la narration Darija.\n"
-        "- Utilise des métaphores de performance : 'Madi' (tranchant), 'Tayra' (ultra-rapide), 'Naddi' (parfait).\n"
-        "- Remplace la fiche technique visuelle par une description vocale convaincante.\n"
-        "- Utilise un ton PERSUASIF ('Had l-bi si madi', 'mat-tfeltouch'). Écris comme on parle à Derb Ghalef (ex: 'j-yga' au lieu de 'giga', 'bi si' au lieu de 'PC').\n"
-        "[/TTS]"
+        "Tu es le 'Compagnon Notebook Jumia', un vendeur expert à Casablanca.\n"
+        "TON DEVOIR : Être factuel et parler un DARIJA authentique.\n"
+        "FORMAT DE SORTIE :\n"
+        "[WHATSAPP] Texte minimaliste incluant TOUJOURS le lien Jumia (URL) [/WHATSAPP]\n"
+        "[TTS] Texte phonétique [/TTS]"
     )
-    
-    llm_with_persona = OpenAI(model="gpt-4o", api_key=OPENAI_API_KEY, system_prompt=system_prompt, temperature=0.0)
-    response_synthesizer = get_response_synthesizer(llm=llm_with_persona, response_mode=ResponseMode.COMPACT)
+
+    llm_persona = OpenAI(
+        model="gpt-4o",
+        api_key=OPENAI_API_KEY,
+        system_prompt=system_prompt,
+        temperature=0.0
+    )
+    resp_syn = get_response_synthesizer(llm=llm_persona, response_mode=ResponseMode.COMPACT)
 
     return RetrieverQueryEngine(
         retriever=retriever,
-        response_synthesizer=response_synthesizer,
-        node_postprocessors=[DeduplicatePostprocessor(), URLAvailabilityPostprocessor()]
+        response_synthesizer=resp_syn,
+        node_postprocessors=[
+            DeduplicatePostprocessor(),
+            URLAvailabilityPostprocessor()
+        ]
     )
+
 
 def expand_query_darija(query: str) -> List[str]:
     """
-    Enrichit la requête Darija/Français avec des termes techniques tout en préservant les références.
+    Enrichit la requête Darija/Français.
     """
     prompt = PromptTemplate(
-        "Tu es un expert en PC portables. Analyse cette requête (Darija ou Français).\n"
-        "Génère 2 variantes de recherche techniques en Français qui :\n"
-        "1. CONSERVE impérativement les noms de modèles, marques et numéros présents dans la requête originale. INTERDICTION d'ajouter des références techniques (modèles, CPU) non mentionnées par l'utilisateur.\n"
-        "2. AJOUTENT des termes sémantiques équivalents.\n"
-        "RÉPONDS SEULEMENT AVEC LES VARIANTES, UNE PAR LIGNE.\n"
+        "Tu es un expert en PC portables. Analyse cette requête.\n"
+        "Génère 2 variantes de recherche techniques en Français.\n"
         "Requête: {query}\n"
         "Variantes:"
     )
     response = llm.complete(prompt.format(query=query))
-    lines = [l.strip().lstrip("123. -\"*") for l in response.text.strip().split("\n") if l.strip()]
-    variantes = [l for l in lines if len(l.split()) >= 1 and ":" not in l]
+    lines = [
+        li.strip().lstrip("123. -\"*")
+        for li in response.text.strip().split("\n")
+        if li.strip()
+    ]
+    variantes = [li for li in lines if len(li.split()) >= 1 and ":" not in li]
     return variantes[:2]
+
 
 class MultiQueryAutoRAG:
     """
-    Moteur RAG principal gérant l'Auto-Retriever avec Fallback sur recherche vectorielle simple.
+    Moteur RAG principal.
     """
     def __init__(self):
         self.auto_engine = get_rag_engine(use_auto_retriever=True)
         self.base_engine = get_rag_engine(use_auto_retriever=False)
-        
-    def query(self, user_query: str, chat_history: Optional[List[ChatMessage]] = None) -> Response | StreamingResponse | AsyncStreamingResponse:
+
+    def query(self, user_query: str, chat_history: Optional[List[ChatMessage]] = None) -> Response:
+        """
+        Gère le RAG et la synthèse.
+        """
         logger.info(f"User Query: {user_query}")
         chat_history = chat_history or []
-        
-        # 1. Expansion Sémantique (Hybridé)
         variantes = expand_query_darija(user_query)
-        # On garde la query originale comme pivot central
         hybrid_query = f"{user_query} {' '.join(variantes)}"
-        logger.info(f"Hybrid Query: {hybrid_query}")
 
-        # 2. Enrichissement d'intention (Automatisé par VectorIndexAutoRetriever)
-        enriched_query = user_query
-        
         try:
-            # Tentative via Auto-Retriever
-            response = self.auto_engine.query(enriched_query)
-            # Validation de la pertinence (PBI-2000: Robustesse)
+            response = self.auto_engine.query(user_query)
             if not response.source_nodes:
-                 raise ValueError("Résultat Auto-Retriever vide")
-        except Exception as e:
-            logger.warning(f"Auto-Retriever Fallback ({e}). Tentative via Base Engine...")
-            # Fallback sur le Base Engine avec la Hybrid Query
+                raise ValueError("Vide")
+        except Exception:
             response = self.base_engine.query(hybrid_query)
-            
-        # 3. Fallback d'alternatives si toujours rien (PBI-2000: Persona Compagnon)
+
         if not response.source_nodes:
-            logger.info("Aucun match exact. Recherche d'alternatives pour le client...")
             response = self.base_engine.query("notebook portable laptop")
 
         if not response.source_nodes:
             return Response(
-                response="Sm7 lya, had l-produit ba9i madiyoroch f stock l-youm. Chouf chi 7aja khora?",
+                response="Sm7 lya, ma-lguit-ch chi bi si mnasib.",
                 source_nodes=[]
             )
 
-        # [PBI-1801] Synthèse avec mémoire contextuelle (6 derniers messages)
-        history_text = "\n".join([f"{m.role.value if hasattr(m.role, 'value') else m.role}: {m.content}" for m in chat_history[-6:]])
-        context_query = f"CONTEXTE (HISTORIQUE):\n{history_text}\n\nNOUVELLE QUESTION:\n{user_query}" if history_text else user_query
-
-        # Synthèse finale avec le prompt "Compagnon" (Garantit le Single Sniper - PBI-1904)
-        # On ne passe que les 3 meilleurs noeuds pour que le Persona choisisse LE MEILLEUR (Sniper)
-        response = self.auto_engine._response_synthesizer.synthesize(
-            query=context_query,
-            nodes=response.source_nodes[:3] 
+        history_text = "\n".join([
+            f"{m.role}: {m.content}"
+            for m in chat_history[-6:]
+        ])
+        context_query = (
+            f"HISTORIQUE:\n{history_text}\n\nQUESTION:\n{user_query}"
+            if history_text else user_query
         )
 
-            
+        response = self.auto_engine._response_synthesizer.synthesize(
+            query=context_query,
+            nodes=response.source_nodes[:3]
+        )
         return response
+
+    def get_retrieved_nodes(self, user_query: str) -> List[NodeWithScore]:
+        """
+        Récupère les nodes pertinents sans synthèse.
+        """
+        variantes = expand_query_darija(user_query)
+        hybrid_query = f"{user_query} {' '.join(variantes)}"
+
+        try:
+            nodes = self.auto_engine.retrieve(user_query)
+            if not nodes:
+                raise ValueError("Vide")
+        except Exception:
+            nodes = self.base_engine.retrieve(hybrid_query)
+
+        if not nodes:
+            nodes = self.base_engine.retrieve("notebook portable laptop")
+
+        return nodes[:3]
+
 
 if __name__ == "__main__":
     rag = MultiQueryAutoRAG()
-    tests = [
-        "Bghit chi laptop m3lem b a9al mn 5000 dh",
-    ]
-    for t in tests:
-        print(f"\n>>> TEST: {t}")
-        print(rag.query(t))
+    print(rag.query("Bghit chi laptop m3lem"))
