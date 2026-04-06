@@ -23,15 +23,17 @@ def generate_multimodal_response(
 
     client = OpenAI(api_key=OPENAI_API_KEY)
 
-    # 1. Préparation du contexte technique
+    # 1. Préparation du contexte technique (Enrichi avec Rationale - PBI-31 Fix)
     nodes_info = []
     for n in context_nodes:
         m = n.node.metadata
+        # On récupère le contenu brut (qui contient l'analyse de sentiment et les specs)
+        content = n.node.get_content()
         nodes_info.append(
-            f"Produit: {m.get('name')}\n"
-            f"Prix: {m.get('price_numeric')} MAD\n"
-            f"Specs: {m.get('description')}\n"
-            f"URL: {m.get('url')}"
+            f"PRODUIT: {m.get('name')}\n"
+            f"PRIX: {m.get('price_numeric')} MAD\n"
+            f"URL: {m.get('url')}\n"
+            f"DÉTAILS SÉMANTIQUES:\n{content}"
         )
     context_text = "\n---\n".join(nodes_info)
 
@@ -40,18 +42,20 @@ def generate_multimodal_response(
     if chat_history:
         history_text = "\n".join([f"{m.role}: {m.content}" for m in chat_history[-5:]])
 
-    # 3. Système Prompt CASA
+    # 3. Système Prompt CASA (Séparation Prosodie vs Structure - PBI-31 Fix)
     system_prompt = (
         "Tu es le 'Compagnon Notebook Jumia', un vendeur expert à Casablanca.\n"
-        "PROSODIE : Speak as a warm, persuasive Moroccan personal shopper. "
-        "Use natural Darija intonations, emphasize 'hemza'.\n\n"
-        "CONSIGNES :\n"
-        "1. Choisis LE MEILLEUR produit parmi les nodes fournis.\n"
-        "2. Texte: message WhatsApp minimaliste : *NOM DU PRODUIT* - *PRIX* MAD \n\n "
-        "Khoudou mn hna : [URL]\n"
-        "INTERDICTION d'utiliser des puces ou du formattage complexe.\n"
-        "3. Audio: conseil chaleureux en Darija Casa. Utilise des mots comme 'Madi', 'Tayra', 'Naddi'. "
-        "Mentionne les specs techniques (CPU, RAM, SSD) de manière naturelle.\n"
+        "Tu fournis DEUX flux distincts : un message TEXTE pour WhatsApp et un message AUDIO.\n\n"
+        "PROSODIE AUDIO (STRICTE) :\n"
+        "- Parle comme un 'Personal Shopper' marocain chaleureux et persuasif (Darija de Casablanca).\n"
+        "- INTERDICTION FORMELLE de prononcer l'URL, de dire 'cliquez sur le lien' ou d'épeler des caractères techniques.\n"
+        "- Ne cite pas les prix de manière robotique. Dis par exemple : 'Hada gha b 5000 dirham, hemza khouya'.\n"
+        "- Utilise un ton de conseil entre amis. Utilise des mots comme 'Madi', 'Tayra', 'Naddi', 'mkhyyer'.\n"
+        "- Mentionne les specs (CPU, RAM, SSD) naturellement, sans lire une fiche technique.\n\n"
+        "STRUCTURE TEXTE (WHATSAPP) :\n"
+        "- C'est ton SEUL support pour le lien technique.\n"
+        "- Format : *NOM DU PRODUIT* - *PRIX* MAD\n\nKhoudou mn hna : [URL]\n"
+        "- INTERDICTION d'utiliser des puces ou du formattage complexe."
     )
 
     try:
@@ -70,11 +74,17 @@ def generate_multimodal_response(
         message = completion.choices[0].message
         audio_data = base64.b64decode(message.audio.data)
         
-        # Récupération de secours si le texte est vide (gpt-4o-audio-preview peut être paresseux)
+        # Récupération de secours robuste (PBI-31 Fix)
+        # Au lieu d'utiliser le transcript (qui doit être pur), on reconstruit le lien manuellement
         text_whatsapp = message.content
         if not text_whatsapp or text_whatsapp.strip() == "":
-            text_whatsapp = message.audio.transcript
-            logger.info("Utilisation du transcript car le contenu texte est vide.")
+            if context_nodes:
+                best_node = context_nodes[0].node.metadata
+                text_whatsapp = f"*{best_node.get('name')}* - {best_node.get('price_numeric')} MAD\n\nKhoudou mn hna : {best_node.get('url')}"
+                logger.warning("Modèle paresseux : Reconstruction manuelle du lien WhatsApp.")
+            else:
+                text_whatsapp = message.audio.transcript
+                logger.info("Utilisation du transcript car le contenu texte est vide et aucun contexte.")
 
         return {
             "text": text_whatsapp,
