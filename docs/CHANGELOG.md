@@ -1,5 +1,18 @@
 # 📜 CHANGELOG
 
+## [1.11.0] - 2026-04-04
+### Added
+- **Control Panel Unifié (PBI-2101)** : 
+  - Création du script `jumia.sh` pour piloter le cycle de vie complet (start/stop/status).
+  - Automatisation du tunnel public via Localtunnel (Zero-Config alternative à Ngrok).
+  - Synchronisation automatique des Webhooks entre le tunnel et l'instance Evolution API.
+  - Monitoring en temps réel de l'état de santé de la stack (Docker, FastAPI, Tunnel).
+
+### Sprint 21 : Developer Experience (DX) & Automatisation
+- **Zero-Config DX** : Le passage de Ngrok à Localtunnel élimine la friction de l'authentification forcée (Authtoken), permettant un démarrage "One-Click" pour les nouveaux développeurs.
+- **Fiabilité des Webhooks** : L'automatisation de la mise à jour du `.env` et de l'API Evolution réduit les erreurs humaines liées aux changements d'URLs de tunnel, garantissant que le bot reçoit toujours les messages WhatsApp après un redémarrage.
+- **Observabilité Locale** : Le dossier `logs/` centralisé et la commande `status` offrent une visibilité immédiate sur les points de défaillance, facilitant le debug rapide de la stack.
+
 ## [1.10.0] - 2026-04-03
 ### Added
 - **Audio-First Strategy (PBI-2001/2003)** : 
