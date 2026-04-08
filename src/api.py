@@ -97,11 +97,11 @@ def process_and_respond(user_id: str, text: str):
         # 1. Priorité à l'audio (native)
         if audio_content:
             send_whatsapp_audio(user_id, audio_content)
-        
+
         # 2. Lien image si présent
         if media_url:
             send_whatsapp_message(user_id, "", media_url)
-        
+
         # 3. Message texte (robustesse : check null)
         if response_text and response_text.strip():
             send_whatsapp_message(user_id, response_text)
@@ -135,6 +135,7 @@ def process_audio_and_respond(user_id: str, audio_msg: dict):
             os.unlink(tmp_path)
 
         if text:
+            logger.info(f"🎤 Transcription audio réussie pour {user_id}: '{text}'")
             process_and_respond(user_id, text)
         else:
             send_whatsapp_message(user_id, "Sm7 lya, ma-9dertch n-sm3.")
