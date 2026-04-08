@@ -65,12 +65,22 @@ class JumiaChatManager:
         self._check_session_expiry(user_id)
         chat_history = self.chat_store.get_messages(user_id)
 
-        nodes = self.rag_engine.get_retrieved_nodes(message_text)
-        if not nodes:
-            return {"text": "Sm7 lya khouya.", "audio_content": None}
+        # 1. Détection d'intention (PBI-31 Fix)
+        intent = self.rag_engine.detect_intent(message_text)
 
+        # 2. RAG conditionnel
+        nodes = []
+        if "PRODUCT" in intent:
+            nodes = self.rag_engine.get_retrieved_nodes(message_text, intent=intent)
+            if not nodes:
+                logger.warning("Intention produit mais aucun résultat RAG.")
+                return {"text": "Sm7 lya khouya, ma-lguit-ch chi laptop b had l-mouwasafat.", "audio_content": None}
+        else:
+            logger.info(f"Pas de recherche produit pour l'intention: {intent}")
+
+        # 3. Génération réponse
         multi_resp = generate_multimodal_response(
-            message_text, nodes, chat_history
+            message_text, nodes, chat_history, intent=intent
         )
 
         if not multi_resp:

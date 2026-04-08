@@ -256,10 +256,38 @@ class MultiQueryAutoRAG:
         )
         return response
 
-    def get_retrieved_nodes(self, user_query: str) -> List[NodeWithScore]:
+    def detect_intent(self, query: str) -> str:
+        """
+        Détecte l'intention de l'utilisateur (GREETING vs PRODUCT).
+        """
+        intent_prompt = (
+            "Analyse l'intention de l'utilisateur Jumia. "
+            "Réponds uniquement par 'PRODUCT' ou 'GREETING'.\n"
+            f"Requête: {query}\n"
+            "Intention:"
+        )
+        try:
+            intent_resp = llm.complete(intent_prompt).text.strip().upper()
+            logger.info(f"Intention détectée : {intent_resp}")
+            return intent_resp
+        except Exception as e:
+            logger.error(f"Erreur détection intention: {e}")
+            return "PRODUCT" # Fallback sécurisé
+
+    def get_retrieved_nodes(self, user_query: str, intent: str = None) -> List[NodeWithScore]:
         """
         Récupère les nodes pertinents sans synthèse.
+        Incorpore un filtrage d'intention (PBI-31 Fix).
         """
+        # 1. Détection d'intention si non fournie
+        if intent is None:
+            intent = self.detect_intent(user_query)
+
+        if "GREETING" in intent and "PRODUCT" not in intent:
+            logger.info("Simple salutation détectée. Skip RAG.")
+            return []
+
+        # 2. Recherche si intention produit
         variantes = expand_query_darija(user_query)
         hybrid_query = f"{user_query} {' '.join(variantes)}"
 

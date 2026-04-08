@@ -12,7 +12,7 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 
 def generate_multimodal_response(
-    user_query: str, context_nodes: list, chat_history: list = None
+    user_query: str, context_nodes: list, chat_history: list = None, intent: str = "PRODUCT"
 ) -> dict:
     """
     Génère une réponse multimodale (Texte + Audio natif).
@@ -48,6 +48,7 @@ def generate_multimodal_response(
         "Tu fournis DEUX flux distincts : un message TEXTE pour WhatsApp et un message AUDIO.\n\n"
         "PROSODIE AUDIO (STRICTE) :\n"
         "- Parle comme un 'Personal Shopper' marocain chaleureux et persuasif (Darija de Casablanca).\n"
+        "- Salue toujours l'utilisateur au début de la conversation ou si la requête est une salutation.\n"
         "- INTERDICTION FORMELLE de prononcer l'URL, de dire 'cliquez sur le lien' ou d'épeler des caractères techniques.\n"
         "- Ne cite pas les prix de manière robotique. Dis par exemple : 'Hada gha b 5000 dirham, hemza khouya'.\n"
         "- Utilise un ton de conseil entre amis. Utilise des mots comme 'Madi', 'Tayra', 'Naddi', 'mkhyyer'.\n"
@@ -78,13 +79,14 @@ def generate_multimodal_response(
         # Au lieu d'utiliser le transcript (qui doit être pur), on reconstruit le lien manuellement
         text_whatsapp = message.content
         if not text_whatsapp or text_whatsapp.strip() == "":
-            if context_nodes:
+            # On ne force la reconstruction que si l'intention PRODUIT est confirmée (PBI-31 Fix)
+            if context_nodes and "PRODUCT" in intent:
                 best_node = context_nodes[0].node.metadata
                 text_whatsapp = f"*{best_node.get('name')}* - {best_node.get('price_numeric')} MAD\n\nKhoudou mn hna : {best_node.get('url')}"
                 logger.warning("Modèle paresseux : Reconstruction manuelle du lien WhatsApp.")
             else:
                 text_whatsapp = message.audio.transcript
-                logger.info("Utilisation du transcript car le contenu texte est vide et aucun contexte.")
+                logger.info("Utilisation du transcript car le contenu texte est vide ou intention non-produit.")
 
         return {
             "text": text_whatsapp,
