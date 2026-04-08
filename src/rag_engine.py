@@ -261,8 +261,12 @@ class MultiQueryAutoRAG:
         Détecte l'intention de l'utilisateur (GREETING vs PRODUCT).
         """
         intent_prompt = (
-            "Analyse l'intention de l'utilisateur Jumia. "
-            "Réponds uniquement par 'PRODUCT' ou 'GREETING'.\n"
+            "Tu es un assistant Jumia. Analyse la requête de l'utilisateur.\n"
+            "Détermine si l'utilisateur veut voir des produits (recherche, achat, prix, specs) "
+            "ou s'il s'agit juste d'une salutation, politesse ou remerciement.\n"
+            "Réponds uniquement par 'PRODUCT' si une recherche produit est pertinente, "
+            "ou 'GREETING' s'il s'agit d'une simple interaction sociale.\n"
+            "Si la requête contient 'Jumia' avec une salutation, c'est généralement un 'GREETING'.\n"
             f"Requête: {query}\n"
             "Intention:"
         )
@@ -277,7 +281,7 @@ class MultiQueryAutoRAG:
     def get_retrieved_nodes(self, user_query: str, intent: str = None) -> List[NodeWithScore]:
         """
         Récupère les nodes pertinents sans synthèse.
-        Incorpore un filtrage d'intention (PBI-31 Fix).
+        Incorpore un filtrage d'intention et de pertinence (PBI-31 Fix).
         """
         # 1. Détection d'intention si non fournie
         if intent is None:
@@ -298,10 +302,21 @@ class MultiQueryAutoRAG:
         except Exception:
             nodes = self.base_engine.retrieve(hybrid_query)
 
-        if not nodes:
-            nodes = self.base_engine.retrieve("notebook portable laptop")
+        # 3. Filtrage de pertinence (PBI-31 Fix)
+        # Seuil de 0.78 pour éviter les recommandations "à peu près" sur des salutations
+        threshold = 0.78
+        filtered_nodes = [n for n in nodes if n.score >= threshold]
+        
+        if not filtered_nodes and nodes:
+            logger.info(f"Top node score ({nodes[0].score}) sous le seuil ({threshold}).")
 
-        return nodes[:3]
+        if not filtered_nodes and intent == "PRODUCT":
+            # Si l'intention est vraiment un produit mais que le RAG est faible, 
+            # on tente un dernier recours très générique ou on laisse vide.
+            logger.warning("Intention PRODUIT confirmée mais score RAG trop faible.")
+            return []
+
+        return filtered_nodes[:3]
 
 
 if __name__ == "__main__":
