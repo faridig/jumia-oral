@@ -17,6 +17,7 @@ def chat_manager():
     with patch("src.session_manager.MultiQueryAutoRAG") as mock_rag_class, \
          patch("src.session_manager.generate_multimodal_response") as mock_gen_multimodal:
         mock_rag = MagicMock()
+        mock_rag.detect_intent.return_value = "PRODUCT"
         mock_rag.get_retrieved_nodes.return_value = [MagicMock()]
         mock_rag_class.return_value = mock_rag
         

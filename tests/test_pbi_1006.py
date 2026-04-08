@@ -10,6 +10,7 @@ def test_handle_message_no_location_onboarding(mock_chat_store, mock_rag_engine,
     PBI-1006: Ensure that we no longer ask for location.
     """
     mock_rag = MagicMock()
+    mock_rag.detect_intent.return_value = "PRODUCT"
     mock_rag.get_retrieved_nodes.return_value = [MagicMock()]
     mock_rag_engine.return_value = mock_rag
     
@@ -25,4 +26,4 @@ def test_handle_message_no_location_onboarding(mock_chat_store, mock_rag_engine,
 
     # The response should be from the RAG
     assert response["text"] == "Hahwa laptop mzyan"
-    mock_rag.get_retrieved_nodes.assert_called_once_with("Bghit laptop")
+    mock_rag.get_retrieved_nodes.assert_called_once_with("Bghit laptop", intent="PRODUCT")
